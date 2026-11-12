@@ -27,6 +27,15 @@ export function renderTokensCss(tokens) {
       ]),
       '}',
     ],
+    // Druck: helles Thema (second) auch ohne data-theme, Papier bleibt hell.
+    [
+      '@media print {',
+      '  :root, [data-theme="' + first + '"] {',
+      '    color-scheme: light;',
+      ...lines(colors(second)).map((l) => '  ' + l),
+      '  }',
+      '}',
+    ],
   ];
   return [HEADER, ...blocks.map((b) => b.join('\n'))].join('\n\n') + '\n';
 }

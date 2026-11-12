@@ -1,0 +1,8 @@
+---
+/** Sichtbarer Platzhalter für Angaben oder Texte, die der Anbieter liefert. `data-placeholder` meldet ihn dem Release-Gate. */
+interface Props { id: string; block?: boolean }
+const { id, block = false } = Astro.props;
+const Tag = block ? 'div' : 'span';
+---
+
+<Tag class:list={['rt-placeholder', block && 'rt-placeholder--block']} data-placeholder={id}><slot /></Tag>

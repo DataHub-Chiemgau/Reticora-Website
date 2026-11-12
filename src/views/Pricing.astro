@@ -1,0 +1,163 @@
+---
+import Leitstand from '../layouts/Leitstand.astro';
+import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
+import Cta from '../components/Cta.astro';
+import Button from '../components/Button.astro';
+import Beleg from '../components/Beleg.astro';
+import Rich from '../components/Rich.astro';
+import Para from '../components/Para.astro';
+import SpecList from '../components/SpecList.astro';
+import { LINKS } from '../data/links';
+import { PLANS } from '../data/pricing';
+import type { Lang } from '../data/types';
+import { content } from '../content';
+import { ui } from '../i18n';
+import { localize } from '../i18n/routes';
+import { belegText } from '../components/beleg-text';
+
+/** Seite „Preise“: Pakettabelle, Paketmatrix, Zusatzkosten, Test und Fragen. Alle Werte aus src/data/pricing.ts. */
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const C = content(lang).preise;
+const UI = ui(lang);
+const H = C.pakete.heads;
+const plain = (v: string) => v.replace(/ /g, ' ');
+// Belege dieser Seite für den Druck: aufklappbare Belege bleiben im Druck zu, deshalb steht darunter eine Liste mit Titel und Text (am Bildschirm verborgen).
+const claimIds = [...new Set(JSON.stringify(C).match(/\bC-\d+\b/g) ?? [])].sort();
+---
+
+<Leitstand title={C.meta.title} description={C.meta.description} lang={lang} path={localize('/preise/', lang)}>
+  <div class="page-preise">
+  <PageHero title={C.hero.title} lead={C.hero.lead} />
+
+  <Section id={C.pakete.id} title={C.pakete.title}>
+    <div class="home-stack">
+      <div class="price-meta">
+        <p class="price-vat">{C.pakete.vat}</p>
+        <p class="home-b2b">{UI.b2b}</p>
+      </div>
+      <div class="rt-price">
+        <section class="rt-table-wrap" tabindex="0" aria-label={C.pakete.label}>
+          <table class="rt-table price-plans">
+            <thead>
+              <tr>
+                <th scope="col">{H.plan}</th>
+                <th scope="col"><span class="sr-only">{H.action}</span></th>
+                <th scope="col" class="num">{H.monthly}</th>
+                <th scope="col" class="num">{H.yearly}</th>
+                <th scope="col" class="num">{H.beta}</th>
+                <th scope="col" class="num">{H.cis}</th>
+                <th scope="col" class="num">{H.collectors}</th>
+                <th scope="col" class="num">{H.users}</th>
+                <th scope="col"><span class="sr-only">{H.claims}</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {C.pakete.rows.map((r) => (
+                <tr data-plan={r.id}>
+                  <th scope="row">{r.name}</th>
+                  <td class="price-desc">
+                    <p class="price-summary">{r.summary}</p>
+                    <div class="price-action">
+                      {r.enterprise
+                        ? <Button variant="secondary" href={localize('/kontakt/', lang) + `?topic=${C.pakete.contact.topic}`} aria-label={`${C.pakete.contact.label}: ${r.name}`}>{C.pakete.contact.label}</Button>
+                        : <Button variant="primary" href={LINKS.signup} aria-label={`${UI.actions.trial}: ${r.name}`}>{UI.actions.trial}</Button>}
+                    </div>
+                  </td>
+                  <td class="num" data-label={H.monthly} data-col="monthly">{r.monthly}</td>
+                  <td class="num" data-label={H.yearly} data-col="yearly">{r.yearly}</td>
+                  <td class="num rt-beta" data-label={H.beta} data-col="beta">{r.beta}</td>
+                  <td class="num" data-label={H.cis} data-col="cis">{r.cis}</td>
+                  <td class="num" data-label={H.collectors} data-col="collectors">{r.collectors}</td>
+                  <td class="num" data-label={H.users} data-col="users">{r.users}</td>
+                  {/* Belege der Zeile (Preise und Limits, bei Enterprise der Betrieb); in einer Zelle, ein details darf nicht in th stehen. */}
+                  <td class="price-claims" data-col="claims"><div>{r.claims.map((c) => <Beleg claim={c} lang={lang} />)}</div></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      </div>
+      <div class="rt-notice price-beta" data-beta>
+        <div role="paragraph"><b>{C.pakete.beta.lead}</b>{' '}<Rich text={C.pakete.beta.text} lang={lang} /></div>
+      </div>
+    </div>
+  </Section>
+
+  <Section id={C.funktionen.id} title={C.funktionen.title}>
+    <div class="home-stack">
+      <div class="price-matrix-box">
+        <p class="rt-table-hint">{UI.tableHint}</p>
+        <section class="rt-table-wrap price-matrix-wrap" tabindex="0" aria-label={C.funktionen.label}>
+          <table class="rt-table price-matrix" aria-describedby="funktionen-beschreibung">
+            <thead>
+              <tr>
+                <th scope="col">{C.funktionen.feature}</th>
+                {PLANS.map((p) => <th scope="col">{p.name}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {C.funktionen.rows.map((f) => (
+                <tr data-feature={f.id}>
+                  <th scope="row">{f.label}</th>
+                  {PLANS.map((p, n) => {
+                    const v = f.plans[p.id];
+                    const rowClaim = n === PLANS.length - 1 ? C.funktionen.rowClaims[f.id] : undefined;
+                    return (
+                      <td>
+                        {v === true && <><span aria-hidden="true" class="rt-yes">✓</span><span class="sr-only">{UI.matrix.yes}</span></>}
+                        {v === false && <><span aria-hidden="true" class="rt-no">–</span><span class="sr-only">{UI.matrix.no}</span></>}
+                        {v === '∞' && <><span aria-hidden="true" class="rt-yes">∞</span><span class="sr-only">{UI.matrix.unlimited}</span></>}
+                        {typeof v === 'string' && v !== '∞' && plain(v)}
+                        {rowClaim && <>{' '}<Beleg claim={rowClaim} lang={lang} /></>}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      </div>
+      <div id="funktionen-beschreibung" class="price-legend">
+        <p class="home-caption">{C.funktionen.legend}</p>
+        <Para class="home-caption" text={C.funktionen.caption} lang={lang} />
+      </div>
+    </div>
+  </Section>
+
+  <Section id={C.zusatz.id} title={C.zusatz.title}>
+    <div class="home-stack">
+      <div class="price-specs"><SpecList items={C.zusatz.specs} lang={lang} /></div>
+      <p class="home-b2b">{C.zusatz.note}</p>
+    </div>
+  </Section>
+
+  <Section id={C.test.id} title={C.test.title}>
+    <div class="home-stack">
+      <div class="home-block"><Para text={C.test.text} lang={lang} /></div>
+      <Button class="home-link" variant="primary" size="lg" href={LINKS.signup}>{UI.actions.trial}</Button>
+    </div>
+  </Section>
+
+  <Section id={C.fragen.id} title={C.fragen.title}>
+    <div class="price-faq">
+      {C.fragen.items.map((i) => (
+        <div>
+          <h3>{i.q}</h3>
+          <div class="price-answer"><Para text={i.a} lang={lang} /></div>
+        </div>
+      ))}
+    </div>
+  </Section>
+
+  {/* Nur im Druck sichtbar: die Texte der Belege (aufklappbare Belege bleiben im Druck zu). */}
+  <section class="price-footnotes">
+    <p class="price-footnotes-title">{H.claims}</p>
+    <ul>{claimIds.map((id) => { const c = belegText(id as `C-${string}`, lang); return <li><b>{id} · {c.title}.</b> {c.evidence}</li>; })}</ul>
+  </section>
+
+  <Cta lang={lang} />
+  </div>
+</Leitstand>

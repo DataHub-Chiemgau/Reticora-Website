@@ -75,3 +75,27 @@
   --font-text: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
+
+@media print {
+  :root, [data-theme="leitstand"] {
+    color-scheme: light;
+    --canvas: #f5f7f8;
+    --panel: #ffffff;
+    --raised: #ffffff;
+    --line: #e1e6e9;
+    --line-strong: #cbd3d8;
+    --control: #808f9a;
+    --fg: #171e23;
+    --fg-muted: #4e5c65;
+    --fg-subtle: #5d6d76;
+    --accent: #087680;
+    --accent-strong: #065a62;
+    --accent-soft: #e4f3f4;
+    --accent-fg: #ffffff;
+    --signal: #b45309;
+    --danger: #b91c1c;
+    --success: #15803d;
+    --graph-active: #16a34a;
+    --graph-failed: #dc2626;
+  }
+}

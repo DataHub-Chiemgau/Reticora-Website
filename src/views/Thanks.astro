@@ -1,0 +1,22 @@
+---
+import Leitstand from '../layouts/Leitstand.astro';
+import PageHero from '../components/PageHero.astro';
+import Button from '../components/Button.astro';
+import { content } from '../content';
+import type { Lang } from '../data/types';
+import { localize } from '../i18n/routes';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const D = content(lang).kontakt.danke;
+---
+
+<Leitstand title={D.meta.title} description={D.meta.description} lang={lang} path={localize('/kontakt/danke/', lang)} noindex>
+  <PageHero title={D.h1} lead={D.text} />
+  <div class="rt-section">
+    <div class="rt-container home-actions-row">
+      <Button variant="primary" size="lg" href={localize('/demo/', lang)}>{D.demo}</Button>
+      <Button variant="secondary" size="lg" href={localize('/', lang)}>{D.home}</Button>
+    </div>
+  </div>
+</Leitstand>

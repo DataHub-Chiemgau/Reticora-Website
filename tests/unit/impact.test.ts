@@ -87,17 +87,17 @@ describe('impactSentence', () => {
       guarded: 'Durch Redundanz geschützt: srv-01, srv-02.',
     });
     expect(s('en', ['pdu-a'])).toEqual({
-      main: 'If "pdu-a" fails, 1 more CI is affected (shown in grey).',
+      main: 'If “pdu-a” fails, 1 more CI is affected (shown in gray).',
       guarded: 'Protected by redundancy: srv-01, srv-02.',
     });
   });
   it('ein CI, mehrere betroffen', () => {
     expect(s('de', ['usv-01'])).toEqual({ main: 'Fällt „usv-01“ aus, sind 8 weitere CIs betroffen (grau dargestellt).', guarded: null });
-    expect(s('en', ['usv-01'])).toEqual({ main: 'If "usv-01" fails, 8 more CIs are affected (shown in grey).', guarded: null });
+    expect(s('en', ['usv-01'])).toEqual({ main: 'If “usv-01” fails, 8 more CIs are affected (shown in gray).', guarded: null });
   });
   it('ein CI, keines betroffen', () => {
     expect(s('de', ['vm-db-01'])).toEqual({ main: 'Fällt „vm-db-01“ aus, ist kein weiteres CI betroffen.', guarded: null });
-    expect(s('en', ['vm-db-01'])).toEqual({ main: 'If "vm-db-01" fails, no other CI is affected.', guarded: null });
+    expect(s('en', ['vm-db-01'])).toEqual({ main: 'If “vm-db-01” fails, no other CI is affected.', guarded: null });
   });
   it('mehrere CIs', () => {
     expect(s('de', ['pdu-a', 'pdu-b'])).toEqual({
@@ -105,7 +105,7 @@ describe('impactSentence', () => {
       guarded: null,
     });
     expect(s('en', ['pdu-a', 'pdu-b'])).toEqual({
-      main: 'If 2 CIs (pdu-a, pdu-b) fail together, 6 more CIs are affected (shown in grey).',
+      main: 'If 2 CIs (pdu-a, pdu-b) fail together, 6 more CIs are affected (shown in gray).',
       guarded: null,
     });
   });
@@ -115,7 +115,7 @@ describe('impactSentence', () => {
       guarded: 'Durch Redundanz geschützt: srv-01, srv-02.',
     });
     expect(s('en', ['pdu-a', 'vm-db-01'])).toEqual({
-      main: 'If 2 CIs (pdu-a, vm-db-01) fail together, 1 more CI is affected (shown in grey).',
+      main: 'If 2 CIs (pdu-a, vm-db-01) fail together, 1 more CI is affected (shown in gray).',
       guarded: 'Protected by redundancy: srv-01, srv-02.',
     });
   });

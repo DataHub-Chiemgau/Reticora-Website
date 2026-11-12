@@ -1,0 +1,16 @@
+---
+import { hyphenate } from '../content/rich';
+
+interface Props { eyebrow?: string; title: string; lead?: string }
+const { eyebrow, title, lead } = Astro.props;
+---
+
+<section class="rt-section page-hero" aria-labelledby="seite-titel">
+  <div class="rt-container">
+    {eyebrow && <p class="data-label page-hero-eyebrow">{eyebrow}</p>}
+    <h1 class="display-xl" id="seite-titel">{hyphenate(title)}</h1>
+    {lead && <p class="lead">{lead}</p>}
+    {Astro.slots.has('lead') && <div class="lead" role="paragraph"><slot name="lead" /></div>}
+    <slot />
+  </div>
+</section>

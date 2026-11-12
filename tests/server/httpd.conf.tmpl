@@ -6,6 +6,10 @@ Mutex file:@TMP@ default
 DefaultRuntimeDir "@TMP@"
 Listen 127.0.0.1:8080
 ServerTokens Prod
+# Firefox blieb in der CI bei etwa jedem hundertsten Seitenaufruf bis zum Zeitlimit
+# im Laden hängen. Ohne wiederverwendete Verbindungen entfällt das Rennen zwischen
+# dem Schließen einer Keep-Alive-Verbindung durch den Server und ihrer Wiederverwendung.
+KeepAlive Off
 
 LoadModule mpm_event_module @MODS@/mod_mpm_event.so
 LoadModule authz_core_module @MODS@/mod_authz_core.so
@@ -17,13 +21,24 @@ LoadModule expires_module @MODS@/mod_expires.so
 LoadModule deflate_module @MODS@/mod_deflate.so
 LoadModule setenvif_module @MODS@/mod_setenvif.so
 LoadModule filter_module @MODS@/mod_filter.so
+<IfModule !mod_log_config.c>
+  LoadModule log_config_module @MODS@/mod_log_config.so
+</IfModule>
 LoadModule alias_module @MODS@/mod_alias.so
+# nur im Test: /api/lead.php geht an den PHP-Entwicklungsserver (im Betrieb liegt lead.php im Webroot)
+LoadModule proxy_module @MODS@/mod_proxy.so
+LoadModule proxy_http_module @MODS@/mod_proxy_http.so
 @IDENTITY@
 TypesConfig /etc/mime.types
 AddType font/woff2 .woff2
 AddDefaultCharset UTF-8
 
 ErrorLog "|/bin/sh -c 'exec cat >&2'"
+# Zugriffsprotokoll als Beleg für das Hängen von Firefox beim Laden (Ursache ungeklärt): Antwortzeit in µs (%D) und
+# Verbindungsstatus (%X: X abgebrochen, + bleibt offen, - wird geschlossen). start.sh kopiert die Datei beim Beenden
+# nach $RETICORA_ACCESS_LOG, wenn gesetzt (die CI lädt sie bei einem Fehlschlag hoch).
+LogFormat "%h %t \"%r\" %>s %b %D %X" reticora_access
+CustomLog "@TMP@/access.log" reticora_access
 LogLevel warn
 
 DocumentRoot "@DOCROOT@"
@@ -36,4 +51,10 @@ DocumentRoot "@DOCROOT@"
   Options FollowSymLinks
   Require all granted
 </Directory>
+# Origin und Host des Browsers bleiben unverändert (Origin-Prüfung im Backend)
+ProxyPreserveHost On
+ProxyRequests Off
+ProxyPass "/api/lead.php" "http://127.0.0.1:8081/lead.php"
+# zweite Instanz mit Standard-Limit, nur für den Test des Rate-Limits
+ProxyPass "/api-limit/lead.php" "http://127.0.0.1:8082/lead.php"
 DirectoryIndex index.html

@@ -1,0 +1,25 @@
+name: security.txt-Ablauf
+
+# Warnt, bevor das Ablaufdatum der security.txt (RFC 9116) näher als 30 Tage rückt.
+# Ohne Meldeadresse (SITE.securityContact) gibt es keine Datei; dann endet der Lauf mit einem Hinweis.
+on:
+  schedule:
+    - cron: '17 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  security-txt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: node scripts/check-security-txt.mjs
+        env:
+          # Optional: öffentliche Adresse der ausgelieferten Datei als Repository-Variable (keine Secrets).
+          SECURITY_TXT_URL: ${{ vars.SECURITY_TXT_URL }}

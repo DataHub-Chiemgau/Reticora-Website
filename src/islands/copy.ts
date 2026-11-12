@@ -1,5 +1,5 @@
 for (const b of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
-  const box = b.closest('.rt-code');
+  const box = b.closest('.rt-code, .demo-row');
   const status = box?.querySelector('[role=status]');
   let timer = 0;
   b.hidden = false;

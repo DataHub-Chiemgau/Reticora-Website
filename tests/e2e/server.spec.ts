@@ -39,16 +39,15 @@ test('Host www.reticora.de über http leitet auf https um', async ({ request }) 
   expect(r.headers()['location']).toBe('https://www.reticora.de/');
 });
 
-test('unbekannter Pfad: Status 404, Seite mit Links Startseite, Impressum, Datenschutz', async ({ page }) => {
+test('unbekannter Pfad: Status 404, Seite mit Wegen weiter laut Textdokument', async ({ page }) => {
   const response = await page.goto('/gibt-es-nicht/');
   expect(response!.status()).toBe(404);
   expect(response!.headers()['content-security-policy']).toBe(CSP);
-  await expect(page.locator('h1')).toHaveText('Diese Seite gibt es nicht');
+  await expect(page.locator('h1')).toHaveText('Diese Seite gibt es nicht.');
   const nav = page.getByRole('navigation', { name: 'Weiterführende Links' });
-  await expect(nav.getByRole('link', { name: 'Zur Startseite' })).toHaveAttribute('href', '/');
+  await expect(nav.getByRole('link', { name: 'Startseite' })).toHaveAttribute('href', '/');
   await expect(nav.getByRole('link', { name: 'Kontakt' })).toHaveAttribute('href', '/kontakt/');
-  await expect(nav.getByRole('link', { name: 'Impressum' })).toHaveAttribute('href', '/impressum/');
-  await expect(nav.getByRole('link', { name: 'Datenschutz' })).toHaveAttribute('href', '/datenschutz/');
+  await expect(nav.getByRole('link', { name: 'Preise' })).toHaveAttribute('href', '/preise/');
 });
 
 test('Dateien unter /_astro/ ein Jahr im Cache, HTML ohne Cache', async ({ page, request }) => {
@@ -106,8 +105,38 @@ test('/_astro/ (Verzeichnis ohne Index) zeigt die eigene Fehlerseite, nicht die 
   const r = await request.get('/_astro/', { maxRedirects: 0 });
   expect([403, 404]).toContain(r.status());
   const body = await r.text();
-  expect(body).toContain('Diese Seite gibt es nicht');
+  expect(body).toContain('Diese Seite gibt es nicht.');
   expect(body).not.toContain('Apache');
   expect(r.headers()['cache-control'] ?? '').not.toContain('immutable');
   expect(r.headers()['content-security-policy']).toBe(CSP);
+});
+
+test('CSP erlaubt Formular und Anfragen nur an die eigene Herkunft', async ({ request }) => {
+  const csp = (await request.get('/')).headers()['content-security-policy'];
+  expect(csp).toContain("form-action 'self'");
+  expect(csp).toContain("connect-src 'self'");
+  expect(csp).toContain("default-src 'none'");
+});
+
+for (const p of ['/backend/', '/backend/src/App.php', '/backend/config.php', '/backend/bin/migrate.php', '/.htaccess', '/.git/config', '/_astro/.env'])
+  test(`kein Webzugriff auf ${p}`, async ({ request }) => {
+    const r = await request.get(p, { maxRedirects: 0 });
+    expect(r.status()).toBe(403);
+    expect(await r.text()).not.toContain('<?php');
+  });
+
+test('/en/index.html leitet in /en/ um (Rewrite-Regeln gelten auch im Unterordner mit eigener .htaccess)', async ({ request }) => {
+  const r = await request.get('/en/index.html', { maxRedirects: 0 });
+  expect(r.status()).toBe(301);
+  expect(new URL(r.headers()['location'], 'http://127.0.0.1:8080').pathname).toBe('/en/');
+});
+
+test('Unterordner /en/: Kopfzeilen und Hostwechsel gelten weiter', async ({ request }) => {
+  const r = await request.get('/en/gibt-es-nicht/', { maxRedirects: 0 });
+  expect(r.status()).toBe(404);
+  expect(r.headers()['content-security-policy']).toBe(CSP);
+  expect(r.headers()['cache-control']).toBe('no-cache');
+  const h = await request.get('/en/gibt-es-nicht/', { maxRedirects: 0, headers: { Host: 'reticora.de' } });
+  expect(h.status()).toBe(301);
+  expect(h.headers()['location']).toBe('https://www.reticora.de/en/gibt-es-nicht/');
 });

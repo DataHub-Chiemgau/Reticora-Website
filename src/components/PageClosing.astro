@@ -1,0 +1,19 @@
+---
+import ActionRow from './ActionRow.astro';
+import Para from './Para.astro';
+import Section from './Section.astro';
+import { nbsp } from '../content/rich';
+import type { Action } from '../content/types';
+import type { Lang } from '../data/types';
+
+/** Eigener Abschluss einer Seite (Überschrift und Text nach dem Textdokument) statt des gemeinsamen `Cta`. */
+interface Props { lang: Lang; id: string; title: string; text?: string; actions: Action[]; topic?: string }
+const { lang, id, title, text, actions, topic } = Astro.props;
+---
+
+<Section id={id} title={nbsp(title)}>
+  <div class="home-stack">
+    {text && <div class="home-block"><Para text={text} lang={lang} /></div>}
+    <ActionRow actions={actions} lang={lang} topic={topic} />
+  </div>
+</Section>

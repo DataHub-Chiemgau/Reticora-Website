@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Stand | 2026-11-12 |
-| Phase | 5: Umsetzung der Startseite, sobald der Umsetzungsplan freigegeben und das private Repository angebunden ist |
+| Phase | 6 umgesetzt (alle Seiten, Englisch, Formular und Backend); als Nächstes Phase 7 |
 | Status | **Design-System „Leitstand“ und technische Spezifikation sind freigegeben (2026-11-12).** |
 | Geltung | Lebendes Dokument. Jede Entscheidung wird hier oder im verlinkten Dokument nachgetragen. |
 
@@ -136,7 +136,7 @@ Browser ──HTTPS──▶ Hetzner Webhosting L (Apache)
                     ├── /                statische Dateien aus `astro build`
                     ├── /.htaccess       HTTPS, Security-Header, CSP, Caching, 404
                     └── /api/lead.php    PHP-8-Endpunkt (einziger dynamischer Pfad)
-                           ├── prüft Eingaben, Honeypot, Zeitfalle, Rate-Limit
+                           ├── prüft Eingaben, Honeypot, Rate-Limit (keine Zeitfalle, Spec Ä-07)
                            ├── schreibt in MariaDB (Lead, befristet)
                            └── sendet per SMTP an das Vertriebspostfach
                     Cronjob: löscht abgelaufene Leads und Rate-Limit-Einträge
@@ -156,7 +156,7 @@ Website selbst       ────────▶ https://www.reticora.de
 | Schriften | selbst gehostet (WOFF2, Teilmenge Latin), `font-display: swap` | keine Drittanfrage, DSGVO |
 | Bilder | `astro:assets` (AVIF/WebP, feste Maße); Komponente `ScreenshotSlot` mit Manifest | kein Layout-Sprung; Austausch der Platzhalter ohne Layout-Arbeit |
 | Lead-Backend | PHP 8 ohne Framework in `backend/`, Konfiguration außerhalb des Webroots | läuft nativ auf dem Webhosting; getrennt deploybar |
-| Spam-Schutz | Honeypot, Zeitfalle, Rate-Limit; bei Bedarf selbst gehostetes ALTCHA (wie im Signup der App) | kein Dritt-Captcha |
+| Spam-Schutz | Honeypot, Rate-Limit je Herkunft und Obergrenze für alle (Spec Ä-07, Ä-18); bei Bedarf selbst gehostetes ALTCHA (wie im Signup der App) | kein Dritt-Captcha |
 | Tests | Playwright (Responsive, Formulare), `@axe-core/playwright`, Netzwerktest auf Drittanfragen und Cookies, Lighthouse-Budget, Link- und HTML-Prüfung | Quality Gates Phase 7 |
 | CI | eigener Workflow in diesem Repository | getrennt von der Produkt-CI |
 | Deploy | manuell freigegebener Workflow; Upload per rsync/SSH oder SFTP; Zugangsdaten nur als geschützte Secrets | Phase 8 verlangt menschliche Freigabe |
@@ -225,10 +225,10 @@ zur Klärung gilt die Annahme in der dritten Spalte.
 | 2 | Informationsarchitektur, Inhaltsstrategie | Entwurf liegt vor (`content-plan.md`) |
 | 3 | Drei Art Directions | **entschieden: B „Leitstand“** (2026-11-12) |
 | 4 | **Freigabe Design-System** | **freigegeben am 2026-11-12:** `design-system.md` und `specs/2026-11-12-website-spec.md` |
-| 5 | Startseite | Umsetzungsplan `plans/2026-11-12-phase-5-startseite.md` und Texte `copy/startseite-de.md` liegen zur Freigabe vor |
-| 6 | Übrige Seiten, Formulare | gesperrt |
-| 7 | QA, Sicherheit, Datenschutz, Barrierefreiheit | gesperrt |
-| 8 | Menschliche Freigabe, Deploy | gesperrt |
+| 5 | Startseite | **umgesetzt** (Startseite deutsch, Bausteine, Tests) |
+| 6 | Übrige Seiten, Englisch, Formular und Backend | **umgesetzt** (2026-11-12): je 22 deutsche und englische Seiten (jeweils mit 404-Seite) sowie die Entwicklungsseite, Lead-Backend nach Spec §14 Ä-07 bis Ä-25, Budgets je Seite, Lighthouse für sechs Seiten, wöchentlicher `security.txt`-Lauf. Inhalte je Seite warten auf Freigabe durch den Auftraggeber |
+| 7 | QA, Sicherheit, Datenschutz, Barrierefreiheit | offen: manuelle Barrierefreiheitsprüfung, Sicherheits- und Datenschutzprüfung mit Protokoll, Container mit Apache, PHP, MariaDB und SMTP-Fänger (Spec Ä-31) |
+| 8 | Menschliche Freigabe, Deploy | gesperrt: Rechtstexte und Anbieterangaben vom Auftraggeber, geprüfte Claims, Screenshots, Deploy auf Hetzner (Datenbank, `config.php`, Cronjob für `purge.php`); der Deploy-Workflow fehlt noch |
 
 ## 10. Entscheidungen
 
@@ -250,3 +250,24 @@ zur Klärung gilt die Annahme in der dritten Spalte.
 | W-E14 | 2026-11-12 | Enterprise Shared: Cloud auf getrennter Infrastruktur. Enterprise Local: beim Kunden gehostet, Preis einschließlich aller Arbeiten | Auftraggeber |
 | W-E15 | 2026-11-12 | Testende: 30 Tage weiter aktiv, dann Löschung. Downgrade: kein Datenverlust, Mehr-CIs als Zusatz-CIs, nicht enthaltene Funktionen gesperrt | Auftraggeber |
 | W-E16 | 2026-11-12 | Limits je Paket nach `README.md` §14; Preise netto zzgl. MwSt.; Paketname „Essentials“ | Auftraggeber |
+
+## 11. Offene Entscheidungen des Auftraggebers
+
+Aus der Umsetzung der Phase 6 gesammelt. Bis zur Entscheidung gilt die
+genannte Annahme; alle Punkte erscheinen auch in den Berichten der Phase.
+
+1. **CIs über dem Limit:** Landen sie im Review („Nicht lizenziertes CI“, wie die App heute) oder werden sie mit 0,05 € je CI abgerechnet (Zusage W-E15)? Die Seiten folgen der Zusage; das Produkt muss entsprechend angepasst werden oder die Aussage fällt.
+2. **Betrieb und Compliance zum Start:** Welche Funktionen dieser Module sind beim Go-live buchbar und eingeschaltet (F-03, F-23)? Bis dahin stehen sie als verfügbar dargestellt, der Claim-Abgleich vor Go-live entscheidet.
+3. **Enterprise Local:** Ist es eine dedizierte Instanz beim Kunden oder ein anderes Betriebsmodell, und was umfasst „Preis einschließlich aller Arbeiten“? Der Satz „denselben Umfang“ für Enterprise Shared und Local wurde entfernt, weil kein Beleg ihn trägt.
+4. **Meldeadresse für Sicherheitslücken:** Welche Adresse steht in der `security.txt` und auf der Sicherheitsseite (`SITE.securityContact`)? Ohne sie gibt es keine Datei.
+5. **Kontakt für Barrierefreiheit:** Welche Adresse und Frist nennt die Seite `/barrierefreiheit/` für Hinweise?
+6. **Preise der Add-ons** IGA und KI-Assistent und die Buchung (F-24); bis dahin „auf Anfrage“.
+7. **Definition „Monitoring-Service“** für die Abrechnung mit 0,03 € je Monat (W-E12): Was zählt als ein Service?
+8. **Demo:** Wie wird das gemeinsame Konto trotz Passwortregel und Authenticator-Pflicht nutzbar (F-18), und wird die Demo regelmäßig zurückgesetzt?
+9. **Indexierung von `/demo/`:** Die Seite trägt `noindex` und fehlt in der Sitemap (Spec Ä-26), bis entschieden ist, ob Zugangsdaten öffentlich suchbar sein sollen.
+10. **Aufbau der Preisseite:** Tabelle ohne Umschalter Monat/Jahr, Fragen immer geöffnet (Spec Ä-27, Ä-28), abweichend vom Layouthinweis im Textdokument. Bestätigen oder anders wünschen.
+11. **Entfallene Sätze zum gleichen Umfang:** Entfernt wurden „denselben Umfang“ (Enterprise Shared und Local) und „Der Funktionsumfang ist gleich.“ in der FAQ. Bestätigen, dass sie nicht wiederkehren sollen.
+12. **„Scope“ oder „Workspace“** für „Arbeitsbereich“ in der englischen Fassung: Die Seite folgt der englischen Beschriftung der App („Scope“); das kollidiert mit den Discovery-Scopes.
+13. **Selbst gebildete englische Begriffe** (`content-plan.md` §6.3, „vorgeschlagen, Freigabe ausstehend“) und die drei nur englischen Erläuterungen zu DATEV, DIN 66399 und KRITIS.
+14. **Aufbewahrung der Kontaktanfragen:** Vorschlag 90 Tage (`retention_days`); Auftraggeber legt die Frist fest (Spec §6.3).
+15. **Eigene Microcopy:** Texte, die in keiner Vorlage standen und von der Umsetzung formuliert wurden (zum Beispiel „Zurück zum Formular“, Hinweise zu Sprungmarken in der Geräteliste, Fehlertexte, die die App nicht kennt). Soweit festgehalten, stehen sie in den Textdokumenten unter `docs/copy` (teils als „eigene Formulierung“ gekennzeichnet); alle brauchen Freigabe.

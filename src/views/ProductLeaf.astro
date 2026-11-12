@@ -1,0 +1,32 @@
+---
+import Para from '../components/Para.astro';
+import SpecList from '../components/SpecList.astro';
+import DataTable from '../components/DataTable.astro';
+import CodeSample from '../components/CodeSample.astro';
+import type { Lang } from '../data/types';
+import type { CodeBlock, SpecsBlock, TableBlock } from '../content/types';
+import { highlightShell } from '../content/rich';
+import { ui } from '../i18n';
+
+/** Die Blöcke, die allein stehen oder neben einem Text (`split`): Kennwerte, Tabelle, Codebeispiel. */
+interface Props { block: SpecsBlock | TableBlock | CodeBlock; lang: Lang }
+const { block: b, lang } = Astro.props;
+const UI = ui(lang);
+---
+
+{b.kind === 'specs' && (
+  <div class="home-block product-wide">
+    {b.title && <p class="data-label">{b.title}</p>}
+    <SpecList items={b.items} lang={lang} />
+  </div>
+)}
+{b.kind === 'table' && (
+  <div class="home-stack product-table">
+    {b.caption && <Para class="product-caption" text={b.caption} lang={lang} />}
+    <DataTable label={b.label} columns={b.columns} rows={b.rows} rowHeader={b.rowHeader} lang={lang} />
+    {b.after && <Para class="product-caption" text={b.after} lang={lang} />}
+  </div>
+)}
+{b.kind === 'code' && (
+  <CodeSample title={b.title} copyLabel={UI.copy} copiedLabel={UI.copied} lang={lang}><Fragment set:html={highlightShell(b.code)} /></CodeSample>
+)}

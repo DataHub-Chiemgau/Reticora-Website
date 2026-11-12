@@ -14,7 +14,7 @@ export const SCREENSHOTS: readonly Screenshot[] = [
   s('S-07', 'Discovery: Scopes und Collector-Status', 'Discovery: scopes and collector status'),
   s('S-08', 'Erste Schritte', 'Getting started'),
   s('S-09', 'Asset mit Zuweisung', 'Asset with assignment'),
-  s('S-10', 'Inventur', 'Stocktaking'),
+  s('S-10', 'Inventur', 'Stocktake'),
   s('S-11', 'Ticket mit SLA', 'Ticket with SLA'),
   s('S-12', 'Monitoring: Metriken und Alarmregeln', 'Monitoring: metrics and alert rules'),
   s('S-13', 'Compliance: Regeln, Score und Abweichungen', 'Compliance: rules, score and deviations'),

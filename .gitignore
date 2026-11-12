@@ -5,3 +5,8 @@ test-results/
 playwright-report/
 .lighthouseci/
 .superpowers/
+backend/vendor/
+backend/config.php
+backend/.phpunit.result.cache
+backend/templates/*.html
+backend/templates/*.json

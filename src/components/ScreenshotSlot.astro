@@ -1,11 +1,12 @@
 ---
 import { screenshot } from '../data/screenshots';
 import type { Lang, ScreenshotId } from '../data/types';
-import { UI } from '../i18n/de';
+import { ui } from '../i18n';
 
 interface Props { id: ScreenshotId; figure: number; caption: string; ratio?: '16x10' | '4x5'; lang: Lang }
 const { id, figure, caption, ratio = '16x10', lang } = Astro.props;
 const shot = screenshot(id);
+const T = ui(lang);
 const motif = shot.motif[lang];
 const src = shot.file ? (shot.file.startsWith('/') ? shot.file : `/screenshots/${shot.file}`) : undefined;
 ---
@@ -16,9 +17,9 @@ const src = shot.file ? (shot.file.startsWith('/') ? shot.file : `/screenshots/$
       <div class="rt-slot-label" data-placeholder={id}>
         <b>{id}</b>
         <span>{motif}</span>
-        <small>{UI.placeholder} · {shot.width} × {shot.height} · {UI.darkTheme}</small>
+        <small>{T.placeholder} · {shot.width} × {shot.height} · {T.darkTheme}</small>
       </div>
     )}
   </div>
-  <figcaption><b>{UI.figure} {figure} ·</b>{' '}{caption}</figcaption>
+  <figcaption><b>{T.figure} {figure} ·</b>{' '}{caption}</figcaption>
 </figure>

@@ -185,9 +185,11 @@ test('jeder interne Link zeigt auf eine Adresse aus ROUTES', async ({ page }) =>
   for (const h of hrefs) expect(h.endsWith('/')).toBe(true);
 });
 
-test('ROUTES: Startseite gebaut, alle anderen geplant, Adressen eindeutig', () => {
+test('ROUTES: Startseite gebaut, englische Seiten noch geplant (bis Task 9), Adressen eindeutig', () => {
   expect(ROUTES.find((r) => r.de === '/')?.status).toBe('gebaut');
-  expect(ROUTES.filter((r) => r.status === 'gebaut').length).toBe(1);
+  // Teil B der englischen Fassung (Task 9b): diese englischen Seiten sind gebaut. Startseite und Produktseiten: Teil A.
+  const partB = ['/geraete/', '/loesungen/isp/', '/loesungen/msp/', '/sicherheit/', '/preise/', '/demo/', '/kontakt/', '/kontakt/danke/', '/impressum/', '/datenschutz/', '/agb/', '/subprozessoren/', '/barrierefreiheit/'];
+  for (const p of partB) expect(ROUTES.find((r) => r.de === p)?.enStatus, p).toBe('gebaut');
   expect(new Set(ROUTES.map((r) => r.de)).size).toBe(ROUTES.length);
   for (const p of ['/demo/', '/preise/', '/geraete/', '/sicherheit/', '/kontakt/']) expect(ROUTES.some((r) => r.de === p)).toBe(true);
 });

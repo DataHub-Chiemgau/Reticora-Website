@@ -1,5 +1,7 @@
 // Reine Prüffunktionen für die Release-Sperre. Jede liefert eine Liste von Mängeln; leer heißt in Ordnung.
 
+import { contactUri } from './security-txt.mjs';
+
 const blank = (v) => typeof v !== 'string' || v.trim() === '';
 const PLACEHOLDER = /^(todo|tbd|xxx|\?)$/i;
 const isoDate = (v) => typeof v === 'string' && /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(v);
@@ -18,7 +20,12 @@ export function checkScreenshots(list) {
 }
 
 export function checkRoutes(routes) {
-  return routes.filter((r) => r.status === 'geplant').map((r) => `${r.de}: Seite nur geplant, nicht gebaut`);
+  const out = [];
+  for (const r of routes) {
+    if (r.status === 'geplant') out.push(`${r.de}: Seite nur geplant, nicht gebaut`);
+    else if (r.en && r.enStatus === 'geplant') out.push(`${r.en}: Seite nur geplant, nicht gebaut`);
+  }
+  return out;
 }
 
 /** Dist-Datei zu einer Adresse mit führendem „/“: Verzeichnis-URLs liegen als index.html, Fragment und Query zählen nicht. */
@@ -28,13 +35,13 @@ function distCandidates(url) {
   return [p, `${p}/index.html`];
 }
 
-/** Jede gebaute Route muss für de und (falls vorhanden) en in dist liegen. */
+/** Jede gebaute Seite (de, und en nach `enStatus`) muss in dist liegen. */
 export function checkRoutesBuilt(routes, exists) {
   const out = [];
   for (const r of routes) {
-    if (r.status !== 'gebaut') continue;
-    for (const url of [r.de, r.en]) {
-      if (url && !distCandidates(url).some(exists)) out.push(`${url}: Seite fehlt in dist`);
+    const pairs = [[r.de, r.status], [r.en, r.enStatus]];
+    for (const [url, status] of pairs) {
+      if (status === 'gebaut' && url && !distCandidates(url).some(exists)) out.push(`${url}: Seite fehlt in dist`);
     }
   }
   return out;
@@ -65,6 +72,17 @@ export function checkSite(site) {
     ['vatId', 'USt-IdNr.'],
   ];
   return fields.filter(([k]) => blank(site[k]) || PLACEHOLDER.test(site[k].trim())).map(([, label]) => `Anbieter: ${label} fehlt`);
+}
+
+/** Spec Ä-13: ohne Meldeadresse keine /.well-known/security.txt. */
+export function checkSecurityContact(site) {
+  if (blank(site.securityContact)) return ['Anbieter: Meldeadresse für Sicherheitslücken fehlt'];
+  try {
+    contactUri(site.securityContact);
+    return [];
+  } catch {
+    return ['Anbieter: Meldeadresse für Sicherheitslücken ist ungültig'];
+  }
 }
 
 /** Ort einer Bilddatei unter public/, wie ScreenshotSlot sie ausliefert. */
