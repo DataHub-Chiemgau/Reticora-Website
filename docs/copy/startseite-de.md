@@ -127,7 +127,7 @@ gleichen Karten.
 
 - **Überschrift:** Für Menschen und für Maschinen
 - **Vorspann:** Die REST-API ist vollständig in OpenAPI beschrieben.
-  Änderungen kommen nur hinzu. Was entfällt, wird mindestens zwölf Monate
+  Änderungen kommen nur hinzu. Was entfällt, wird mindestens 12 Monate
   vorher angekündigt. [C-11]
 - **Code-Beispiel**, Kopfzeile `GET /api/v1/cis`:
 

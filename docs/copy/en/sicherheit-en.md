@@ -21,7 +21,7 @@ the page it becomes an evidence note. Not mentioned: penetration test
 
 ## Intro
 
-- **Heading (h1):** What your information security team wants to know.
+- **Heading (h1):** What your security team wants to know.
 - **Lead:** This page answers the questions of an initial assessment: where
   the data is stored, which connections exist, how customers are separated,
   who signs in and how, and what is logged. Every statement has evidence.
@@ -63,7 +63,7 @@ the page it becomes an evidence note. Not mentioned: penetration test
 | Term | Value | Claim |
 |---|---|---|
 | Enrollment code | valid for 24 h, single use | C-41 |
-| Certificate | 90 days, renews itself; blocked by revocation | C-41 |
+| Certificate | 90 days, renews itself; can be revoked | C-41 |
 | Channel | its own only; revoked certificates and deactivated collectors are rejected | C-77 |
 | Updates | signed only | C-42 |
 

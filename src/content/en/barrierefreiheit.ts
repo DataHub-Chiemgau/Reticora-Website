@@ -16,15 +16,16 @@ export const barrierefreiheit: Translation<typeof De> = {
   pruefen: {
     title: 'How we test',
     items: [
-      'Every page is tested automatically with axe-core on every change. As of today: no findings.',
-      'Tested with the keyboard and operable: the menu, the expandable evidence notes, the outage simulation and the contact form.',
+      'Every page is tested automatically with axe-core on every change. As of today: no findings. [C-97]',
+      'Tested with the keyboard and operable: the menu, the expandable evidence notes, the outage simulation and the contact form. [C-98]',
       'In addition to the points in the schematic, the outage simulation has a toggle button per CI and a result line that screen readers announce.',
     ],
   },
   kontraste: {
     title: 'Contrast',
-    text: 'The colors are chosen so that text reaches a contrast ratio of at least 4.5:1 and outlines of controls at least 3:1. The values are calculated with the WCAG 2 formula.',
+    text: 'The colors are chosen so that text reaches a contrast ratio of at least 4.5:1 and outlines of controls at least 3:1. The values are calculated with the WCAG 2 formula. [C-95]',
     label: 'Contrast ratios by color theme',
+    after: 'The values come from our design specification and are calculated by us, not checked by a third party. [C-95]',
     heads: { pair: 'Pair', dark: 'dark theme “Control room”', light: 'light theme “Document”', min: 'Minimum' },
     rows: [
       { pair: 'Text on page background', dark: '16.0:1', light: '15.7:1', min: '4.5:1' },
@@ -36,7 +37,7 @@ export const barrierefreiheit: Translation<typeof De> = {
   },
   bewegung: {
     title: 'Motion and display',
-    text: 'Motion only occurs in response to an action and lasts at most 150 ms. If “Reduce motion” is set in the system, it is dropped entirely. In “Forced colors” mode (such as the Windows contrast themes), buttons, network schematic and outage simulation take on the system colors; failed and affected CIs remain distinguishable. Color never carries a message on its own: states have a word, the network schematic has a result line.',
+    text: 'Motion only occurs in response to an action and lasts at most 150 ms. If your system is set to reduce motion, it is dropped entirely. [C-96] In “Forced colors” mode (such as the Windows contrast themes), buttons, network schematic and outage simulation take on the system colors; failed and affected CIs remain distinguishable. [C-99] Color never carries a message on its own: states are also labeled in words, the network schematic has a result line.',
   },
   grenzen: {
     title: 'Known limitations',

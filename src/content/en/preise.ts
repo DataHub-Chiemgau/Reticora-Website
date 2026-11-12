@@ -17,7 +17,7 @@ const from = PLANS[0];
 
 export const preise: Translation<typeof De> = {
   meta: {
-    title: 'Pricing and plans – Reticora CMDB',
+    title: 'Plans and pricing – Reticora CMDB',
     description: `${from.name} from ${eur(from.monthly, 'en')} per month, plus Standard, Pro and Enterprise. Features, limits, additional charges and a 30-day trial. Prices excl. VAT, for businesses only.`,
   },
   hero: {
@@ -31,7 +31,7 @@ export const preise: Translation<typeof De> = {
     vat: 'excl. VAT',
     heads: {
       plan: 'Plan', monthly: 'per month', yearly: 'per year', beta: 'first beta year',
-      cis: 'CIs', collectors: 'Collectors', users: 'Users', claims: 'Evidence',
+      cis: 'CIs', collectors: 'Collectors', users: 'Users', claims: 'Evidence', action: 'Description and action',
     },
     /** Button per plan: Essentials, Standard and Pro “Try for 30 days” (ui.actions.trial), Enterprise “Get in touch” with topic “Enterprise”. */
     contact: { label: 'Get in touch', topic: 'enterprise' },
@@ -85,7 +85,7 @@ export const preise: Translation<typeof De> = {
   test: {
     id: 'test',
     title: 'Try for 30 days',
-    text: 'The trial covers the Standard scope for up to 100 CIs. You create an account, confirm your email address and set up an authenticator app at your first sign-in. After the trial your CMDB is kept for 30 days; if you do not choose a plan by then, it is deleted. [C-22]' as Rich,
+    text: 'The trial covers the Standard plan for up to 100 CIs. You create an account, confirm your email address and set up an authenticator app at your first sign-in. After the trial your CMDB is kept for 30 days; if you do not choose a plan by then, it is deleted. [C-22]' as Rich,
   },
   fragen: {
     id: 'fragen',

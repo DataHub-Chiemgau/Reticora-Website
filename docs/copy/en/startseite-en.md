@@ -66,7 +66,7 @@ claim-register changes are documented in the German version only.
 |---|---|---|---|
 | Provenance for every field | For every field you see the source, its rank, the time of the observation and the reason why this value applies. | S-02, “Fig. 2 · Provenance of a field in the CI view.” | C-03; evidence with the source ranking |
 | Manual wins | An override stays until you remove it. If a source later reports something else, you see both values side by side and decide. | – | C-04 |
-| Decide instead of cleaning up | The review inbox collects what automation may not decide on its own: an unknown device, a possible duplicate, conflicting values. You compare observation and CI and decide: merge, create new, accept or discard. | S-03, “Fig. 3 · Review inbox: observation and CI compared.” | C-30 |
+| Decide instead of cleaning up | The review inbox collects what automation may not decide on its own: an unknown device, a probable duplicate, conflicting values. You compare observation and CI and decide: merge, create new, accept or discard. | S-03, “Fig. 3 · Review inbox: observation and CI compared.” | C-30 |
 
 - **Evidence “Source ranking”:** manual 100 · import 95 · workflow 92 · Redfish 90 · agent 85 · SNMP 80 · API
   75 · WMI 70 · SSH 60 · sweep 20.
@@ -86,7 +86,7 @@ claim-register changes are documented in the German version only.
 ## 5. Built for many customers
 
 - **Heading:** Built for many customers
-- **Lead:** Organization, customer, site: the current scope is always shown in the app
+- **Lead:** Organization, customer, site: the current workspace is always shown in the app
   header. Someone who looks after a single customer sees only that customer’s
   data.
 - **Key figures:**
@@ -98,7 +98,7 @@ claim-register changes are documented in the German version only.
 | Roles | scoped to a customer, site or team | C-33 |
 | Second factor | mandatory for administrators | C-34 |
 
-- **Image:** S-18, “Fig. 7 · The scope: organization, customer, site.”
+- **Image:** S-18, “Fig. 7 · The workspace: organization, customer, site.”
 
 ## 6. More than an inventory
 
@@ -109,7 +109,7 @@ claim-register changes are documented in the German version only.
 
 | Term | Sentence | Claim |
 |---|---|---|
-| Assets and contracts | Purchase data, assignment with signature, contracts and documents on the device. | C-35 |
+| Assets and contracts | Purchase data, signed assignments, contracts and documents on the device. | C-35 |
 | Stock and stocktakes | Stock levels, movements and stocktakes with labels and barcodes. | C-36 |
 | Tickets | Tickets with SLA and business calendar, right on the affected CI. | C-37 |
 | Monitoring | Reachability, interface counters, UPS and PDU values as history on the CI; alert rules trigger tickets and notifications. | C-24 |
@@ -120,7 +120,7 @@ claim-register changes are documented in the German version only.
 
 - **Heading:** For people and for machines
 - **Lead:** The REST API is fully described in OpenAPI. Changes are additive only.
-  Anything that goes away is announced at least twelve months in advance.
+  Reticora announces any removal at least 12 months in advance.
   [C-11]
 - **Code sample**, header `GET /api/v1/cis`:
 
@@ -142,7 +142,7 @@ curl "https://www.reticora.cloud/api/v1/cis?q=core&limit=50" \
 ## 8. Security you can verify
 
 - **Heading:** Security you can verify
-- **Lead:** What your information security team asks first is answered here. The details
+- **Lead:** The first questions your security team will ask are answered here. The details
   are on the Security page.
 - **Key figures**, each with evidence:
 
@@ -192,7 +192,7 @@ curl "https://www.reticora.cloud/api/v1/cis?q=core&limit=50" \
 
 ## 11. Closing
 
-- **Heading:** Try Reticora with your own network for 30 days.
+- **Heading:** Try Reticora on your own network for 30 days.
 - **Text:** The trial includes the Standard plan for up to 100 CIs. You create an
   account, confirm your email address and set up an authenticator app when you
   first sign in. After the trial your CMDB is kept for 30 days. [C-22]

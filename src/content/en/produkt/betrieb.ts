@@ -74,7 +74,7 @@ export const betrieb: Translation<PageContent> = {
         {
           kind: 'prose',
           paras: [
-            'A maintenance window has a start, an end and the CIs being worked on. Reticora derives from them which customers are affected. Beforehand, you let these CIs fail together in the outage simulation and see what goes down with them and what redundancy carries. [C-66, C-09]',
+            'A maintenance window has a start, an end and the CIs being worked on. Reticora derives from them which customers are affected. Beforehand, you let these CIs fail together in the outage simulation and see what goes down with them and what stays up thanks to redundancy. [C-66, C-09]',
           ],
         },
         { kind: 'link', link: { label: 'Outage simulation', href: '/produkt/topologie-impact/' } },

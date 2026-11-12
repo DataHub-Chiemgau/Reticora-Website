@@ -38,7 +38,7 @@ describe('claims', () => {
   it('eindeutig, vollständig, offen', () => {
     const ids = CLAIMS.map((c) => c.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids).toEqual(Array.from({ length: 94 }, (_, i) => `C-${String(i + 1).padStart(2, '0')}`));
+    expect(ids).toEqual(Array.from({ length: 99 }, (_, i) => `C-${String(i + 1).padStart(2, '0')}`));
     for (const c of CLAIMS) {
       expect(c.title.de).not.toBe(''); expect(c.evidence.de).not.toBe('');
       expect(c.title.en).not.toBe(''); expect(c.evidence.en).not.toBe('');
@@ -55,7 +55,7 @@ describe('claims', () => {
   });
   it('claim() wirft bei unbekannter ID', () => {
     expect(claim('C-01').id).toBe('C-01');
-    expect(() => claim('C-99')).toThrow();
+    expect(() => claim('C-199')).toThrow();
   });
 });
 

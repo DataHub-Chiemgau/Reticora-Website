@@ -25,7 +25,7 @@ test('Titel, Beschreibung, h1, h2 und Fragen wie im Textdokument', async ({ page
   await expect(page.locator('h1')).toHaveText('Pakete und Preise');
   expect((await page.locator('main h2').allTextContents()).map(norm)).toEqual(H2);
   await expect(page.locator('.price-faq > div')).toHaveCount(8);
-  expect((await page.locator('.price-faq dt').allTextContents()).map(norm)).toEqual([
+  expect((await page.locator('.price-faq h3').allTextContents()).map(norm)).toEqual([
     'Was zählt als CI?',
     'Was passiert über dem Limit?',
     'Was passiert nach dem Test?',
@@ -41,12 +41,13 @@ test('Pakettabelle: jede Zahl stammt aus PLANS', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/preise/');
   const table = page.locator('table.price-plans');
-  expect((await table.locator('thead th').allTextContents()).map(norm)).toEqual(['Paket', 'im Monat', 'im Jahr', 'erstes Beta-Jahr', 'CIs', 'Collectors', 'Nutzer', 'Belege']);
+  expect((await table.locator('thead th').allTextContents()).map(norm)).toEqual(['Paket', 'Beschreibung und Handlung', 'im Monat', 'im Jahr', 'erstes Beta-Jahr', 'CIs', 'Collectors', 'Nutzer', 'Belege']);
   await expect(table.locator('tbody tr')).toHaveCount(PLANS.length);
   for (const p of PLANS) {
     const row = table.locator(`tr[data-plan="${p.id}"]`);
-    await expect(row.locator('th[scope="row"]')).toContainText(p.name);
-    await expect(row.locator('th[scope="row"] small')).toHaveText(p.summary.de);
+    // Zeilenkopf: nur der Name des Pakets; Beschreibung und Knopf stehen in einer eigenen Zelle.
+    await expect(row.locator('th[scope="row"]')).toHaveText(p.name);
+    await expect(row.locator('td.price-desc .price-summary')).toHaveText(p.summary.de);
     const cell = async (c: string) => norm(await row.locator(`[data-col="${c}"]`).innerText());
     expect(await cell('monthly')).toBe(`${p.from ? 'ab ' : ''}${eur(p.monthly)}`);
     expect(await cell('yearly')).toBe(p.yearly === null ? 'auf Anfrage' : eur(p.yearly));
@@ -107,7 +108,7 @@ test('Zusatzkosten aus EXTRAS', async ({ page }) => {
 test('Fragen: eine immer geöffnete Liste, alle Antworten stehen im Text; Test-Abschnitt mit Knopf', async ({ page }) => {
   await page.goto('/preise/');
   await expect(page.locator('.price-faq > details')).toHaveCount(0);
-  const answers = page.locator('.price-faq dd');
+  const answers = page.locator('.price-faq .price-answer');
   await expect(answers).toHaveCount(8);
   for (const a of await answers.all()) await expect(a).toBeVisible();
   await expect(answers.first()).toContainText('Ein CI ist ein Eintrag in der CMDB');
@@ -139,7 +140,7 @@ test('Belege: C-21 und bei Enterprise C-92 an den Paketzeilen, C-60 an der Speic
 test('ein Knopf je Paket: „30 Tage testen“ für Essentials bis Pro, „Kontakt aufnehmen“ mit Anliegen Enterprise', async ({ page }) => {
   await page.goto('/preise/');
   for (const p of PLANS) {
-    const link = page.locator(`table.price-plans tr[data-plan="${p.id}"] th .price-action a`);
+    const link = page.locator(`table.price-plans tr[data-plan="${p.id}"] td.price-desc .price-action a`);
     await expect(link).toHaveCount(1);
     if (p.from) {
       await expect(link).toHaveText('Kontakt aufnehmen');
@@ -172,7 +173,7 @@ test('die Pakettabelle passt ab 1024 px ohne seitliches Scrollen in ihren Rahmen
 test('bei 360 px stehen die Knöpfe je Paket in der Karte, mindestens 44 px hoch und im Bild', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto('/preise/');
-  for (const a of await page.locator('table.price-plans th .price-action a').all()) {
+  for (const a of await page.locator('table.price-plans td.price-desc .price-action a').all()) {
     const box = await a.boundingBox();
     expect(box!.height).toBeGreaterThanOrEqual(44);
     expect(box!.x + box!.width).toBeLessThanOrEqual(360);
@@ -217,6 +218,55 @@ test('Druckansicht: helles Thema, ohne Navigation und Abschlussband', async ({ p
   // Geschlossene Belege fallen im Druck weg, auch in der Pakettabelle.
   for (const b of await page.locator('table.price-plans .rt-beleg').all()) await expect(b).toBeHidden();
   // Alle Antworten der Fragenliste stehen im Druck.
-  for (const a of await page.locator('.price-faq dd').all()) await expect(a).toBeVisible();
-  await expect(page.locator('.price-faq dd').first()).toContainText('Ein CI ist ein Eintrag in der CMDB');
+  for (const a of await page.locator('.price-faq .price-answer').all()) await expect(a).toBeVisible();
+  await expect(page.locator('.price-faq .price-answer').first()).toContainText('Ein CI ist ein Eintrag in der CMDB');
+});
+
+test('Zeilenkopf der Pakettabelle enthält nur den Namen; Knöpfe haben je Paket einen eigenen Namen', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/preise/');
+  for (const p of PLANS) {
+    const row = page.locator(`table.price-plans tr[data-plan="${p.id}"]`);
+    await expect(row.locator('th[scope="row"]')).toHaveText(p.name);
+    await expect(row.locator('th[scope="row"]')).toHaveAccessibleName(p.name);
+  }
+  const names = await page.locator('table.price-plans .price-action a').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')));
+  expect(new Set(names).size).toBe(PLANS.length);
+});
+
+test('Fragen sind Überschriften (h3) mit der Antwort darunter und immer sichtbar', async ({ page }) => {
+  await page.goto('/preise/');
+  await expect(page.getByRole('heading', { level: 3 })).toHaveCount(8);
+  await expect(page.locator('.price-faq details:not(.rt-beleg)')).toHaveCount(0);
+  for (const a of await page.locator('.price-faq .price-answer').all()) await expect(a).toBeVisible();
+});
+
+test('bei 360 px liegt der aufgeklappte Beleg C-60 ganz im Scrollrahmen der Matrix', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto('/preise/');
+  const claim = page.locator('tr[data-feature="storage"] [data-claim="C-60"]');
+  await claim.scrollIntoViewIfNeeded();
+  await claim.locator('summary').click();
+  const wrap = page.locator('.price-matrix-wrap');
+  await wrap.evaluate((e) => { e.scrollLeft = e.scrollWidth; });
+  const body = (await claim.locator('.rt-beleg-body').boundingBox())!;
+  const frame = (await wrap.boundingBox())!;
+  expect(body.x).toBeGreaterThanOrEqual(frame.x);
+  expect(body.x + body.width).toBeLessThanOrEqual(frame.x + frame.width);
+  expect(body.x + body.width).toBeLessThanOrEqual(360);
+});
+
+test.describe('Druck', () => {
+  test('ohne Handlungsknöpfe, mit den Belegtexten als Liste', async ({ page }) => {
+    await page.goto('/preise/');
+    await expect(page.locator('.price-footnotes')).toBeHidden();
+    await page.emulateMedia({ media: 'print' });
+    await expect(page.locator('.price-action a').first()).toBeHidden();
+    await expect(page.locator('#test .home-link')).toBeHidden();
+    await expect(page.locator('.rt-beleg').first()).toBeHidden();
+    const notes = page.locator('.price-footnotes li');
+    await expect(page.locator('.price-footnotes')).toBeVisible();
+    for (const id of ['C-21', 'C-22', 'C-60', 'C-92']) await expect(notes.filter({ hasText: id })).toHaveCount(1);
+    for (const li of await notes.all()) expect((await li.innerText()).length).toBeGreaterThan(40);
+  });
 });

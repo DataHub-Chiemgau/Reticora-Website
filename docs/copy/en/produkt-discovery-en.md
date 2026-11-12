@@ -122,4 +122,4 @@ claim-register changes are documented in the German version only.
 
 ## Closing
 
-- Closing band as on all pages: “Try Reticora with your own network for 30 days.” with “Try for 30 days” (primary button), “Live demo”, “Contact”; below it “Offer for businesses only.”
+- Closing band as on all pages: “Try Reticora on your own network for 30 days.” with “Try for 30 days” (primary button), “Live demo”, “Contact”; below it “Offer for businesses only.”

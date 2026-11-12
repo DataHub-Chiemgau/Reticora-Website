@@ -99,14 +99,14 @@ test.describe('Englische Einzelheiten (Geräte, Preise, Rechtsseiten, Demo, 404)
     await expect(cell('enterprise-local', 'monthly')).toHaveText('from €1,999');
     await expect(cell('enterprise-local', 'yearly')).toHaveText('on request');
     await expect(cell('enterprise-local', 'collectors')).toHaveText('unlimited');
-    await expect(page.locator('.price-plans thead th')).toHaveText(['Plan', 'per month', 'per year', 'first beta year', 'CIs', 'Collectors', 'Users', 'Evidence']);
+    await expect(page.locator('.price-plans thead th')).toHaveText(['Plan', 'Description and action', 'per month', 'per year', 'first beta year', 'CIs', 'Collectors', 'Users', 'Evidence']);
     await expect(page.locator('.price-vat')).toHaveText('excl. VAT');
     await expect(page.locator('[data-beta]')).toContainText('20% in the first six months, 10% in the following six months');
     await expect(page.locator('#zusatzkosten')).toContainText('€0.05 per month');
     await expect(page.locator('#zusatzkosten')).toContainText('€0.03 per month');
     await expect(page.locator('tr[data-feature="storage"] td').first()).toHaveText(/^1,000 MiB/);
     // Paketnamen bleiben
-    await expect(page.locator('.price-plans tbody .rt-tarif')).toContainText(['Essentials', 'Standard', 'Pro', 'Enterprise Shared', 'Enterprise Local']);
+    await expect(page.locator('.price-plans tbody th[scope="row"]')).toContainText(['Essentials', 'Standard', 'Pro', 'Enterprise Shared', 'Enterprise Local']);
     await expect(page.getByRole('link', { name: `${C.preise.pakete.contact.label}: Enterprise Shared` })).toHaveAttribute('href', '/en/contact/?topic=enterprise');
   });
 

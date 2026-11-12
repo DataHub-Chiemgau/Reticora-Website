@@ -16,7 +16,7 @@ The credentials never appear in the text; they come from `LINKS.demo`,
 
 - **Browser title:** Live demo – try Reticora
 - **Description:** Open the Reticora demo with the shared login. Three
-  things to try: simulate an outage, view provenance, decide a review.
+  things to try: simulate an outage, view provenance, resolve a review.
 
 ## Intro
 
@@ -61,22 +61,22 @@ The credentials never appear in the text; they come from `LINKS.demo`,
 ### 2.2 View the provenance of a field
 
 - **Title:** View the provenance of a field
-- **Text:** Open a CI and there the provenance of a field, such as the
+- **Text:** Open a CI, then the provenance of one of its fields, such as the
   serial number. You see source, rank, time of observation and why this
   value applies. [C-03]
 - **Figure:** S-02, “Fig. 2 · Provenance of a field in the CI view.”
 
-### 2.3 Decide a review
+### 2.3 Resolve a review
 
-- **Title:** Decide a review
+- **Title:** Resolve a review
 - **Text:** Open the review inbox and select an entry. Observation and CI
-  appear side by side. Decide: merge, create new, accept or dismiss. [C-30]
+  appear side by side. Decide: merge, create new, accept or discard. [C-30]
 - **Figure:** S-03, “Fig. 3 · Review inbox: observation and CI compared.”
 
 ## Closing
 
 - **Heading:** Prefer your own network?
 - **Text:** In the trial you connect a collector to your network and see
-  your own devices, for 30 days at Standard scope with up to 100 CIs. [C-22]
+  your own devices, for 30 days on the Standard plan with up to 100 CIs. [C-22]
 - **Buttons:** “Try for 30 days” (primary), “Contact”
 - **Line below:** Offer for businesses only.

@@ -22,7 +22,7 @@ export const topologieImpact: Translation<PageContent> = {
         {
           kind: 'figure',
           paras: [
-            'When a device reports a neighbor over LLDP, a `connected_to` relationship is created. [C-31] Added to that are the dependencies between CIs: what runs on what, what draws power from what, what belongs to a cluster. The topology shows all of it as a graph; the color of a dot stands for the status of the CI. Up to 2,000 nodes you see the whole network; above that you first choose a site or type. [C-55]',
+            'When a device reports a neighbor over LLDP, a `connected_to` relationship is created. [C-31] Reticora also records the dependencies between CIs: what runs on what, what draws power from what, what belongs to a cluster. The topology shows all of it as a graph; the color of a dot stands for the status of the CI. Up to 2,000 nodes, you see the whole network; above that you first choose a site or type. [C-55]',
           ],
           shot: { id: 'S-04', caption: 'Topology: CIs as a graph, the color shows the status.' },
         },

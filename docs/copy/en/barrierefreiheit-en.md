@@ -35,9 +35,9 @@ regulation) are named only as context; this page makes no legal statement.
 - **Heading:** How we test
 - **List:**
   - Every page is tested automatically with axe-core on every change. As of
-    today: no findings.
+    today: no findings. [C-97]
   - Tested with the keyboard and operable: the menu, the expandable evidence
-    notes, the outage simulation and the contact form.
+    notes, the outage simulation and the contact form. [C-98]
   - In addition to the points in the schematic, the outage simulation has a
     toggle button per CI and a result line that screen readers announce.
 
@@ -46,7 +46,7 @@ regulation) are named only as context; this page makes no legal statement.
 - **Heading:** Contrast
 - **Text:** The colors are chosen so that text reaches a contrast ratio of
   at least 4.5:1 and outlines of controls at least 3:1. The values are
-  calculated with the WCAG 2 formula.
+  calculated with the WCAG 2 formula. [C-95]
 - **Table** (values from `design-system.md` §3.1; the themes are named
   “Leitstand” and “Dokument” internally):
 
@@ -58,15 +58,18 @@ regulation) are named only as context; this page makes no legal statement.
 | Accent color on page background | 9.0:1 | 5.0:1 | 4.5:1 |
 | Outline of controls on page background | 3.9:1 | 3.1:1 | 3.0:1 |
 
+- **Below the table:** The values come from our design specification and are
+  calculated by us, not checked by a third party. [C-95]
+
 ## 3. Motion and display
 
 - **Heading:** Motion and display
 - **Text:** Motion only occurs in response to an action and lasts at most
-  150 ms. If “Reduce motion” is set in the system, it is dropped entirely.
+  150 ms. If your system is set to reduce motion, it is dropped entirely. [C-96]
   In “Forced colors” mode (such as the Windows contrast themes), buttons,
   network schematic and outage simulation take on the system colors; failed
-  and affected CIs remain distinguishable. Color never carries a message on
-  its own: states have a word, the network schematic has a result line.
+  and affected CIs remain distinguishable. [C-99] Color never carries a message on
+  its own: states are also labeled in words, the network schematic has a result line.
 
 ## 4. Known limitations
 

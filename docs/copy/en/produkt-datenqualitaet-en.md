@@ -95,11 +95,11 @@ claim-register changes are documented in the German version only.
 | Case | What Reticora shows | What you do |
 |---|---|---|
 | Unknown device | No profile matches. Reticora creates a generic device; the MAC address names the vendor. [C-40, C-91] | Set the type, resolve the review. |
-| Possible duplicate | A new device has the same hostname as an existing CI, but the other keys do not match. [C-05, C-49] | Merge if it is the same device; otherwise create new. |
-| Different serial number | Discovery reports a different serial number than the asset holds – for example after a mainboard swap. [C-49, C-56] | Accept or discard the value. |
+| Probable duplicate | A new device has the same hostname as an existing CI, but the other keys do not match. [C-05, C-49] | Merge if it is the same device; otherwise create new. |
+| Serial number mismatch | Discovery reports a different serial number than the asset holds – for example after a mainboard swap. [C-49, C-56] | Accept or discard the value. |
 
 - **Text:** **Other kinds of reviews:** ambiguous identity, conflicting values,
-  resurrected device, duplicate IP address, unlicensed CI, suggested scope.
+  resurrected device, duplicate IP address, unlicensed CI, scope suggestion.
   [C-49]
 - **Image:** S-03, “Fig. 2 · Review inbox: observation and CI compared.”
 
@@ -121,4 +121,4 @@ claim-register changes are documented in the German version only.
 
 ## Closing
 
-- Closing band as on all pages: “Try Reticora with your own network for 30 days.” with “Try for 30 days” (primary button), “Live demo”, “Contact”; below it “Offer for businesses only.”
+- Closing band as on all pages: “Try Reticora on your own network for 30 days.” with “Try for 30 days” (primary button), “Live demo”, “Contact”; below it “Offer for businesses only.”

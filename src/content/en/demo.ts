@@ -7,7 +7,7 @@ export const demo: Translation<typeof De> = {
   meta: {
     title: 'Live demo – try Reticora',
     description:
-      'Open the Reticora demo with the shared login. Three things to try: simulate an outage, view provenance, decide a review.',
+      'Open the Reticora demo with the shared login. Three things to try: simulate an outage, view provenance, resolve a review.',
   },
   hero: {
     title: 'Live demo',
@@ -34,12 +34,12 @@ export const demo: Translation<typeof De> = {
       },
       {
         title: 'View the provenance of a field',
-        text: 'Open a CI and there the provenance of a field, such as the serial number. You see source, rank, time of observation and why this value applies. [C-03]' as Rich,
+        text: 'Open a CI, then the provenance of one of its fields, such as the serial number. You see source, rank, time of observation and why this value applies. [C-03]' as Rich,
         shot: { id: 'S-02', caption: 'Provenance of a field in the CI view.' } as ShotRef,
       },
       {
-        title: 'Decide a review',
-        text: 'Open the review inbox and select an entry. Observation and CI appear side by side. Decide: merge, create new, accept or dismiss. [C-30]' as Rich,
+        title: 'Resolve a review',
+        text: 'Open the review inbox and select an entry. Observation and CI appear side by side. Decide: merge, create new, accept or discard. [C-30]' as Rich,
         shot: { id: 'S-03', caption: 'Review inbox: observation and CI compared.' } as ShotRef,
       },
     ],
@@ -47,7 +47,7 @@ export const demo: Translation<typeof De> = {
   closing: {
     id: 'abschluss',
     title: 'Prefer your own network?',
-    text: 'In the trial you connect a collector to your network and see your own devices, for 30 days at Standard scope with up to 100 CIs. [C-22]' as Rich,
+    text: 'In the trial you connect a collector to your network and see your own devices, for 30 days on the Standard plan with up to 100 CIs. [C-22]' as Rich,
     actions: ['trial', 'contact'] as Action[],
   },
 };

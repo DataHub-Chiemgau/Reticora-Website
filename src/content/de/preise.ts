@@ -29,7 +29,7 @@ export const preise = {
     vat: 'zzgl. MwSt.',
     heads: {
       plan: 'Paket', monthly: 'im Monat', yearly: 'im Jahr', beta: 'erstes Beta-Jahr',
-      cis: 'CIs', collectors: 'Collectors', users: 'Nutzer', claims: 'Belege',
+      cis: 'CIs', collectors: 'Collectors', users: 'Nutzer', claims: 'Belege', action: 'Beschreibung und Handlung',
     },
     /** Knopf je Paket: Essentials, Standard und Pro „30 Tage testen“ (ui.actions.trial), Enterprise „Kontakt aufnehmen“ mit Anliegen „Enterprise“. */
     contact: { label: 'Kontakt aufnehmen', topic: 'enterprise' },

@@ -22,7 +22,7 @@ export const SCREENSHOTS: readonly Screenshot[] = [
   s('S-15', 'Webhooks: Abonnements, Zustellverlauf und Dead-Letter-Queue', 'Webhooks: subscriptions, delivery history and dead-letter queue'),
   s('S-16', 'Dashboard', 'Dashboard'),
   s('S-17', 'Berechtigungen', 'Permissions'),
-  s('S-18', 'Arbeitsbereich Organisation → Kunde → Standort', 'Scope Organization → Customer → Site'),
+  s('S-18', 'Arbeitsbereich Organisation → Kunde → Standort', 'Workspace Organization → Customer → Site'),
 ];
 
 export function screenshot(id: ScreenshotId): Screenshot {

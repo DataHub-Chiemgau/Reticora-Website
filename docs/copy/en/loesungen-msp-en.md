@@ -16,14 +16,14 @@ customer’s story.
 ## Page head
 
 - **Browser title:** Reticora for managed service providers (MSP)
-- **Description:** Onboard a new customer, grant rights per customer, keep
+- **Description:** Onboard a new customer, grant permissions per customer, keep
   identical address ranges apart, track contracts and SLAs: how MSPs work
   with Reticora.
 
 ## Intro
 
 - **Heading (h1):** For MSPs: every customer separate, all in one CMDB.
-- **Lead:** Organization, Customer, Site: in Reticora you work for all
+- **Lead:** Organization, customer, site: in Reticora you work for all
   customers in one application, and the data stays separated down to the
   database. Four everyday situations show how. [C-32, C-06]
 - **Buttons:** “Live demo” (primary), “Try for 30 days”
@@ -41,7 +41,7 @@ proceed), a feature line and claims.
   it sits in; you confirm the scopes, and the first CIs appear under the
   right customer. [C-29]
 - **Features:** Customers and sites, Collector, Scopes
-- **Figure:** S-18, “Fig. 1 · The workspace: Organization, Customer, Site.”
+- **Figure:** S-18, “Fig. 1 · The workspace: organization, customer, site.”
 
 ## 2. A technician looks after only two customers
 
@@ -50,8 +50,7 @@ proceed), a feature line and claims.
   also be limited to sites or teams. They then see only those customers’
   data – in the interface, in the API, in search and in exports.
   [C-33, C-84, C-93] The database itself enforces the separation, through
-  row-level security on the tenant tables. [C-06] Fields they should not
-  see, such as purchase prices, you hide with field permissions. [C-89]
+  row-level security on the tenant tables. [C-06] You hide fields they should not see, such as purchase prices, with field permissions. [C-89]
 - **Features:** Scoped roles, Row-level security, Field permissions
 - **Figure:** S-17, “Fig. 2 · Permissions.”
 
@@ -80,6 +79,6 @@ proceed), a feature line and claims.
 
 - **Heading:** Take a look with sample data.
 - **Text:** The live demo shows Reticora with sample data, no account
-  needed. Or try it for 30 days with your own network.
+  needed. Or try it for 30 days on your own network.
 - **Buttons:** “Live demo” (primary), “Try for 30 days”, “Contact”
 - **Line below:** Offer for businesses only.

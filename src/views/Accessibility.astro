@@ -4,6 +4,8 @@ import PageHero from '../components/PageHero.astro';
 import Section from '../components/Section.astro';
 import DataTable from '../components/DataTable.astro';
 import Placeholder from '../components/Placeholder.astro';
+import Para from '../components/Para.astro';
+import Rich from '../components/Rich.astro';
 import { content } from '../content';
 import type { Lang } from '../data/types';
 import { ui } from '../i18n';
@@ -28,15 +30,17 @@ const columns = [
   </PageHero>
 
   <Section id="pruefen" title={A.pruefen.title}>
-    <ul class="legal-list">{A.pruefen.items.map((i) => <li>{i}</li>)}</ul>
+    <ul class="legal-list">{A.pruefen.items.map((i) => <li><Rich text={i} lang={lang} /></li>)}</ul>
   </Section>
 
-  <Section id="kontraste" title={K.title} lead={K.text}>
+  <Section id="kontraste" title={K.title}>
+    <Para class="legal-text" text={K.text} lang={lang} />
     <DataTable label={K.label} columns={columns} rows={K.rows.map((r) => ({ ...r }))} rowHeader="pair" lang={lang} />
+    <Para class="legal-text" text={K.after} lang={lang} />
   </Section>
 
   <Section id="bewegung" title={A.bewegung.title}>
-    <p class="legal-text">{A.bewegung.text}</p>
+    <Para class="legal-text" text={A.bewegung.text} lang={lang} />
   </Section>
 
   <Section id="grenzen" title={A.grenzen.title}>

@@ -71,7 +71,7 @@ proceed), a feature line and claims.
 ## 4. A switch is swapped for a spare from stock
 
 - **Heading:** A switch is swapped for a spare from stock.
-- **Text:** You take the spare out of stock and book the faulty one as a
+- **Text:** You take the spare out of stock and record the faulty one as a
   “Repair” movement. [C-57] When discovery reports the new device, Reticora
   matches it using the keys in a fixed order: serial number, hardware UUID,
   MAC addresses, management IP with sysObjectID. Where observation and asset

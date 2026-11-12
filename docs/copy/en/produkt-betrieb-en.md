@@ -73,9 +73,9 @@ claim-register changes are documented in the German version only.
 - **Text:** A maintenance window has a start, an end and the CIs being worked on.
   Reticora derives from them which customers are affected. Beforehand, you let
   these CIs fail together in the outage simulation and see what goes down with
-  them and what redundancy carries. [C-66, C-09]
+  them and what stays up thanks to redundancy. [C-66, C-09]
 - **Link:** “Outage simulation” → `/produkt/topologie-impact/` (English page)
 
 ## Closing
 
-- Closing band as on all pages: “Try Reticora with your own network for 30 days.” with “Try for 30 days” (primary button), “Live demo”, “Contact”; below it “Offer for businesses only.”
+- Closing band as on all pages: “Try Reticora on your own network for 30 days.” with “Try for 30 days” (primary button), “Live demo”, “Contact”; below it “Offer for businesses only.”

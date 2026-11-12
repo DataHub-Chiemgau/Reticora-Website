@@ -109,13 +109,13 @@ export const datenqualitaet: Translation<PageContent> = {
           ],
           rows: [
             { case: 'Unknown device', shows: 'No profile matches. Reticora creates a generic device; the MAC address names the vendor. [C-40, C-91]', todo: 'Set the type, resolve the review.' },
-            { case: 'Possible duplicate', shows: 'A new device has the same hostname as an existing CI, but the other keys do not match. [C-05, C-49]', todo: 'Merge if it is the same device; otherwise create new.' },
-            { case: 'Different serial number', shows: 'Discovery reports a different serial number than the asset holds – for example after a mainboard swap. [C-49, C-56]', todo: 'Accept or discard the value.' },
+            { case: 'Probable duplicate', shows: 'A new device has the same hostname as an existing CI, but the other keys do not match. [C-05, C-49]', todo: 'Merge if it is the same device; otherwise create new.' },
+            { case: 'Serial number mismatch', shows: 'Discovery reports a different serial number than the asset holds – for example after a mainboard swap. [C-49, C-56]', todo: 'Accept or discard the value.' },
           ],
         },
         {
           kind: 'figure',
-          paras: ['**Other kinds of reviews:** ambiguous identity, conflicting values, resurrected device, duplicate IP address, unlicensed CI, suggested scope. [C-49]'],
+          paras: ['**Other kinds of reviews:** ambiguous identity, conflicting values, resurrected device, duplicate IP address, unlicensed CI, scope suggestion. [C-49]'],
           shot: { id: 'S-03', caption: 'Review inbox: observation and CI compared.' },
         },
       ],

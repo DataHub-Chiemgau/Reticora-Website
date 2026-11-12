@@ -153,3 +153,19 @@ test.describe('Druck', () => {
     await expect(page.locator('.sr-skip')).toBeHidden();
   });
 });
+
+test('gestapelte Zellen: die Spaltenbeschriftung gehört nicht zum zugänglichen Namen (Chromium)', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'Alternativtext-Syntax content: … / "" und Namensberechnung geprüft in Chromium');
+  await page.setViewportSize({ width: 360, height: 900 });
+  await page.goto('/barrierefreiheit/');
+  const cells = page.locator('.rt-table--stack td');
+  expect(await cells.count()).toBeGreaterThan(5);
+  for (let i = 0; i < 6; i++) {
+    const cell = cells.nth(i);
+    const text = (await cell.innerText()).trim();
+    // sichtbar steht die Beschriftung davor …
+    expect(await cell.evaluate((e) => getComputedStyle(e, '::before').content)).not.toBe('none');
+    // … im Namen aber nur der eigene Text
+    await expect(cell).toHaveAccessibleName(text);
+  }
+});

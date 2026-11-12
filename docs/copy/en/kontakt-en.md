@@ -48,7 +48,7 @@ renders errors in the English template built from `/en/contact/`.
 | `security` | Security and privacy |
 | `other` | Other |
 
-- **Button:** “Send message”; while sending “Sending …”
+- **Button:** “Send message”; while sending “Sending…”
 - **Notice on data processing** (below the button, with `data-placeholder`):
   “[Notice on data processing: text from the provider]” with the link
   “Privacy policy” → `/en/privacy/`

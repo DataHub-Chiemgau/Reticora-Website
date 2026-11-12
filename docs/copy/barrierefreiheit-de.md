@@ -34,9 +34,9 @@ Sitemap grün?
 - **Überschrift:** Wie wir prüfen
 - **Liste:**
   - Jede Seite wird bei jeder Änderung automatisch mit axe-core geprüft.
-    Stand heute: ohne Befund.
+    Stand heute: ohne Befund. [C-97]
   - Mit der Tastatur geprüft und bedienbar: das Menü, die aufklappbaren
-    Belege, die Ausfallsimulation und das Kontaktformular.
+    Belege, die Ausfallsimulation und das Kontaktformular. [C-98]
   - Die Ausfallsimulation hat zusätzlich zu den Punkten im Schema einen
     Umschaltknopf je CI und eine Ergebniszeile, die Screenreader vorlesen.
 
@@ -45,7 +45,7 @@ Sitemap grün?
 - **Überschrift:** Kontraste
 - **Text:** Die Farben sind so gewählt, dass Text mindestens das
   Kontrastverhältnis 4,5 : 1 und Umrisse von Bedienelementen mindestens 3 : 1
-  erreichen. Die Werte sind nach der Formel der WCAG 2 berechnet.
+  erreichen. Die Werte sind nach der Formel der WCAG 2 berechnet. [C-95]
 - **Tabelle** (Werte aus `design-system.md` §3.1):
 
 | Paar | dunkles Thema „Leitstand“ | helles Thema „Dokument“ | Mindestwert |
@@ -56,14 +56,17 @@ Sitemap grün?
 | Akzentfarbe auf Seitengrund | 9,0 : 1 | 5,0 : 1 | 4,5 : 1 |
 | Umriss von Bedienelementen auf Seitengrund | 3,9 : 1 | 3,1 : 1 | 3,0 : 1 |
 
+- **Unter der Tabelle:** Die Werte stammen aus unseren Gestaltungsvorgaben
+  und sind von uns berechnet, nicht von Dritten geprüft. [C-95]
+
 ## 3. Bewegung und Darstellung
 
 - **Überschrift:** Bewegung und Darstellung
 - **Text:** Bewegung gibt es nur als Antwort auf eine Handlung, höchstens
   150 ms lang. Ist im System „Bewegung reduzieren“ eingestellt, entfällt sie
-  ganz. Im Modus „Erzwungene Farben“ (etwa dem Kontrastmodus von Windows)
+  ganz. [C-96] Im Modus „Erzwungene Farben“ (etwa dem Kontrastmodus von Windows)
   übernehmen Knöpfe, Netzschema und Ausfallsimulation die Systemfarben;
-  ausgefallene und betroffene CIs bleiben unterscheidbar. Farbe trägt nie allein eine
+  ausgefallene und betroffene CIs bleiben unterscheidbar. [C-99] Farbe trägt nie allein eine
   Aussage: Zustände haben ein Wort, das Netzschema eine Ergebniszeile.
 
 ## 4. Bekannte Einschränkungen

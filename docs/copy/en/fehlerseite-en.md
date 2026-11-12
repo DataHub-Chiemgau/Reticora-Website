@@ -26,5 +26,4 @@
   - “Supported devices” → `/en/devices/`
   - “Pricing” → `/en/pricing/`
   - “Contact” → `/en/contact/`
-- **Line below:** Did you arrive here through a link on this website? Then
-  please tell us through the contact form which link it was.
+- **Line below:** If a link on this website brought you here, please tell us which one using the contact form.

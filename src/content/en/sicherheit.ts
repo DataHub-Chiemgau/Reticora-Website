@@ -10,7 +10,7 @@ export const sicherheit: Translation<typeof De> = {
       'Deployment models, connection direction and ports, tenant separation in the database, encrypted credentials, MFA, audit chain and data residency in the EU.',
   },
   hero: {
-    title: 'What your information security team wants to know.',
+    title: 'What your security team wants to know.',
     lead: 'This page answers the questions of an initial assessment: where the data is stored, which connections exist, how customers are separated, who signs in and how, and what is logged. Every statement has evidence.',
     actions: ['contact', 'demo'] as Action[],
     topic: 'security',
@@ -49,7 +49,7 @@ export const sicherheit: Translation<typeof De> = {
     collectorTitle: 'Collector',
     collector: [
       { term: 'Enrollment code', value: 'valid for 24 h, single use [C-41]' },
-      { term: 'Certificate', value: '90 days, renews itself; blocked by revocation [C-41]' },
+      { term: 'Certificate', value: '90 days, renews itself; can be revoked [C-41]' },
       { term: 'Channel', value: 'its own only; revoked certificates and deactivated collectors are rejected [C-77]' },
       { term: 'Updates', value: 'signed only [C-42]' },
     ] as { term: string; value: Rich }[],

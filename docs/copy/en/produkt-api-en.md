@@ -23,8 +23,7 @@ claim-register changes are documented in the German version only.
 
 - **Heading (h1):** A REST API with fixed rules.
 - **Lead:** The REST API under `/api/v1` is fully described in OpenAPI. Changes are
-  additive only. Anything that goes away, Reticora announces at least 12
-  months in advance. [C-11, C-71]
+  additive only. Reticora announces any removal at least 12 months in advance. [C-11, C-71]
 - **Buttons:** “Try for 30 days” (primary button), “Live demo”
 
 ## 1. Principles
@@ -92,9 +91,9 @@ curl "https://www.reticora.cloud/api/v1/cis?q=core&limit=50" \
 ## 5. Bulk changes
 
 - **Heading:** Bulk changes
-- **Text:** A bulk change covers up to 500 IDs. From 100 IDs it runs as a background job
+- **Text:** A bulk change covers up to 500 IDs. With 100 IDs or more, it runs as a background job
   and delivers a report of which entries could not be changed. [C-76]
 
 ## Closing
 
-- Closing band as on all pages: “Try Reticora with your own network for 30 days.” with “Try for 30 days” (primary button), “Live demo”, “Contact”; below it “Offer for businesses only.”
+- Closing band as on all pages: “Try Reticora on your own network for 30 days.” with “Try for 30 days” (primary button), “Live demo”, “Contact”; below it “Offer for businesses only.”

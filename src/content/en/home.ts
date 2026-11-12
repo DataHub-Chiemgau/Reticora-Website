@@ -52,7 +52,7 @@ export const home: Translation<typeof HomeDe> = {
     },
     review: {
       title: 'Decide instead of cleaning up',
-      text: 'The review inbox collects what automation may not decide on its own: an unknown device, a possible duplicate, conflicting values. You compare observation and CI and decide: merge, create new, accept or discard.',
+      text: 'The review inbox collects what automation may not decide on its own: an unknown device, a probable duplicate, conflicting values. You compare observation and CI and decide: merge, create new, accept or discard.',
       claim: 'C-30',
       caption: 'Review inbox: observation and CI compared.',
     },
@@ -71,20 +71,20 @@ export const home: Translation<typeof HomeDe> = {
   },
   kunden: {
     title: 'Built for many customers',
-    lead: 'Organization, customer, site: the current scope is always shown in the app header. Someone who looks after a single customer sees only that customer’s data.',
+    lead: 'Organization, customer, site: the current workspace is always shown in the app header. Someone who looks after a single customer sees only that customer’s data.',
     specs: [
       { term: 'Levels', value: 'Organization → Customer → Site', claim: 'C-32' },
       { term: 'Separation', value: 'enforced in the database', claim: 'C-06' },
       { term: 'Roles', value: 'scoped to a customer, site or team', claim: 'C-33' },
       { term: 'Second factor', value: 'mandatory for administrators', claim: 'C-34' },
     ],
-    caption: 'The scope: organization, customer, site.',
+    caption: 'The workspace: organization, customer, site.',
   },
   mehr: {
     title: 'More than an inventory',
     lead: 'Service desk, warehouse and compliance work on the same inventory. There is only one inventory, so there is nothing to reconcile.',
     items: [
-      { term: 'Assets and contracts', value: 'Purchase data, assignment with signature, contracts and documents on the device.', claims: ['C-35'] },
+      { term: 'Assets and contracts', value: 'Purchase data, signed assignments, contracts and documents on the device.', claims: ['C-35'] },
       { term: 'Stock and stocktakes', value: 'Stock levels, movements and stocktakes with labels and barcodes.', claims: ['C-36'] },
       { term: 'Tickets', value: 'Tickets with SLA and business calendar, right on the affected CI.', claims: ['C-37'] },
       { term: 'Monitoring', value: 'Reachability, interface counters, UPS and PDU values as history on the CI; alert rules trigger tickets and notifications.', claims: ['C-24'] },
@@ -94,7 +94,7 @@ export const home: Translation<typeof HomeDe> = {
   },
   api: {
     title: 'For people and for machines',
-    lead: 'The REST API is fully described in OpenAPI. Changes are additive only. Anything that goes away is announced at least twelve months in advance.',
+    lead: 'The REST API is fully described in OpenAPI. Changes are additive only. Reticora announces any removal at least 12 months in advance.',
     leadClaim: 'C-11',
     codeTitle: 'GET /api/v1/cis',
     codeComment: '# All CIs whose name contains “core”',
@@ -107,7 +107,7 @@ export const home: Translation<typeof HomeDe> = {
   },
   sicherheit: {
     title: 'Security you can verify',
-    lead: 'What your information security team asks first is answered here. The details are on the Security page.',
+    lead: 'The first questions your security team will ask are answered here. The details are on the Security page.',
     items: [
       { term: 'Connection', value: 'The collector connects outbound. Reticora opens no connection into your network.', claim: 'C-02' },
       { term: 'Credentials', value: 'stored encrypted (AES-256-GCM); in plain text only in memory, never on disk, in API responses or in logs', claim: 'C-13' },
@@ -141,7 +141,7 @@ export const home: Translation<typeof HomeDe> = {
     link: 'All prices and features',
   },
   abschluss: {
-    title: 'Try Reticora with your own network for 30 days.',
+    title: 'Try Reticora on your own network for 30 days.',
     text: 'The trial includes the Standard plan for up to 100 CIs. You create an account, confirm your email address and set up an authenticator app when you first sign in. After the trial your CMDB is kept for 30 days.',
     claim: 'C-22',
   },

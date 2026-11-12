@@ -10,7 +10,7 @@ export const api: Translation<PageContent> = {
   hero: {
     title: 'A REST API with fixed rules.',
     lead:
-      'The REST API under `/api/v1` is fully described in OpenAPI. Changes are additive only. Anything that goes away, Reticora announces at least 12 months in advance. [C-11, C-71]',
+      'The REST API under `/api/v1` is fully described in OpenAPI. Changes are additive only. Reticora announces any removal at least 12 months in advance. [C-11, C-71]',
     actions: ['trial', 'demo'],
   },
   sections: [
@@ -90,7 +90,7 @@ export const api: Translation<PageContent> = {
         {
           kind: 'prose',
           paras: [
-            'A bulk change covers up to 500 IDs. From 100 IDs it runs as a background job and delivers a report of which entries could not be changed. [C-76]',
+            'A bulk change covers up to 500 IDs. With 100 IDs or more, it runs as a background job and delivers a report of which entries could not be changed. [C-76]',
           ],
         },
       ],

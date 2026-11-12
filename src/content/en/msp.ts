@@ -5,11 +5,11 @@ export const msp: SolutionContent = {
   meta: {
     title: 'Reticora for managed service providers (MSP)',
     description:
-      'Onboard a new customer, grant rights per customer, keep identical address ranges apart, track contracts and SLAs: how MSPs work with Reticora.',
+      'Onboard a new customer, grant permissions per customer, keep identical address ranges apart, track contracts and SLAs: how MSPs work with Reticora.',
   },
   hero: {
     title: 'For MSPs: every customer separate, all in one CMDB.',
-    lead: 'Organization, Customer, Site: in Reticora you work for all customers in one application, and the data stays separated down to the database. Four everyday situations show how. [C-32, C-06]',
+    lead: 'Organization, customer, site: in Reticora you work for all customers in one application, and the data stays separated down to the database. Four everyday situations show how. [C-32, C-06]',
     actions: ['demo', 'trial'],
   },
   situations: [
@@ -20,13 +20,13 @@ export const msp: SolutionContent = {
         'You create the customer and its sites. In the customer’s network you install a collector and enter the enrollment code, which is valid for 24 hours. The collector only connects outbound; the customer needs no inbound firewall rule. [C-32, C-41, C-02, C-77] It suggests the networks it sits in; you confirm the scopes, and the first CIs appear under the right customer. [C-29]',
       ],
       features: ['Customers and sites', 'Collector', 'Scopes'],
-      shot: { id: 'S-18', caption: 'The workspace: Organization, Customer, Site.' },
+      shot: { id: 'S-18', caption: 'The workspace: organization, customer, site.' },
     },
     {
       id: 'zwei-kunden',
       title: 'A technician looks after only two customers.',
       text: [
-        'You give them a role scoped to these two customers; roles can also be limited to sites or teams. They then see only those customers’ data – in the interface, in the API, in search and in exports. [C-33, C-84, C-93] The database itself enforces the separation, through row-level security on the tenant tables. [C-06] Fields they should not see, such as purchase prices, you hide with field permissions. [C-89]',
+        'You give them a role scoped to these two customers; roles can also be limited to sites or teams. They then see only those customers’ data – in the interface, in the API, in search and in exports. [C-33, C-84, C-93] The database itself enforces the separation, through row-level security on the tenant tables. [C-06] You hide fields they should not see, such as purchase prices, with field permissions. [C-89]',
       ],
       features: ['Scoped roles', 'Row-level security', 'Field permissions'],
       shot: { id: 'S-17', caption: 'Permissions.' },
@@ -52,7 +52,7 @@ export const msp: SolutionContent = {
   closing: {
     id: 'abschluss',
     title: 'Take a look with sample data.',
-    text: 'The live demo shows Reticora with sample data, no account needed. Or try it for 30 days with your own network.',
+    text: 'The live demo shows Reticora with sample data, no account needed. Or try it for 30 days on your own network.',
     actions: ['demo', 'trial', 'contact'],
   },
 };

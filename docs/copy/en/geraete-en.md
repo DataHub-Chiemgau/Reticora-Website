@@ -31,18 +31,17 @@ vendor and family names stay unchanged.
 
 - **Heading:** Device families
 - **Filter** (group of toggle buttons, label “Category”): “All”, “Network”,
-  “Server and virtualization”, “Storage”, “Power”. Without JavaScript the
+  “Servers and virtualization”, “Storage”, “Power”. Without JavaScript the
   whole table is shown, grouped by category.
 - **Jump links without JavaScript** (navigation above the table, label
   “Jump to a category”): one anchor per category, “{Category} ({n})”, to
   the group in the table. With JavaScript the filter replaces them.
 - **Table**, columns: “Vendor”, “Family”, “Protocols”. Values from
-  `DEVICES`; categories: `network` = Network, `server` = Server and
-  virtualization, `storage` = Storage, `power` = Power. [C-08]
+  `DEVICES`; categories: `network` = Network, `server` = Servers and virtualization, `storage` = Storage, `power` = Power. [C-08]
 - **Hint above the table on narrow screens:** “The table scrolls sideways.”
 - **Filter result line** (live region): “{n} device families” or
   “1 device family”.
-- **Caption:** Vendor names are trademarks of their owners and appear here
+- **Caption:** Vendor names are trademarks of their respective owners and appear here
   only to describe compatibility.
 
 ## 2. How the collector recognizes a device
@@ -71,7 +70,7 @@ vendor and family names stay unchanged.
 - **Text:** A profile is a declarative file: how to recognize a device and
   which values the collector queries. The collector loads additional or
   changed profiles from a directory, without you waiting for a new release.
-  [C-88] If a family is missing for you, write to us.
+  [C-88] Missing a device family? Let us know.
 - **Link:** “Contact” → `/en/contact/`
 
 ## Closing

@@ -17,7 +17,7 @@ Shared, Enterprise Local.
 
 ## Page head
 
-- **Browser title:** Pricing and plans – Reticora CMDB
+- **Browser title:** Plans and pricing – Reticora CMDB
 - **Description:** Essentials from €49 per month, plus Standard, Pro and
   Enterprise. Features, limits, additional charges and a 30-day trial.
   Prices excl. VAT, for businesses only.
@@ -89,7 +89,7 @@ Shared, Enterprise Local.
 ## 4. The trial
 
 - **Heading:** Try for 30 days
-- **Text:** The trial covers the Standard scope for up to 100 CIs. You
+- **Text:** The trial covers the Standard plan for up to 100 CIs. You
   create an account, confirm your email address and set up an authenticator
   app at your first sign-in. After the trial your CMDB is kept for 30 days;
   if you do not choose a plan by then, it is deleted. [C-22]
@@ -114,6 +114,6 @@ Shared, Enterprise Local.
 
 ## Closing
 
-- **Heading:** Try Reticora with your own network for 30 days.
+- **Heading:** Try Reticora on your own network for 30 days.
 - **Buttons:** “Try for 30 days” (primary), “Live demo”, “Contact”
 - **Line below:** Offer for businesses only.

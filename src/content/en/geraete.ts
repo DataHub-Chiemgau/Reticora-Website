@@ -18,11 +18,11 @@ export const geraete: Translation<typeof De> = {
     id: 'familien',
     title: 'Device families',
     tableLabel: 'Device families with vendor and protocols',
-    categories: { network: 'Network', server: 'Server and virtualization', storage: 'Storage', power: 'Power' },
+    categories: { network: 'Network', server: 'Servers and virtualization', storage: 'Storage', power: 'Power' },
     jump: 'Jump to a category',
     groupId: 'kategorie',
     heads: { vendor: 'Vendor', family: 'Family', protocols: 'Protocols' },
-    note: 'Vendor names are trademarks of their owners and appear here only to describe compatibility.',
+    note: 'Vendor names are trademarks of their respective owners and appear here only to describe compatibility.',
     claim: 'C-08' as `C-${string}`,
   },
   erkennung: {
@@ -39,7 +39,7 @@ export const geraete: Translation<typeof De> = {
   profile: {
     id: 'profile',
     title: 'Adding profiles',
-    text: 'A profile is a declarative file: how to recognize a device and which values the collector queries. The collector loads additional or changed profiles from a directory, without you waiting for a new release. [C-88] If a family is missing for you, write to us.' as Rich,
+    text: 'A profile is a declarative file: how to recognize a device and which values the collector queries. The collector loads additional or changed profiles from a directory, without you waiting for a new release. [C-88] Missing a device family? Let us know.' as Rich,
     link: { label: 'Contact', href: '/kontakt/' } as LinkRef,
   },
 };

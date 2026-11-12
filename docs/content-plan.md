@@ -244,7 +244,7 @@ US-Schreibweise.
 | Kunde | Customer |
 | Standort | Site (oberste Ebene), Location (jede Ebene) |
 | CI, CI-Typ | CI, CI type |
-| Collector, Discovery, Scope | Collector, Discovery, Scope |
+| Collector, Discovery, Scope (Discovery) | Collector, Discovery, Scope (nur Discovery-Scopes) |
 | Review-Inbox, Review | Review inbox, review |
 | Abgleich | Reconciliation |
 | Herkunft, Quelle, Rang | Provenance, Source, Rank |
@@ -268,7 +268,7 @@ bleiben oder durch Begriffe der App ersetzt werden.
 
 | Deutsch | Englisch | Anmerkung |
 |---|---|---|
-| Arbeitsbereich | Scope | folgt der englischen Beschriftung der App (Kopfzeilen-Auswahl „Scope“); kollidiert mit den Discovery-Scopes. Alternative: Workspace |
+| Arbeitsbereich | Workspace | vorgeschlagen, Freigabe ausstehend: die App beschriftet die Kopfzeilen-Auswahl „Scope“, das kollidiert mit den Discovery-Scopes. „Scope“ steht auf der Website nur für Discovery-Scopes; für den Umfang eines Pakets stehen „plan“, „included in …“, „what the sweep covers“. Der Auftraggeber entscheidet |
 | Lebenszeichen | Heartbeat | nicht in der App |
 | Puffer, Takt | Buffer, Intervals | nicht in der App |
 | Klick-Builder | Click builder | |
@@ -290,7 +290,7 @@ Kurze Erläuterungen, die nur die englische Fassung enthält (Definitionen, kein
 Produktaussagen): DATEV („the format used by German accounting software“),
 DIN 66399 („the German standard for destroying data media“), KRITIS („the
 German framework for critical infrastructure“). Die englische Fassung nimmt
-außerdem Begriffe der App unverändert: Unclassified device, Serial number
+außerdem Begriffe der App unverändert: Unclassified device, Probable duplicate, Serial number
 mismatch, Unlicensed CI, Repair, Review inbox, Simulate outage, Protected by
 redundancy, Field permissions, Business calendar, Stocktake.
 
@@ -396,6 +396,11 @@ benannte Person ihn abgehakt hat (F-14).
 | C-92 | Enterprise Shared läuft in der Cloud auf getrennter Infrastruktur. Enterprise Local wird bei Ihnen gehostet; der Preis enthält alle Arbeiten dafür. | Entscheidung W-E14 (docs/project-brief.md der Website); Produkt: README.md §2.1 (Dedicated Instance), docs/betrieb/referenzmodell.md. Angebot vor Go-live bestätigen. | Angebot bestätigen (C-25); Umfang „alle Arbeiten“ vertraglich fassen |
 | C-93 | Ein automatischer Isolationstest prüft die Mandantentrennung über alle Zugriffswege. | README.md §16 „Tests“ (Isolationstest über alle Zugriffspfade); docs/releases/phase2.md M2.10 | – |
 | C-94 | Jedes CI über dem Limit des Pakets kostet 0,05 € im Monat, jeder Monitoring-Service 0,03 € im Monat, jeweils zuzüglich Mehrwertsteuer. | README.md §14 „Extra-Kosten“; Entscheidungen W-E12, W-E15 (docs/project-brief.md der Website) | „Monitoring-Service“ definieren (was wird gezählt?) |
+| C-95 | Die Kontrastverhältnisse der Farbpaare dieser Website sind nach der Formel der WCAG 2 selbst berechnet, nicht von Dritten geprüft. Auf dem Seitengrund erreichen im dunklen Thema Text 16,0 : 1, Vorspann 8,3 : 1, Hinweise 6,4 : 1, Akzentfarbe 9,0 : 1 und Umriss von Bedienelementen 3,9 : 1; im hellen Thema 15,7 : 1, 6,4 : 1, 5,0 : 1, 5,0 : 1 und 3,1 : 1. | docs/design-system.md §3.1, Tabelle „Kontrast nach WCAG 2, selbst berechnet“ | nur als eigene Berechnung nennen, nicht als Prüfung durch Dritte |
+| C-96 | Bewegung gibt es nur als Antwort auf eine Handlung, dauert höchstens 150 ms und entfällt bei „Bewegung reduzieren“. Gemessen an den Bewegungen des Netzschemas. | docs/design-system.md §8; tests/e2e/topology.spec.ts (Dauer 0 < d ≤ 0,15 s, reduziert 0 s) | übrige Seitenelemente sind nicht einzeln gemessen |
+| C-97 | Jede gebaute Seite beider Sprachen wird bei jeder Änderung automatisch mit axe-core geprüft; zuletzt ohne Befund. | tests/e2e/pages.spec.ts („axe ohne Befunde“); .github/workflows/ci.yml | „automatische Prüfung“, nie „konform“ oder „barrierefrei“ schreiben |
+| C-98 | Menü, aufklappbare Belege, Ausfallsimulation und Kontaktformular sind in Browsertests per Tastatur bedient worden. | tests/e2e/components.spec.ts, topology.spec.ts, contact.spec.ts | ersetzt keine Prüfung mit Screenreadern |
+| C-99 | Im Modus „Erzwungene Farben“ übernehmen Knöpfe, Netzschema und Ausfallsimulation die Systemfarben; ausgefallene und betroffene CIs bleiben unterscheidbar. | tests/e2e/topology.spec.ts (forcedColors: active) | – |
 
 ## 8. Screenshot-Platzhalter
 

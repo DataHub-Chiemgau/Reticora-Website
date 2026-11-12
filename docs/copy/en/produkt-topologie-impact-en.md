@@ -31,10 +31,10 @@ claim-register changes are documented in the German version only.
 
 - **Heading:** Topology as a graph
 - **Text:** When a device reports a neighbor over LLDP, a `connected_to` relationship is
-  created. [C-31] Added to that are the dependencies between CIs: what runs on
+  created. [C-31] Reticora also records the dependencies between CIs: what runs on
   what, what draws power from what, what belongs to a cluster. The topology
   shows all of it as a graph; the color of a dot stands for the status of the
-  CI. Up to 2,000 nodes you see the whole network; above that you first choose
+  CI. Up to 2,000 nodes, you see the whole network; above that you first choose
   a site or type. [C-55]
 - **Image:** S-04, “Fig. 1 · Topology: CIs as a graph, the color shows the status.”
 
@@ -96,4 +96,4 @@ claim-register changes are documented in the German version only.
 
 ## Closing
 
-- Closing band as on all pages: “Try Reticora with your own network for 30 days.” with “Try for 30 days” (primary button), “Live demo”, “Contact”; below it “Offer for businesses only.”
+- Closing band as on all pages: “Try Reticora on your own network for 30 days.” with “Try for 30 days” (primary button), “Live demo”, “Contact”; below it “Offer for businesses only.”

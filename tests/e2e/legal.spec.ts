@@ -51,9 +51,16 @@ test.describe('/barrierefreiheit/', () => {
     await expect(page.locator('.page-hero .lead')).toHaveText(A.hero.lead);
     await expect(page.getByText(`${T.asOf}: ${A.hero.asOf}`)).toBeVisible();
     await expect(page.locator('main h2')).toHaveText([A.pruefen.title, A.kontraste.title, A.bewegung.title, A.grenzen.title, A.hinweise.title]);
-    await expect(page.locator('#pruefen li')).toHaveText([...A.pruefen.items]);
+    // Texte mit [C-xx]-Belegen: die Teile vor und nach dem Beleg stehen im Element, der Beleg selbst ist ein Beleg-Knopf.
+    const parts = (t: string) => t.split(/\s*\[C-\d+\]\s*/).filter(Boolean);
+    const items = page.locator('#pruefen li');
+    await expect(items).toHaveCount(A.pruefen.items.length);
+    for (const [i, t] of A.pruefen.items.entries()) for (const part of parts(t)) await expect(items.nth(i)).toContainText(part);
+    await expect(page.locator('#pruefen [data-claim="C-97"]')).toHaveCount(1);
+    await expect(page.locator('#pruefen [data-claim="C-98"]')).toHaveCount(1);
+    for (const c of ['C-95', 'C-96', 'C-99']) await expect(page.locator(`main [data-claim="${c}"]`).first()).toHaveCount(1);
     await expect(page.locator('#grenzen li')).toHaveText([...A.grenzen.items]);
-    await expect(page.locator('#bewegung p')).toHaveText(A.bewegung.text);
+    for (const part of parts(A.bewegung.text)) await expect(page.locator('#bewegung .legal-text')).toContainText(part);
     const table = page.locator('#kontraste table');
     await expect(table.locator('thead th')).toHaveText([A.kontraste.heads.pair, A.kontraste.heads.dark, A.kontraste.heads.light, A.kontraste.heads.min]);
     await expect(table.locator('tbody tr')).toHaveCount(5);
