@@ -11,13 +11,14 @@ a:hover { color: var(--fg); }
 
 .sr-skip {
   position: absolute;
-  left: 16px;
+  left: var(--space-4);
   top: -100px;
   z-index: 100;
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   background: var(--accent);
   color: var(--accent-fg);
   font-weight: 600;
   text-decoration: none;
 }
-.sr-skip:focus { top: 8px; }
+.sr-skip:hover { color: var(--accent-fg); }
+.sr-skip:focus { top: var(--space-2); }

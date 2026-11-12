@@ -37,6 +37,17 @@ test('Sprunglink ist das erste fokussierbare Element und führt zu #inhalt', asy
 test('ohne Schriftdateien bleibt die h1 sichtbar', async ({ page }) => {
   await page.route('**/*.woff2', (r) => r.abort());
   await page.goto('/');
-  const box = await page.locator('h1').boundingBox();
-  expect(box!.width).toBeGreaterThan(0);
+  const h1 = page.locator('h1');
+  await expect(h1).toBeVisible();
+  const m = await h1.evaluate((e) => {
+    const range = document.createRange();
+    range.selectNodeContents(e.firstChild!);
+    const r = range.getBoundingClientRect();
+    const cs = getComputedStyle(e);
+    return { w: r.width, h: r.height, visibility: cs.visibility, opacity: cs.opacity };
+  });
+  expect(m.w).toBeGreaterThan(0);
+  expect(m.h).toBeGreaterThan(0);
+  expect(m.visibility).toBe('visible');
+  expect(m.opacity).toBe('1');
 });

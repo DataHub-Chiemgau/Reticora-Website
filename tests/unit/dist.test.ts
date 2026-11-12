@@ -34,4 +34,11 @@ describe.skipIf(!hasDist)('dist', () => {
     expect(rules.length).toBeGreaterThanOrEqual(2);
     for (const r of rules) expect(r).toMatch(/font-display:\s*swap/);
   });
+
+  test('Archivo-@font-face deklariert font-stretch 100% 112%', () => {
+    const rules = walk(join(dist, '_astro'), '.css').flatMap((f) => readFileSync(f, 'utf8').match(/@font-face\s*\{[^}]*\}/g) ?? []);
+    const archivo = rules.find((r) => /Archivo/.test(r));
+    expect(archivo).toBeDefined();
+    expect(archivo).toMatch(/font-stretch:\s*100%\s*112%/);
+  });
 });
