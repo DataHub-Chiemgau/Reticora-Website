@@ -1,0 +1,471 @@
+<title>Reticora Art Directions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Serif:ital,wght@0,500;1,400&family=JetBrains+Mono:wght@100..800&display=swap">
+<style>
+/* Layout: a quiet review sheet. Three specimen panels, each in its own fixed
+   palette, sit on a neutral page that follows the viewer's theme. */
+:root{
+  --bg:#F1F3F5; --surface:#FFFFFF; --fg:#151B20; --muted:#4E5C65; --line:#D3DAdf; --accent:#087680; --accent-soft:#E3F2F3;
+  --f-geist:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-geistmono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --f-archivo:"Archivo","Arial Nova","Helvetica Neue",Arial,sans-serif;
+  --f-jbmono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --f-plexserif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+  --f-plexsans:"IBM Plex Sans","Segoe UI",Helvetica,Arial,sans-serif;
+  --f-plexmono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  /* Specimen palettes: constants, identical in both page themes. */
+  --a-canvas:#F7F9FA; --a-panel:#FFFFFF; --a-line:#E1E6E9; --a-line-strong:#CBD3D8; --a-fg:#151B20; --a-muted:#4E5C65; --a-accent:#087680; --a-soft:#E8F5F6; --a-signal:#B45309;
+  --b-canvas:#0D1215; --b-panel:#151B20; --b-raised:#1C242A; --b-line:#262F36; --b-line-strong:#3B474F; --b-fg:#E6ECEF; --b-muted:#A3B0B8; --b-accent:#4CC4CE; --b-signal:#F0B429;
+  --c-canvas:#FAF8F3; --c-panel:#FFFFFF; --c-line:#D9D4C7; --c-fg:#1B1F23; --c-muted:#575E66; --c-accent:#087680; --c-signal:#B4402A;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0B0F12; --surface:#141A1F; --fg:#E6ECEF; --muted:#A3B0B8; --line:#2A343B; --accent:#4CC4CE; --accent-soft:#0F2A2E; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0B0F12; --surface:#141A1F; --fg:#E6ECEF; --muted:#A3B0B8; --line:#2A343B; --accent:#4CC4CE; --accent-soft:#0F2A2E; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-geist);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 80px;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3,h4,p,dl,dd,figure{margin:0}
+h1,h2,h3,h4{text-wrap:balance}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- page chrome ---------- */
+.intro{display:flex;flex-direction:column;gap:16px;max-width:70ch}
+.intro h1{font-size:clamp(28px,4vw,40px);line-height:1.1;letter-spacing:-.025em;font-weight:600}
+.intro p{color:var(--muted)}
+.jump{display:flex;flex-wrap:wrap;gap:8px;font-size:14px}
+.jump a{padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg);text-decoration:none}
+.jump a:hover{border-color:var(--accent)}
+.rec{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--surface);padding:16px 20px;border-radius:6px;max-width:70ch}
+.rec strong{font-weight:600}
+.dir{display:flex;flex-direction:column;gap:20px;scroll-margin-top:16px}
+.dir-head{display:flex;flex-direction:column;gap:6px;max-width:70ch}
+.dir-head h2{font-size:26px;line-height:1.2;letter-spacing:-.02em;font-weight:600}
+.dir-head h2 span{font-family:var(--f-geistmono);font-weight:500;font-size:15px;color:var(--accent);margin-right:10px;letter-spacing:0}
+.dir-head p{color:var(--muted)}
+.frame{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px 32px;font-size:14.5px}
+.facts dt{font-family:var(--f-geistmono);font-size:12px;color:var(--muted);margin-bottom:2px}
+.facts dd{min-width:0}
+.sw{display:inline-block;width:12px;height:12px;border-radius:2px;border:1px solid var(--line);vertical-align:-1px;margin:0 3px 0 8px}
+.sw:first-child{margin-left:0}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14.5px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{font-family:var(--f-geistmono);font-size:12px;font-weight:500;color:var(--muted)}
+tbody tr:last-child td,tbody tr:last-child th{border-bottom:0}
+tbody th{font-weight:500}
+.sec h2{font-size:22px;letter-spacing:-.015em;font-weight:600;margin-bottom:14px}
+.next{color:var(--muted);max-width:70ch}
+
+/* ---------- shared specimen bits ---------- */
+.mark{width:22px;height:22px;flex:none}
+.sp-nav{display:flex;align-items:center;gap:20px;min-height:64px;flex-wrap:wrap;padding-block:10px}
+.sp-links{display:flex;gap:22px;font-size:14px}
+.sp-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.sp-in{padding-left:clamp(16px,3.2vw,44px);padding-right:clamp(16px,3.2vw,44px)}
+@media (max-width:820px){ .sp-links{display:none} }
+
+/* ---------- A  Messblatt ---------- */
+.fa{background:var(--a-canvas);color:var(--a-fg);font-family:var(--f-geist)}
+.fa .sp-nav{border-bottom:1px solid var(--a-line)}
+.fa-brand{display:flex;align-items:center;gap:8px;font-weight:600;letter-spacing:-.01em;font-size:16px}
+.fa-brand .mark{color:var(--a-accent)}
+.fa .sp-links{color:var(--a-muted)}
+.fa-btn,.fa-btn2{display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:4px;font-size:14.5px;font-weight:500}
+.fa-btn{background:var(--a-accent);color:#fff}
+.fa-btn2{border:1px solid var(--a-line-strong);background:var(--a-panel);color:var(--a-fg)}
+.fa-hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(24px,4vw,56px);padding-block:clamp(36px,5vw,64px);border-bottom:1px solid var(--a-line);align-items:start}
+.fa-hero-text{display:flex;flex-direction:column;gap:20px}
+.fa-h1{font-size:clamp(30px,4.1vw,50px);line-height:1.05;letter-spacing:-.03em;font-weight:600}
+.fa-lead{font-size:17px;line-height:1.65;color:var(--a-muted);max-width:46ch}
+.fa-cta{display:flex;gap:10px;flex-wrap:wrap}
+.fa-note{font-family:var(--f-geistmono);font-size:12.5px;color:var(--a-muted)}
+.fa-plate{display:flex;flex-direction:column;gap:10px;min-width:0}
+.fa-slot{position:relative;aspect-ratio:16/10;max-width:100%;background:
+   linear-gradient(var(--a-line),var(--a-line)) center/1px 100% no-repeat,
+   linear-gradient(var(--a-line),var(--a-line)) center/100% 1px no-repeat,
+   var(--a-panel);
+  border:1px solid var(--a-line-strong);border-radius:2px;display:grid;place-items:center}
+.fa-slot::before,.fa-slot::after{content:"";position:absolute;pointer-events:none}
+.fa-slot::before{left:0;right:0;top:0;height:7px;background:repeating-linear-gradient(90deg,var(--a-line-strong) 0 1px,transparent 1px 16px)}
+.fa-slot::after{top:0;bottom:0;left:0;width:7px;background:repeating-linear-gradient(0deg,var(--a-line-strong) 0 1px,transparent 1px 16px)}
+.fa-slot-label{background:var(--a-panel);padding:14px 20px;text-align:center;display:flex;flex-direction:column;gap:4px;border:1px dashed var(--a-line-strong);border-radius:2px;max-width:86%}
+.fa-slot-label b{font-family:var(--f-geistmono);font-weight:500;font-size:22px;color:var(--a-accent);letter-spacing:-.01em}
+.fa-slot-label span{font-size:14px}
+.fa-slot-label small{font-family:var(--f-geistmono);font-size:11.5px;color:var(--a-muted)}
+.fa-pin{position:absolute;width:22px;height:22px;border-radius:50%;background:var(--a-fg);color:#fff;font-family:var(--f-geistmono);font-size:12px;display:grid;place-items:center}
+.fa-cap{font-family:var(--f-geistmono);font-size:12px;color:var(--a-muted);display:flex;flex-wrap:wrap;gap:4px 18px}
+.fa-cap b{font-weight:500;color:var(--a-fg)}
+.fa-sec{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:clamp(24px,4vw,56px);padding-block:clamp(32px,4.5vw,56px)}
+.fa-sec h4{font-size:24px;line-height:1.2;letter-spacing:-.02em;font-weight:600;margin-bottom:18px}
+.fa-kv{font-family:var(--f-geistmono);font-size:13px;font-variant-numeric:tabular-nums}
+.fa-kv>div{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-top:1px solid var(--a-line)}
+.fa-kv>div:last-child{border-bottom:1px solid var(--a-line)}
+.fa-kv dt{color:var(--a-muted)}
+.fa-kv dd{text-align:right}
+.fa-kv details{display:inline-block;text-align:right}
+.fa-kv summary{cursor:pointer;list-style:none;text-decoration:underline dotted var(--a-accent);text-underline-offset:3px}
+.fa-kv summary::-webkit-details-marker{display:none}
+.fa-kv details p{margin-top:6px;padding:8px 10px;background:var(--a-soft);color:var(--a-fg);border-radius:2px;font-size:12px;max-width:26ch;text-align:left;margin-left:auto}
+.fa-sec-r{display:flex;flex-direction:column;gap:22px;min-width:0}
+.fa-sec-r p{font-size:17px;line-height:1.65;max-width:60ch}
+.fa-rank{display:flex;flex-direction:column;gap:7px;font-family:var(--f-geistmono);font-size:12.5px;font-variant-numeric:tabular-nums;max-width:560px}
+.fa-rank>div{display:grid;grid-template-columns:76px minmax(0,1fr) 30px;gap:12px;align-items:center}
+.fa-rank i{display:block;height:8px;background:var(--a-line-strong);border-radius:1px}
+.fa-rank .top i{background:var(--a-accent)}
+.fa-rank .top span:first-child{color:var(--a-accent)}
+.fa-rank span:last-child{text-align:right;color:var(--a-muted)}
+.fa-sec-r .fa-rank-cap{font-family:var(--f-geistmono);font-size:12px;line-height:1.4;color:var(--a-muted)}
+@media (max-width:820px){ .fa-hero,.fa-sec{grid-template-columns:minmax(0,1fr)} }
+
+/* ---------- B  Leitstand ---------- */
+.fb{background:var(--b-canvas);color:var(--b-fg);font-family:var(--f-archivo)}
+.fb .sp-nav{border-bottom:1px solid var(--b-line)}
+.fb-brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:16px;font-stretch:108%}
+.fb-brand .mark{color:var(--b-accent)}
+.fb .sp-links{color:var(--b-muted)}
+.fb-btn,.fb-btn2{display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:6px;font-size:14.5px;font-weight:600}
+.fb-btn{background:var(--b-accent);color:#0D1215}
+.fb-btn2{border:1px solid var(--b-line-strong);color:var(--b-fg)}
+.fb-topo{overflow-x:auto;border-bottom:1px solid var(--b-line);background:
+   linear-gradient(var(--b-line),var(--b-line)) 0 0/100% 1px no-repeat,var(--b-canvas)}
+.fb-topo svg{display:block;width:100%;min-width:720px;height:auto}
+.fb-topo .e{stroke:var(--b-line-strong);stroke-width:1.25}
+.fb-topo .e.down{stroke:var(--b-signal);stroke-dasharray:2 6;opacity:.75}
+.fb-topo .n{cursor:pointer;outline:none}
+.fb-topo .n rect{fill:var(--b-panel);stroke:var(--b-line-strong);stroke-width:1}
+.fb-topo .n text{fill:var(--b-muted);font-family:var(--f-jbmono);font-size:12px;text-anchor:middle;dominant-baseline:central}
+.fb-topo .n:hover rect{stroke:var(--b-accent)}
+.fb-topo .n:focus-visible rect{stroke:var(--b-fg);stroke-width:2}
+.fb-topo .n.is-failed rect{fill:var(--b-signal);stroke:var(--b-signal)}
+.fb-topo .n.is-failed text{fill:#0D1215;font-weight:500}
+.fb-topo .n.is-impacted rect{stroke:var(--b-signal)}
+.fb-topo .n.is-impacted text{fill:var(--b-signal)}
+.fb-topo .n.is-redundant rect{stroke:var(--b-accent);stroke-dasharray:4 3}
+.fb-topo .n.is-redundant text{fill:var(--b-accent)}
+.fb-topo #ret{stroke:var(--b-fg);stroke-width:1.25;fill:none;pointer-events:none}
+.fb-result{font-family:var(--f-jbmono);font-size:13px;color:var(--b-muted);padding-block:12px;border-bottom:1px solid var(--b-line);display:flex;flex-wrap:wrap;gap:6px 20px}
+.fb-result b{color:var(--b-signal);font-weight:500}
+.fb-result em{font-style:normal;color:var(--b-accent)}
+.fb-hero{padding-block:clamp(32px,5vw,60px);display:flex;flex-direction:column;gap:26px}
+.fb-h1{font-stretch:112%;font-weight:600;font-size:clamp(30px,5.2vw,66px);line-height:1.0;letter-spacing:-.02em;max-width:17ch}
+.fb-row{display:flex;gap:24px 48px;flex-wrap:wrap;align-items:flex-end;justify-content:space-between}
+.fb-lead{font-size:17px;line-height:1.65;color:var(--b-muted);max-width:52ch}
+.fb-cta{display:flex;gap:10px;flex-wrap:wrap}
+.fb-strip{display:flex;flex-wrap:wrap;border-block:1px solid var(--b-line);font-family:var(--f-jbmono);font-size:12px;letter-spacing:.04em;color:var(--b-muted)}
+.fb-strip span{padding:12px 22px 12px 0;margin-right:22px;border-right:1px solid var(--b-line)}
+.fb-strip span:last-child{border-right:0}
+.fb-strip b{color:var(--b-fg);font-weight:500}
+.fb-sec{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(24px,4vw,56px);padding-block:clamp(32px,4.5vw,56px);align-items:center}
+.fb-slot{position:relative;aspect-ratio:16/10;max-width:100%;background:var(--b-panel);border-radius:10px;display:grid;place-items:center;border:1px solid var(--b-line)}
+.fb-slot::before,.fb-slot::after{content:"";position:absolute;width:18px;height:18px;border:1.5px solid var(--b-accent)}
+.fb-slot::before{left:12px;top:12px;border-right:0;border-bottom:0}
+.fb-slot::after{right:12px;bottom:12px;border-left:0;border-top:0}
+.fb-slot-label{text-align:center;display:flex;flex-direction:column;gap:4px;padding:0 20px}
+.fb-slot-label b{font-family:var(--f-jbmono);font-weight:500;font-size:22px;color:var(--b-accent)}
+.fb-slot-label span{font-size:14.5px}
+.fb-slot-label small{font-family:var(--f-jbmono);font-size:11.5px;color:var(--b-muted)}
+.fb-sec h4{font-stretch:110%;font-size:26px;line-height:1.15;font-weight:600;margin-bottom:14px}
+.fb-sec p{font-size:17px;line-height:1.65;color:var(--b-muted)}
+@media (max-width:820px){ .fb-sec{grid-template-columns:minmax(0,1fr)} }
+
+/* ---------- C  Prüfbericht ---------- */
+.fc{background:var(--c-canvas);color:var(--c-fg);font-family:var(--f-plexsans)}
+.fc .sp-nav{border-bottom:2px solid var(--c-fg)}
+.fc-brand{display:flex;align-items:center;gap:8px;font-family:var(--f-plexserif);font-weight:500;font-size:19px}
+.fc-brand .mark{color:var(--c-accent)}
+.fc .sp-links{color:var(--c-fg)}
+.fc-btn{display:inline-flex;align-items:center;height:40px;padding:0 16px;background:var(--c-accent);color:#fff;font-size:15px;font-weight:600}
+.fc-link{display:inline-flex;align-items:center;height:40px;font-size:15px;font-weight:600;color:var(--c-accent);text-decoration:underline;text-underline-offset:4px}
+.fc-head{padding-block:clamp(32px,5vw,60px) clamp(28px,4vw,44px);display:flex;flex-direction:column;gap:20px;border-bottom:1px solid var(--c-line)}
+.fc-meta{font-family:var(--f-plexmono);font-size:12.5px;color:var(--c-muted)}
+.fc-h1{font-family:var(--f-plexserif);font-weight:500;font-size:clamp(30px,4.5vw,56px);line-height:1.1;letter-spacing:-.015em;max-width:19ch}
+.fc-lead{font-size:19px;line-height:1.6;max-width:58ch}
+.fc-cta{display:flex;gap:10px 24px;flex-wrap:wrap;align-items:center}
+.fc-body{display:grid;grid-template-columns:minmax(0,66ch) minmax(0,240px);gap:clamp(24px,4vw,56px);padding-block:clamp(28px,4vw,48px)}
+.fc-text{display:flex;flex-direction:column;gap:16px;min-width:0}
+.fc-text h4{font-family:var(--f-plexserif);font-weight:500;font-size:26px;line-height:1.2}
+.fc-text h4 span{font-family:var(--f-plexmono);font-size:15px;color:var(--c-muted);margin-right:12px}
+.fc-text p{font-size:18px;line-height:1.68}
+.fc-ref{font-family:var(--f-plexmono);font-size:12px;color:var(--c-signal);vertical-align:super;line-height:0;margin-left:2px}
+.fc-notes{display:flex;flex-direction:column;gap:16px;font-size:13.5px;line-height:1.5;color:var(--c-muted);padding-top:46px;min-width:0}
+.fc-notes div{border-top:1px solid var(--c-line);padding-top:8px}
+.fc-notes b{font-family:var(--f-plexmono);font-weight:500;color:var(--c-signal);font-size:12px;display:block;margin-bottom:2px}
+.fc-fig{padding-bottom:clamp(32px,4.5vw,56px);display:flex;flex-direction:column;gap:10px}
+.fc-slot{aspect-ratio:21/9;max-width:100%;background:var(--c-panel);border:1px solid var(--c-fg);display:grid;place-items:center}
+.fc-slot-label{text-align:center;display:flex;flex-direction:column;gap:4px;padding:0 20px}
+.fc-slot-label b{font-family:var(--f-plexmono);font-weight:500;font-size:20px;color:var(--c-accent)}
+.fc-slot-label span{font-family:var(--f-plexserif);font-style:italic;font-size:17px}
+.fc-slot-label small{font-family:var(--f-plexmono);font-size:11.5px;color:var(--c-muted)}
+.fc-fig figcaption{font-size:14px;color:var(--c-muted)}
+.fc-fig figcaption b{font-family:var(--f-plexmono);font-weight:500;font-size:12.5px;color:var(--c-fg);margin-right:8px}
+@media (max-width:820px){ .fc-body{grid-template-columns:minmax(0,1fr)} .fc-notes{padding-top:0} .fc-slot{aspect-ratio:16/10} }
+@media (prefers-reduced-motion:no-preference){ .fb-topo .n rect,.fb-topo .e{transition:stroke .15s,fill .15s} }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="reticle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+    <circle cx="12" cy="12" r="6.25"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+  </symbol>
+</svg>
+
+<div class="wrap">
+
+  <header class="intro">
+    <h1>Drei Art Directions für die Reticora-Website</h1>
+    <p>Drei Auslegungen von „Technical Precision“. Jede Tafel zeigt denselben Seitenanfang mit denselben Texten, damit sich nur die Gestaltung unterscheidet. Es sind Entwurfstafeln für die Entscheidung, noch keine Website. Rahmen mit einer S-Nummer sind Platzhalter für Screenshots aus der App.</p>
+    <nav class="jump" aria-label="Sprungmarken">
+      <a href="#messblatt">A Messblatt</a><a href="#leitstand">B Leitstand</a><a href="#pruefbericht">C Prüfbericht</a><a href="#vergleich">Vergleich</a>
+    </nav>
+  </header>
+
+  <p class="rec"><strong>Empfehlung: A „Messblatt“.</strong> Es teilt Schrift, Farbe und Bildmarke mit der App, hält die Seiten am leichtesten und ist auf dem Webhosting am einfachsten zu pflegen. Aus C käme das Belegprinzip dazu: Aussagen mit Zahl oder Sicherheitsbezug zeigen ihre Quelle.</p>
+
+  <!-- ===================== A ===================== -->
+  <section class="dir" id="messblatt">
+    <div class="dir-head">
+      <h2><span>A</span>Messblatt</h2>
+      <p>Die Website liest sich wie das Datenblatt eines Messgeräts. Hell, sichtbares Raster, links Kennwerte, rechts Erklärung und Abbildung.</p>
+    </div>
+    <div class="frame fa" role="group" aria-label="Entwurfstafel A">
+      <div class="sp-in">
+        <div class="sp-nav">
+          <span class="fa-brand"><svg class="mark"><use href="#reticle"/></svg>Reticora</span>
+          <span class="sp-links"><span>Produkt</span><span>Geräte</span><span>Lösungen</span><span>Sicherheit</span><span>Preise</span></span>
+          <span class="sp-actions"><span class="fa-btn2">Demo anfragen</span><span class="fa-btn">30 Tage testen</span></span>
+        </div>
+        <div class="fa-hero">
+          <div class="fa-hero-text">
+            <h3 class="fa-h1">Die CMDB, die Ihr Netz selbst ausliest und jeden Wert belegt.</h3>
+            <p class="fa-lead">Ein Collector in Ihrem Netz erfasst Switches, Router, Server, USVs und Storage. Reticora gleicht die Beobachtungen ab und zeigt zu jedem Feld Quelle und Zeitpunkt. Für ISPs und Netzwerk-MSPs.</p>
+            <div class="fa-cta"><span class="fa-btn">30 Tage testen</span><span class="fa-btn2">Demo anfragen</span></div>
+            <p class="fa-note">Standard-Umfang · bis 100 CIs · Hosting in der EU</p>
+          </div>
+          <figure class="fa-plate">
+            <div class="fa-slot">
+              <span class="fa-pin" style="left:16%;top:22%" aria-hidden="true">1</span>
+              <span class="fa-pin" style="left:68%;top:22%" aria-hidden="true">2</span>
+              <span class="fa-pin" style="left:82%;top:72%" aria-hidden="true">3</span>
+              <div class="fa-slot-label"><b>S-02</b><span>CI-Detail mit Herkunft eines Feldes</span><small>Platzhalter für Screenshot · 1440 × 900 · helles Thema</small></div>
+            </div>
+            <figcaption class="fa-cap"><b>Abb. 1</b><span>1 Wert</span><span>2 Quelle und Rang</span><span>3 Zeitpunkt der Beobachtung</span></figcaption>
+          </figure>
+        </div>
+        <div class="fa-sec">
+          <div>
+            <h4>Ausgelesen, nicht abgetippt</h4>
+            <dl class="fa-kv">
+              <div><dt>Sweep</dt><dd>alle 24 h</dd></div>
+              <div><dt>Poll</dt><dd><details><summary>alle 15 min</summary><p>Beleg: Standardwert für SNMP und Redfish, einstellbar ab 5 min.</p></details></dd></div>
+              <div><dt>Puffer ohne Verbindung</dt><dd>bis 24 h</dd></div>
+              <div><dt>Verbindung</dt><dd>nur ausgehend · 443, 4222</dd></div>
+            </dl>
+          </div>
+          <div class="fa-sec-r">
+            <p>Melden zwei Quellen denselben Wert unterschiedlich, entscheidet eine feste Rangfolge. Ein von Hand gesetzter Wert steht immer oben und wird nie überschrieben.</p>
+            <div class="fa-rank" role="img" aria-label="Rangfolge der Quellen: manuell 100, Import 95, Redfish 90, SNMP 80, SSH 60, Sweep 20">
+              <div class="top"><span>manuell</span><i style="width:100%"></i><span>100</span></div>
+              <div><span>Import</span><i style="width:95%"></i><span>95</span></div>
+              <div><span>Redfish</span><i style="width:90%"></i><span>90</span></div>
+              <div><span>SNMP</span><i style="width:80%"></i><span>80</span></div>
+              <div><span>SSH</span><i style="width:60%"></i><span>60</span></div>
+              <div><span>Sweep</span><i style="width:20%"></i><span>20</span></div>
+            </div>
+            <p class="fa-rank-cap">Abb. 2 · Rangfolge der Quellen (Auszug)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <dl class="facts">
+      <div><dt>Schrift</dt><dd>Geist und Geist Mono, wie in der App</dd></div>
+      <div><dt>Farbe</dt><dd><span class="sw" style="background:#F7F9FA"></span>Kühlweiß<span class="sw" style="background:#151B20"></span>Graphit<span class="sw" style="background:#087680"></span>Petrol<span class="sw" style="background:#B45309"></span>Bernstein für „braucht Entscheidung“</dd></div>
+      <div><dt>Layout</dt><dd>12 Spalten, Haarlinien, Verhältnis 4 zu 8, Kennwerttabellen statt Kartenreihen</dd></div>
+      <div><dt>Bildsprache</dt><dd>Nummerierte Abbildungen mit Maßstrichen und Ziffern, die auf Details zeigen</dd></div>
+      <div><dt>Interaktion</dt><dd>Kennwerte zeigen ihren Beleg (oben „alle 15 min“ antippen), sonst fast nichts</dd></div>
+      <div><dt>Stärke</dt><dd>Wer in den Test wechselt, erkennt das Produkt wieder. Leichteste Seiten.</dd></div>
+      <div><dt>Risiko</dt><dd>Kann nüchtern wirken und braucht eine starke erste Abbildung.</dd></div>
+    </dl>
+  </section>
+
+  <!-- ===================== B ===================== -->
+  <section class="dir" id="leitstand">
+    <div class="dir-head">
+      <h2><span>B</span>Leitstand</h2>
+      <p>Die Website zeigt das Netz selbst. Dunkel, mit einer Topologie als Bühne. Wählen Sie einen Knoten, um seinen Ausfall zu simulieren.</p>
+    </div>
+    <div class="frame fb" role="group" aria-label="Entwurfstafel B">
+      <div class="sp-in">
+        <div class="sp-nav">
+          <span class="fb-brand"><svg class="mark"><use href="#reticle"/></svg>Reticora</span>
+          <span class="sp-links"><span>Produkt</span><span>Geräte</span><span>Lösungen</span><span>Sicherheit</span><span>Preise</span></span>
+          <span class="sp-actions"><span class="fb-btn2">Demo anfragen</span><span class="fb-btn">30 Tage testen</span></span>
+        </div>
+      </div>
+      <div class="fb-topo">
+        <svg id="topo" viewBox="0 -34 1100 420" role="group" aria-label="Schema eines Netzes mit Ausfallsimulation">
+          <g id="edges">
+            <line class="e" data-a="up" data-b="rt-01" x1="550" y1="40" x2="330" y2="116"/>
+            <line class="e" data-a="up" data-b="rt-02" x1="550" y1="40" x2="770" y2="116"/>
+            <line class="e" data-a="rt-01" data-b="core-01" x1="330" y1="116" x2="330" y2="206"/>
+            <line class="e" data-a="rt-01" data-b="core-02" x1="330" y1="116" x2="770" y2="206"/>
+            <line class="e" data-a="rt-02" data-b="core-01" x1="770" y1="116" x2="330" y2="206"/>
+            <line class="e" data-a="rt-02" data-b="core-02" x1="770" y1="116" x2="770" y2="206"/>
+            <line class="e down" data-a="core-01" data-b="acc-01" x1="330" y1="206" x2="110" y2="306"/>
+            <line class="e down" data-a="core-01" data-b="acc-02" x1="330" y1="206" x2="286" y2="306"/>
+            <line class="e down" data-a="core-01" data-b="acc-03" x1="330" y1="206" x2="462" y2="306"/>
+            <line class="e" data-a="core-02" data-b="acc-03" x1="770" y1="206" x2="462" y2="306"/>
+            <line class="e down" data-a="core-01" data-b="acc-04" x1="330" y1="206" x2="638" y2="306"/>
+            <line class="e" data-a="core-02" data-b="acc-04" x1="770" y1="206" x2="638" y2="306"/>
+            <line class="e" data-a="core-02" data-b="acc-05" x1="770" y1="206" x2="814" y2="306"/>
+            <line class="e" data-a="core-02" data-b="acc-06" x1="770" y1="206" x2="990" y2="306"/>
+          </g>
+          <g id="nodes">
+            <g class="n" data-id="up" data-label="Upstream" data-parents="" tabindex="0" role="button" aria-label="Ausfall von Upstream simulieren" transform="translate(550 40)"><rect x="-50" y="-15" width="100" height="30" rx="4"/><text>Upstream</text></g>
+            <g class="n" data-id="rt-01" data-label="rt-edge-01" data-parents="up" tabindex="0" role="button" aria-label="Ausfall von rt-edge-01 simulieren" transform="translate(330 116)"><rect x="-50" y="-15" width="100" height="30" rx="4"/><text>rt-edge-01</text></g>
+            <g class="n" data-id="rt-02" data-label="rt-edge-02" data-parents="up" tabindex="0" role="button" aria-label="Ausfall von rt-edge-02 simulieren" transform="translate(770 116)"><rect x="-50" y="-15" width="100" height="30" rx="4"/><text>rt-edge-02</text></g>
+            <g class="n is-failed" data-id="core-01" data-label="sw-core-01" data-parents="rt-01 rt-02" tabindex="0" role="button" aria-label="Ausfall von sw-core-01 simulieren" transform="translate(330 206)"><rect x="-50" y="-15" width="100" height="30" rx="4"/><text>sw-core-01</text></g>
+            <g class="n" data-id="core-02" data-label="sw-core-02" data-parents="rt-01 rt-02" tabindex="0" role="button" aria-label="Ausfall von sw-core-02 simulieren" transform="translate(770 206)"><rect x="-50" y="-15" width="100" height="30" rx="4"/><text>sw-core-02</text></g>
+            <g class="n is-impacted" data-id="acc-01" data-label="sw-acc-01" data-parents="core-01" tabindex="0" role="button" aria-label="Ausfall von sw-acc-01 simulieren" transform="translate(110 306)"><rect x="-50" y="-15" width="100" height="30" rx="4"/><text>sw-acc-01</text></g>
+            <g class="n is-impacted" data-id="acc-02" data-label="sw-acc-02" data-parents="core-01" tabindex="0" role="button" aria-label="Ausfall von sw-acc-02 simulieren" transform="translate(286 306)"><rect x="-50" y="-15" width="100" height="30" rx="4"/><text>sw-acc-02</text></g>
+            <g class="n is-redundant" data-id="acc-03" data-label="sw-acc-03" data-parents="core-01 core-02" tabindex="0" role="button" aria-label="Ausfall von sw-acc-03 simulieren" transform="translate(462 306)"><rect x="-50" y="-15" width="100" height="30" rx="4"/><text>sw-acc-03</text></g>
+            <g class="n is-redundant" data-id="acc-04" data-label="sw-acc-04" data-parents="core-01 core-02" tabindex="0" role="button" aria-label="Ausfall von sw-acc-04 simulieren" transform="translate(638 306)"><rect x="-50" y="-15" width="100" height="30" rx="4"/><text>sw-acc-04</text></g>
+            <g class="n" data-id="acc-05" data-label="sw-acc-05" data-parents="core-02" tabindex="0" role="button" aria-label="Ausfall von sw-acc-05 simulieren" transform="translate(814 306)"><rect x="-50" y="-15" width="100" height="30" rx="4"/><text>sw-acc-05</text></g>
+            <g class="n" data-id="acc-06" data-label="sw-acc-06" data-parents="core-02" tabindex="0" role="button" aria-label="Ausfall von sw-acc-06 simulieren" transform="translate(990 306)"><rect x="-50" y="-15" width="100" height="30" rx="4"/><text>sw-acc-06</text></g>
+          </g>
+          <g id="ret" transform="translate(330 206)"><circle r="58"/><path d="M0-58v-10M0 58v10M-58 0h-10M58 0h10"/></g>
+        </svg>
+      </div>
+      <div class="sp-in">
+        <p class="fb-result" id="result" aria-live="polite"><span>Ausfall <b>sw-core-01</b></span><span><b>2</b> CIs ohne Verbindung</span><span><em>2</em> redundant versorgt</span></p>
+        <div class="fb-hero">
+          <h3 class="fb-h1">Die CMDB, die Ihr Netz selbst ausliest und jeden Wert belegt.</h3>
+          <div class="fb-row">
+            <p class="fb-lead">Ein Collector in Ihrem Netz erfasst Switches, Router, Server, USVs und Storage. Reticora gleicht die Beobachtungen ab und zeigt zu jedem Feld Quelle und Zeitpunkt. Für ISPs und Netzwerk-MSPs.</p>
+            <div class="fb-cta"><span class="fb-btn">30 Tage testen</span><span class="fb-btn2">Demo anfragen</span></div>
+          </div>
+        </div>
+        <div class="fb-strip"><span>SWEEP <b>24 h</b></span><span>POLL <b>15 min</b></span><span>PUFFER <b>24 h</b></span><span>VERBINDUNG <b>nur ausgehend</b></span><span>HOSTING <b>EU</b></span></div>
+        <div class="fb-sec">
+          <div class="fb-slot"><div class="fb-slot-label"><b>S-06</b><span>Ausfallsimulation in der Topologie</span><small>Platzhalter für Screenshot · 1440 × 900 · dunkles Thema</small></div></div>
+          <div>
+            <h4>Was fällt aus, wenn dieser Switch ausfällt?</h4>
+            <p>Reticora folgt den Abhängigkeiten bis zum Dienst. Geräte mit zweiter Strom- oder Netzanbindung gelten erst als betroffen, wenn beide Wege ausfallen.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <dl class="facts">
+      <div><dt>Schrift</dt><dd>Archivo, in Überschriften leicht gedehnt; JetBrains Mono für Daten</dd></div>
+      <div><dt>Farbe</dt><dd><span class="sw" style="background:#0D1215"></span>Graphit-Schwarz<span class="sw" style="background:#4CC4CE"></span>helles Petrol<span class="sw" style="background:#F0B429"></span>Bernstein für Betroffenes. Keine Leuchteffekte.</dd></div>
+      <div><dt>Layout</dt><dd>Bänder über die volle Breite, Text in schmaler Spalte, Leiste mit festen Betriebswerten</dd></div>
+      <div><dt>Bildsprache</dt><dd>Dunkle Screenshots, Linienzeichnungen von Topologie und Rack</dd></div>
+      <div><dt>Interaktion</dt><dd>Die Ausfallsimulation als einziges Schaustück, auch per Tastatur</dd></div>
+      <div><dt>Stärke</dt><dd>Einprägsam. Zeigt den Nutzen in den ersten Sekunden.</dd></div>
+      <div><dt>Risiko</dt><dd>Dunkle SaaS-Seiten sind verbreitet. Lange Texte und Rechtsseiten lesen sich schlechter. Mehr JavaScript, mehr Pflege, weiter weg vom hellen Standard der App.</dd></div>
+    </dl>
+  </section>
+
+  <!-- ===================== C ===================== -->
+  <section class="dir" id="pruefbericht">
+    <div class="dir-head">
+      <h2><span>C</span>Prüfbericht</h2>
+      <p>Die Website ist gesetzt wie ein technischer Bericht. Neben dem Text steht eine Randspalte mit Belegen. Das Prinzip der App, Herkunft je Feld, wird zum Layout.</p>
+    </div>
+    <div class="frame fc" role="group" aria-label="Entwurfstafel C">
+      <div class="sp-in">
+        <div class="sp-nav">
+          <span class="fc-brand"><svg class="mark"><use href="#reticle"/></svg>Reticora</span>
+          <span class="sp-links"><span>Produkt</span><span>Geräte</span><span>Lösungen</span><span>Sicherheit</span><span>Preise</span></span>
+          <span class="sp-actions"><span class="fc-link">Demo anfragen</span><span class="fc-btn">30 Tage testen</span></span>
+        </div>
+        <div class="fc-head">
+          <p class="fc-meta">Reticora CMDB · Produktbeschreibung · Stand November 2026</p>
+          <h3 class="fc-h1">Die CMDB, die Ihr Netz selbst ausliest und jeden Wert belegt.</h3>
+          <p class="fc-lead">Ein Collector in Ihrem Netz erfasst Switches, Router, Server, USVs und Storage. Reticora gleicht die Beobachtungen ab und zeigt zu jedem Feld Quelle und Zeitpunkt. Für ISPs und Netzwerk-MSPs.</p>
+          <div class="fc-cta"><span class="fc-btn">30 Tage testen</span><span class="fc-link">Demo anfragen</span></div>
+        </div>
+        <div class="fc-body">
+          <div class="fc-text">
+            <h4><span>1</span>Wie der Bestand entsteht</h4>
+            <p>Ein Collector in Ihrem Netz fragt die Geräte über SNMP, SSH und Redfish ab und sendet jede Beobachtung mit ihrem Zeitstempel an Reticora.<span class="fc-ref">1</span> Er baut die Verbindung selbst auf. Von außen greift niemand in Ihr Netz.<span class="fc-ref">2</span></p>
+            <p>Melden zwei Quellen denselben Wert unterschiedlich, entscheidet eine feste Rangfolge. Ein von Hand gesetzter Wert steht immer oben und wird nie überschrieben.<span class="fc-ref">3</span></p>
+          </div>
+          <aside class="fc-notes" aria-label="Belege">
+            <div><b>Beleg 1</b>SNMP v2c und v3, SSH, Redfish, IPMI, WMI. Abfrage alle 15 Minuten.</div>
+            <div><b>Beleg 2</b>Ausgehend über HTTPS 443 und NATS mit mTLS 4222 zu festen Hostnamen.</div>
+            <div><b>Beleg 3</b>Rangfolge: manuell 100, Import 95, Redfish 90, SNMP 80, SSH 60, Sweep 20.</div>
+          </aside>
+        </div>
+        <figure class="fc-fig">
+          <div class="fc-slot"><div class="fc-slot-label"><b>S-02</b><span>CI-Detail mit Herkunft eines Feldes</span><small>Platzhalter für Screenshot · 1440 × 900 · helles Thema</small></div></div>
+          <figcaption><b>Abb. 1</b>Jedes Feld zeigt Quelle, Zeitpunkt und den Grund, warum dieser Wert gilt.</figcaption>
+        </figure>
+      </div>
+    </div>
+    <dl class="facts">
+      <div><dt>Schrift</dt><dd>IBM Plex Serif für Überschriften, Plex Sans für Text, Plex Mono für Daten</dd></div>
+      <div><dt>Farbe</dt><dd><span class="sw" style="background:#FAF8F3"></span>Papier<span class="sw" style="background:#1B1F23"></span>Tinte<span class="sw" style="background:#087680"></span>Petrol<span class="sw" style="background:#B4402A"></span>Rostrot nur für Belegmarken</dd></div>
+      <div><dt>Layout</dt><dd>Textspalte mit etwa 66 Zeichen, Randspalte für Belege, nummerierte Abschnitte</dd></div>
+      <div><dt>Bildsprache</dt><dd>Abbildungen mit Nummer und Unterschrift wie in einem Bericht</dd></div>
+      <div><dt>Interaktion</dt><dd>Fast keine. Auf dem Telefon rutschen die Belege unter den Absatz. Druckt sauber.</dd></div>
+      <div><dt>Stärke</dt><dd>Eigenständig. Sehr glaubwürdig für Prüfer und Einkauf.</dd></div>
+      <div><dt>Risiko</dt><dd>Liest sich langsamer. Die Serifenschrift steht der App ferner. Handlungsaufrufe treten zurück.</dd></div>
+    </dl>
+  </section>
+
+  <!-- ===================== Vergleich ===================== -->
+  <section class="sec" id="vergleich">
+    <h2>Vergleich</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th scope="col">Kriterium</th><th scope="col">A Messblatt</th><th scope="col">B Leitstand</th><th scope="col">C Prüfbericht</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Nähe zur App</th><td>sehr hoch</td><td>mittel</td><td>gering</td></tr>
+          <tr><th scope="row">Eigenständigkeit</th><td>mittel</td><td>mittel</td><td>hoch</td></tr>
+          <tr><th scope="row">Lesbarkeit langer Inhalte</th><td>hoch</td><td>mittel</td><td>sehr hoch</td></tr>
+          <tr><th scope="row">Wirkung in den ersten Sekunden</th><td>mittel</td><td>hoch</td><td>mittel</td></tr>
+          <tr><th scope="row">JavaScript-Bedarf</th><td>nahe null</td><td>am höchsten</td><td>nahe null</td></tr>
+          <tr><th scope="row">Pflegeaufwand</th><td>niedrig</td><td>hoch</td><td>mittel</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="next">Nächster Schritt: Sie wählen eine Richtung oder eine Mischung. Danach wird das Design-System für diese Richtung ausgearbeitet und zur Freigabe vorgelegt. Erst dann entsteht die Startseite.</p>
+</div>
+
+<script>
+(function(){
+  var svg=document.getElementById('topo'); if(!svg) return;
+  var nodes=[].slice.call(svg.querySelectorAll('.n'));
+  var edges=[].slice.call(svg.querySelectorAll('.e'));
+  var ret=document.getElementById('ret'), out=document.getElementById('result');
+  function parents(n){ return (n.getAttribute('data-parents')||'').split(' ').filter(Boolean); }
+  function run(failId){
+    var st={}, lost=0, red=0, label='';
+    nodes.forEach(function(n){
+      var id=n.getAttribute('data-id'), p=parents(n), s='ok';
+      if(id===failId){ s='failed'; label=n.getAttribute('data-label'); ret.setAttribute('transform',n.getAttribute('transform')); }
+      else if(p.length){
+        var down=p.filter(function(x){ return st[x]==='failed'||st[x]==='impacted'; }).length;
+        if(down===p.length){ s='impacted'; lost++; } else if(down>0){ s='redundant'; red++; }
+      }
+      st[id]=s;
+      n.classList.toggle('is-failed',s==='failed');
+      n.classList.toggle('is-impacted',s==='impacted');
+      n.classList.toggle('is-redundant',s==='redundant');
+    });
+    edges.forEach(function(e){
+      var a=st[e.getAttribute('data-a')];
+      e.classList.toggle('down',a==='failed'||a==='impacted');
+    });
+    out.innerHTML='<span>Ausfall <b></b></span><span><b>'+lost+'</b> CIs ohne Verbindung</span><span><em>'+red+'</em> redundant versorgt</span>';
+    out.querySelector('b').textContent=label;
+  }
+  nodes.forEach(function(n){
+    n.addEventListener('click',function(){ run(n.getAttribute('data-id')); });
+    n.addEventListener('keydown',function(ev){ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); run(n.getAttribute('data-id')); } });
+  });
+})();
+</script>

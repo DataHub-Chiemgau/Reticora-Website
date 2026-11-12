@@ -1,0 +1,20 @@
+<!-- @dsCard group="Formular" height=900 -->
+<!doctype html>
+<html lang="de">
+<head><meta charset="utf-8"><title>Kontaktformular</title></head>
+<body>
+<div class="rt-stage">
+<form class="rt-form" novalidate onsubmit="return false">
+  <div class="rt-summary" role="alert"><h3>Bitte prüfen Sie ein Feld</h3><a href="#f-mail">Geschäftliche E-Mail-Adresse: Bitte geben Sie eine gültige Adresse an.</a></div>
+  <div class="rt-field"><label for="f-name">Name</label><input class="rt-input" id="f-name" name="name" autocomplete="name" value="Maria Huber"></div>
+  <div class="rt-field"><label for="f-mail">Geschäftliche E-Mail-Adresse</label><input class="rt-input" id="f-mail" name="email" type="email" autocomplete="email" value="maria.huber@" aria-invalid="true" aria-describedby="f-mail-err"><p class="rt-error" id="f-mail-err">Bitte geben Sie eine gültige E-Mail-Adresse an, zum Beispiel name@firma.de.</p></div>
+  <div class="rt-field"><label for="f-firma">Unternehmen</label><input class="rt-input" id="f-firma" name="company" autocomplete="organization" value="Stadtnetz Beispiel GmbH"></div>
+  <div class="rt-field"><label for="f-thema">Anliegen</label><select class="rt-input" id="f-thema" name="topic"><option>Vorführung</option><option>Enterprise</option><option>Sicherheit und Datenschutz</option><option>Sonstiges</option></select></div>
+  <div class="rt-field"><label for="f-text">Nachricht <span>(freiwillig)</span></label><textarea class="rt-input" id="f-text" name="message" aria-describedby="f-text-hint"></textarea><p class="rt-hint" id="f-text-hint">Bitte keine Zugangsdaten und keine vertraulichen Netzpläne.</p></div>
+  <p class="rt-hint">Hinweis zur Verarbeitung Ihrer Angaben mit Link zur Datenschutzerklärung. Den Wortlaut liefert der Anbieter.</p>
+  <div class="rt-row"><button class="rt-btn rt-btn--primary" type="submit">Absenden</button></div>
+  <p class="rt-done" role="status"><b>Gesendet.</b> Wir antworten an die angegebene Adresse.</p>
+</form>
+</div>
+</body>
+</html>

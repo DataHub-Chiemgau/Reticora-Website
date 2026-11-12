@@ -1,0 +1,56 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Reticora Leitstand</title>
+<style>
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--canvas); color: var(--fg); font-family: var(--font-display); overflow: hidden; }
+  .cover { position: relative; height: 288px; overflow: hidden; }
+  .art { position: absolute; top: 0; left: 480px; width: 480px; height: 288px; overflow: hidden; }
+  .art svg { display: block; width: 480px; height: 288px; }
+  .acc { fill: var(--accent); }
+  .ink { fill: var(--fg); }
+  .tint { fill: var(--accent-soft); }
+  .cut { fill: var(--canvas); }
+  .fail { fill: var(--graph-failed); }
+  .blk { rx: var(--radius-lg); }
+  .words { position: absolute; left: var(--space-8); bottom: var(--space-8); max-width: 440px; }
+  .name { margin: 0; font-size: 68px; line-height: .95; font-weight: 600; letter-spacing: -.02em; font-variation-settings: "wdth" 112; color: var(--fg); }
+  .tag { margin: var(--space-3) 0 0; font-family: var(--font-text); font-size: 14px; line-height: 20px; color: var(--fg-muted); }
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="art" aria-hidden="true">
+<svg viewBox="0 0 480 288" width="480" height="288">
+<!--
+  blocks      accent 168×224 bled off the top (the petrol the product is known by, largest) · fg 232 wide bleeding off the right edge, 168 tall (the deep ink of the theme) · accent-soft 168×40 under the slab (the tint) · graph-failed once, as one dot (it only ever means "ausgefallen")
+  arrangement one tall accent slab with two satellites, left edges on a space-6 inset, gutters space-4, bottoms on one line space-6 above the edge
+  pattern     dot grid, from "Knoten sind gefüllte Punkte" and the 4 px raster: 6×8 dots of radius 4 at a space-6 pitch cut out of the slab in canvas; one dot is the failed node, 1.4 times the size
+  scales      sides in space-2 multiples; gutters space-4; pitch space-6; dot radius space-1; corners radius-lg
+-->
+<rect class="acc blk" x="24" y="-16" width="168" height="224" rx="10"/>
+<rect class="tint blk" x="24" y="224" width="168" height="40" rx="10"/>
+<rect class="ink blk" x="208" y="96" width="304" height="168" rx="10"/>
+<g class="cut">
+<circle cx="48" cy="4" r="4"/><circle cx="72" cy="4" r="4"/><circle cx="96" cy="4" r="4"/><circle cx="120" cy="4" r="4"/><circle cx="144" cy="4" r="4"/><circle cx="168" cy="4" r="4"/>
+<circle cx="48" cy="28" r="4"/><circle cx="72" cy="28" r="4"/><circle cx="96" cy="28" r="4"/><circle cx="120" cy="28" r="4"/><circle cx="144" cy="28" r="4"/><circle cx="168" cy="28" r="4"/>
+<circle cx="48" cy="52" r="4"/><circle cx="72" cy="52" r="4"/><circle cx="96" cy="52" r="4"/><circle cx="120" cy="52" r="4"/><circle cx="144" cy="52" r="4"/><circle cx="168" cy="52" r="4"/>
+<circle cx="48" cy="76" r="4"/><circle cx="72" cy="76" r="4"/><circle cx="96" cy="76" r="4"/><circle cx="120" cy="76" r="4"/><circle cx="144" cy="76" r="4"/><circle cx="168" cy="76" r="4"/>
+<circle cx="48" cy="100" r="4"/><circle cx="72" cy="100" r="4"/><circle cx="96" cy="100" r="4"/><circle cx="120" cy="100" r="4"/><circle cx="144" cy="100" r="4"/><circle cx="168" cy="100" r="4"/>
+<circle cx="48" cy="124" r="4"/><circle cx="72" cy="124" r="4"/><circle cx="96" cy="124" r="4"/><circle cx="144" cy="124" r="4"/><circle cx="168" cy="124" r="4"/><circle cx="48" cy="148" r="4"/>
+<circle cx="72" cy="148" r="4"/><circle cx="96" cy="148" r="4"/><circle cx="120" cy="148" r="4"/><circle cx="144" cy="148" r="4"/><circle cx="168" cy="148" r="4"/><circle cx="48" cy="172" r="4"/>
+<circle cx="72" cy="172" r="4"/><circle cx="96" cy="172" r="4"/><circle cx="120" cy="172" r="4"/><circle cx="144" cy="172" r="4"/><circle cx="168" cy="172" r="4"/>
+</g>
+<circle class="fail" cx="120" cy="124" r="5.6"/>
+</svg>
+</div>
+<div class="words">
+<h1 class="name">Reticora Leitstand</h1>
+<p class="tag">Die Website zeigt das Netz selbst.</p>
+</div>
+</div>
+</body>
+</html>

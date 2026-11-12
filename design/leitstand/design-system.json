@@ -1,0 +1,56 @@
+{
+  "v": 3,
+  "layout": "files",
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-12T10:14:00Z"
+  },
+  "title": "Reticora Leitstand",
+  "namespace": "Reticora",
+  "libraries": [],
+  "sections": {},
+  "groups": [
+    "Logos",
+    "Lizenzen"
+  ],
+  "assetGroups": {
+    "Logos": {
+      "name": "Logos",
+      "tile": "m",
+      "order": [
+        "reticora-mark-leitstand.svg",
+        "reticora-mark-dokument.svg"
+      ],
+      "files": {
+        "reticora-mark-leitstand.svg": {
+          "name": "reticora-mark-leitstand.svg",
+          "blob": "82549444cc16d4962f98114725d52df5",
+          "size": 329,
+          "type": "image/svg+xml"
+        },
+        "reticora-mark-dokument.svg": {
+          "name": "reticora-mark-dokument.svg",
+          "blob": "5b153a2893a41676d3be0decce61325a",
+          "size": 329,
+          "type": "image/svg+xml"
+        }
+      }
+    },
+    "Lizenzen": {
+      "name": "Lizenzen",
+      "tile": "s",
+      "order": [],
+      "files": {}
+    }
+  },
+  "blobs": {},
+  "docs": {
+    "sections": []
+  },
+  "lastChange": {
+    "by": "Claude",
+    "at": "2026-11-12T10:31:00Z",
+    "via": "Claude Code",
+    "note": "Preistabelle: Paket statt Tarif, Zusatzkosten und Enterprise-Pakete nach Angabe des Auftraggebers"
+  }
+}

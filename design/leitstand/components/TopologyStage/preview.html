@@ -1,0 +1,86 @@
+<!-- @dsCard group="Leitstand" height=720 -->
+<!doctype html>
+<html lang="de">
+<head><meta charset="utf-8"><title>Netzschema</title></head>
+<body>
+<div class="rt-stage">
+<section class="rt-topo" data-topo aria-label="Ausfallsimulation">
+  <div class="rt-topo-frame"><svg viewBox="0 0 1100 420" role="img" aria-labelledby="topo-t topo-d"><title id="topo-t">Schema einer Stromkette mit Ausfallsimulation</title><desc id="topo-d">usv-01 versorgt pdu-a und pdu-b. srv-01 und srv-02 hängen an beiden PDUs, sw-access-01 nur an pdu-a, nas-01 nur an pdu-b. vm-app-01 läuft auf srv-01, vm-db-01 auf srv-02.</desc><g><g class="e" data-from="pdu-a" data-to="usv-01" data-rel="powered_by"><line x1="537.3" y1="61.8" x2="342.7" y2="150.2"/><text transform="translate(440.0 106.0) rotate(335.6)" dy="-5">powered_by</text></g><g class="e" data-from="pdu-b" data-to="usv-01" data-rel="powered_by"><line x1="562.7" y1="61.8" x2="757.3" y2="150.2"/><text transform="translate(660.0 106.0) rotate(24.4)" dy="-5">powered_by</text></g><g class="e is-dim" data-from="sw-access-01" data-to="pdu-a" data-rel="powered_by"><line x1="318.0" y1="163.2" x2="142.0" y2="268.8"/><text transform="translate(230.0 216.0) rotate(329.0)" dy="-5">powered_by</text></g><g class="e" data-from="srv-01" data-to="pdu-a" data-rel="powered_by"><line x1="337.8" y1="167.6" x2="402.2" y2="264.4"/><text transform="translate(370.0 216.0) rotate(56.3)" dy="-5">powered_by</text></g><g class="e" data-from="srv-02" data-to="pdu-a" data-rel="powered_by"><line x1="343.3" y1="160.4" x2="676.7" y2="271.6"/><text transform="translate(423.6 187.2) rotate(18.4)" dy="-5">powered_by</text></g><g class="e" data-from="srv-01" data-to="pdu-b" data-rel="powered_by"><line x1="756.7" y1="160.4" x2="423.3" y2="271.6"/><text transform="translate(676.4 187.2) rotate(341.6)" dy="-5">powered_by</text></g><g class="e" data-from="srv-02" data-to="pdu-b" data-rel="powered_by"><line x1="762.2" y1="167.6" x2="697.8" y2="264.4"/><text transform="translate(730.0 216.0) rotate(303.7)" dy="-5">powered_by</text></g><g class="e" data-from="nas-01" data-to="pdu-b" data-rel="powered_by"><line x1="782.0" y1="163.2" x2="958.0" y2="268.8"/><text transform="translate(870.0 216.0) rotate(31.0)" dy="-5">powered_by</text></g><g class="e" data-from="vm-app-01" data-to="srv-01" data-rel="hosted_on"><line x1="410.0" y1="290.0" x2="410.0" y2="352.0"/><text transform="translate(410.0 321.0) rotate(90.0)" dy="-5">hosted_on</text></g><g class="e" data-from="vm-db-01" data-to="srv-02" data-rel="hosted_on"><line x1="690.0" y1="290.0" x2="690.0" y2="352.0"/><text transform="translate(690.0 321.0) rotate(90.0)" dy="-5">hosted_on</text></g></g><g><g class="n" data-id="usv-01" transform="translate(550 56)"><circle class="hit" r="22"/><g class="focus"><circle r="17"/><path d="M0-17v-7M0 17v7M-17 0h-7M17 0h7"/></g><circle class="dot" r="8"/><text y="-18">usv-01</text></g><g class="n is-failed" data-id="pdu-a" transform="translate(330 156)"><circle class="hit" r="22"/><g class="focus"><circle r="17"/><path d="M0-17v-7M0 17v7M-17 0h-7M17 0h7"/></g><circle class="dot" r="8"/><text x="-18" y="4" style="text-anchor:end">pdu-a</text></g><g class="n" data-id="pdu-b" transform="translate(770 156)"><circle class="hit" r="22"/><g class="focus"><circle r="17"/><path d="M0-17v-7M0 17v7M-17 0h-7M17 0h7"/></g><circle class="dot" r="8"/><text x="18" y="4" style="text-anchor:start">pdu-b</text></g><g class="n is-affected" data-id="sw-access-01" transform="translate(130 276)"><circle class="hit" r="22"/><g class="focus"><circle r="17"/><path d="M0-17v-7M0 17v7M-17 0h-7M17 0h7"/></g><circle class="dot" r="8"/><text y="28">sw-access-01</text></g><g class="n" data-id="srv-01" transform="translate(410 276)"><circle class="hit" r="22"/><g class="focus"><circle r="17"/><path d="M0-17v-7M0 17v7M-17 0h-7M17 0h7"/></g><circle class="dot" r="8"/><text x="16" y="20" style="text-anchor:start">srv-01</text></g><g class="n" data-id="srv-02" transform="translate(690 276)"><circle class="hit" r="22"/><g class="focus"><circle r="17"/><path d="M0-17v-7M0 17v7M-17 0h-7M17 0h7"/></g><circle class="dot" r="8"/><text x="16" y="20" style="text-anchor:start">srv-02</text></g><g class="n" data-id="nas-01" transform="translate(970 276)"><circle class="hit" r="22"/><g class="focus"><circle r="17"/><path d="M0-17v-7M0 17v7M-17 0h-7M17 0h7"/></g><circle class="dot" r="8"/><text y="28">nas-01</text></g><g class="n" data-id="vm-app-01" transform="translate(410 366)"><circle class="hit" r="22"/><g class="focus"><circle r="17"/><path d="M0-17v-7M0 17v7M-17 0h-7M17 0h7"/></g><circle class="dot" r="8"/><text y="28">vm-app-01</text></g><g class="n" data-id="vm-db-01" transform="translate(690 366)"><circle class="hit" r="22"/><g class="focus"><circle r="17"/><path d="M0-17v-7M0 17v7M-17 0h-7M17 0h7"/></g><circle class="dot" r="8"/><text y="28">vm-db-01</text></g></g></svg></div>
+  <div class="rt-topo-controls" role="group" aria-label="Ausfall simulieren"><span>Ausfall simulieren</span><button type="button" class="rt-chip" aria-pressed="false" data-ci="usv-01">usv-01</button><button type="button" class="rt-chip" aria-pressed="true" data-ci="pdu-a">pdu-a</button><button type="button" class="rt-chip" aria-pressed="false" data-ci="pdu-b">pdu-b</button><button type="button" class="rt-chip is-affected" aria-pressed="false" data-ci="sw-access-01">sw-access-01</button><button type="button" class="rt-chip" aria-pressed="false" data-ci="srv-01">srv-01</button><button type="button" class="rt-chip" aria-pressed="false" data-ci="srv-02">srv-02</button><button type="button" class="rt-chip" aria-pressed="false" data-ci="nas-01">nas-01</button><button type="button" class="rt-chip" aria-pressed="false" data-ci="vm-app-01">vm-app-01</button><button type="button" class="rt-chip" aria-pressed="false" data-ci="vm-db-01">vm-db-01</button></div>
+  <p class="rt-topo-result" role="status" aria-live="polite">Fällt „pdu-a“ aus, ist 1 weiteres CI betroffen (grau dargestellt). <span>Durch Redundanz geschützt: srv-01, srv-02.</span></p>
+  <p class="rt-topo-legend"><span><i></i>CI, Status „Aktiv“</span><span><i class="is-failed"></i>ausgefallen</span><span><i class="is-affected"></i>betroffen (grau dargestellt)</span><span>Schemazeichnung, kein Screenshot</span></p>
+</section>
+</div>
+<script>
+(function () {
+  var root = document.querySelector('[data-topo]'); if (!root) return;
+  var REDUNDANT = { powered_by: true, member_of_cluster: true };
+  var nodes = [].slice.call(root.querySelectorAll('.n'));
+  var edges = [].slice.call(root.querySelectorAll('.e'));
+  var chips = [].slice.call(root.querySelectorAll('[data-ci]'));
+  var out = root.querySelector('.rt-topo-result');
+  var failed = {};
+  chips.forEach(function (c) { if (c.getAttribute('aria-pressed') === 'true') failed[c.getAttribute('data-ci')] = true; });
+  function providers(id) {
+    var by = {};
+    edges.forEach(function (e) {
+      if (e.getAttribute('data-from') !== id) return;
+      var rel = e.getAttribute('data-rel'); (by[rel] = by[rel] || []).push(e.getAttribute('data-to'));
+    });
+    return by;
+  }
+  function run() {
+    var down = {}, changed = true, id;
+    for (id in failed) down[id] = true;
+    while (changed) {
+      changed = false;
+      nodes.forEach(function (n) {
+        var nid = n.getAttribute('data-id'); if (down[nid]) return;
+        var by = providers(nid), rel, list, d;
+        for (rel in by) {
+          list = by[rel]; d = list.filter(function (p) { return down[p]; }).length;
+          if (REDUNDANT[rel] ? d === list.length : d > 0) { down[nid] = true; changed = true; return; }
+        }
+      });
+    }
+    var names = [], affected = [], guarded = [];
+    nodes.forEach(function (n) {
+      var nid = n.getAttribute('data-id'), isFailed = !!failed[nid], isAffected = !!down[nid] && !isFailed;
+      if (isFailed) names.push(nid);
+      if (isAffected) affected.push(nid);
+      if (!down[nid]) {
+        var by = providers(nid), rel;
+        for (rel in by) if (REDUNDANT[rel] && by[rel].some(function (p) { return down[p]; })) { guarded.push(nid); break; }
+      }
+      n.classList.toggle('is-failed', isFailed); n.classList.toggle('is-affected', isAffected);
+    });
+    edges.forEach(function (e) {
+      var a = e.getAttribute('data-from'), b = e.getAttribute('data-to');
+      e.classList.toggle('is-dim', (!!down[a] && !failed[a]) || (!!down[b] && !failed[b]));
+    });
+    chips.forEach(function (c) {
+      var cid = c.getAttribute('data-ci');
+      c.setAttribute('aria-pressed', failed[cid] ? 'true' : 'false');
+      c.classList.toggle('is-affected', !!down[cid] && !failed[cid]);
+    });
+    var n = affected.length, text;
+    var tail = n === 0 ? 'ist kein weiteres CI betroffen.' : n === 1 ? 'ist 1 weiteres CI betroffen (grau dargestellt).' : 'sind ' + n + ' weitere CIs betroffen (grau dargestellt).';
+    if (!names.length) text = 'Wählen Sie ein CI, um seinen Ausfall zu simulieren.';
+    else if (names.length === 1) text = 'Fällt „' + names[0] + '“ aus, ' + tail;
+    else text = 'Fallen ' + names.length + ' CIs (' + names.join(', ') + ') gemeinsam aus, ' + tail;
+    out.textContent = text;
+    if (guarded.length) { var s = document.createElement('span'); s.textContent = ' Durch Redundanz geschützt: ' + guarded.join(', ') + '.'; out.appendChild(s); }
+  }
+  function toggle(id) { if (failed[id]) delete failed[id]; else failed[id] = true; run(); }
+  chips.forEach(function (c) {
+    var cid = c.getAttribute('data-ci'), node = root.querySelector('.n[data-id="' + cid + '"]');
+    c.addEventListener('click', function () { toggle(cid); });
+    c.addEventListener('focus', function () { node.classList.add('is-focus'); });
+    c.addEventListener('blur', function () { node.classList.remove('is-focus'); });
+  });
+  nodes.forEach(function (n) { n.addEventListener('click', function () { toggle(n.getAttribute('data-id')); }); });
+  run();
+})();
+</script>
+</body>
+</html>
