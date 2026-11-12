@@ -1,7 +1,7 @@
 ---
 interface Props {
   label: string;
-  columns: { key: string; head: string; numeric?: boolean }[];
+  columns: { key: string; head: string; numeric?: boolean; sub?: string }[];
   rows: Record<string, string>[];
   rowHeader: string;
 }
@@ -17,7 +17,7 @@ const { label, columns, rows, rowHeader } = Astro.props;
       {rows.map((r) => (
         <tr>
           {columns.map((c) => c.key === rowHeader
-            ? <th scope="row">{r[c.key]}</th>
+            ? <th scope="row">{c.sub && r[c.sub] ? <span class="rt-tarif">{r[c.key]}<small>{r[c.sub]}</small></span> : r[c.key]}</th>
             : <td class={c.numeric ? 'num' : undefined}>{r[c.key]}</td>)}
         </tr>
       ))}

@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { chunkImports } from '../../scripts/lib/budget.mjs';
 
 const dist = join(process.cwd(), 'dist');
 const hasDist = existsSync(dist);
@@ -42,9 +43,15 @@ describe.skipIf(!hasDist)('dist', () => {
     expect(archivo).toMatch(/font-stretch:\s*100%\s*112%/);
   });
 
+  test('Zahl und Einheit stehen nie mit einfachem Leerzeichen (geschütztes Leerzeichen U+00A0)', () => {
+    const html = readFileSync(join(dist, 'index.html'), 'utf8');
+    const text = html.replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, '\u00a0');
+    const bad = [...text.matchAll(/\d (?:€|%|(?:h|min|KB|Tage|Tagen|CIs|Stunden|Minuten)(?![\wäöüß]))/g)].map((m) => text.slice(Math.max(0, m.index! - 20), m.index! + 12));
+    expect(bad).toEqual([]);
+  });
+
   test('Insel impact: alle vom Schema geladenen Skripte zusammen höchstens 8 KB', () => {
-    const dir = join(dist, 'dev', 'bausteine');
-    const html = readFileSync(join(dir, 'index.html'), 'utf8');
+    const html = readFileSync(join(dist, 'index.html'), 'utf8');
     const after = html.slice(html.indexOf('data-topo'));
     const entry = /<script[^>]*type="module"[^>]*src="([^"]+)"/.exec(after)?.[1];
     expect(entry).toBeDefined();
@@ -53,9 +60,8 @@ describe.skipIf(!hasDist)('dist', () => {
       const f = join(dist, url.replace(/^\//, ''));
       if (seen.has(f)) return;
       seen.add(f);
-      const code = readFileSync(f, 'utf8');
-      for (const m of code.matchAll(/(?:from|import)\s*["'](\.{1,2}\/[^"']+\.js)["']/g))
-        load(new URL(m[1]!, 'http://x' + (url.startsWith('/') ? url : '/' + url)).pathname);
+      for (const imp of chunkImports(readFileSync(f, 'utf8')))
+        load(new URL(imp, 'http://x' + (url.startsWith('/') ? url : '/' + url)).pathname);
     };
     load(entry!);
     const sum = [...seen].reduce((n, f) => n + statSync(f).size, 0);

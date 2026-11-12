@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Stand | 2026-11-12 |
-| Status | **Entwurf – inhaltliche Freigabe durch den Auftraggeber ausstehend** |
+| Status | **Freigegeben vom Auftraggeber am 2026-11-12** |
 | Regeln | `content-plan.md` §1, `brand-strategy.md` §4; Wörter der App nach `content-plan.md` §6.3 |
 
 Jede Aussage mit Zahl oder Sicherheitsbezug nennt in eckigen Klammern ihren

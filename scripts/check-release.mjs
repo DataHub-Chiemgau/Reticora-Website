@@ -6,13 +6,15 @@ import { CLAIMS } from '../src/data/claims.ts';
 import { SCREENSHOTS } from '../src/data/screenshots.ts';
 import { SITE } from '../src/data/site.ts';
 import { ROUTES } from '../src/i18n/routes.ts';
-import { checkClaims, checkDevPages, checkDistHtml, checkNotEmpty, checkRoutes, checkScreenshotFiles, checkScreenshots, checkSite } from './lib/release-checks.mjs';
+import { checkClaims, checkDevPages, checkDistHtml, checkInternalLinks, checkNotEmpty, checkRoutes, checkRoutesBuilt, checkScreenshotFiles, checkScreenshots, checkSite } from './lib/release-checks.mjs';
 
 const dist = join(process.cwd(), 'dist');
 const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => {
   const p = join(d, e.name);
   return e.isDirectory() ? walk(p) : p.endsWith('.html') ? [p] : [];
 });
+const distExists = (p) => existsSync(join(dist, p));
+const hasDist = distExists('index.html');
 const pages = existsSync(dist) ? walk(dist).map((p) => ({ path: relative(process.cwd(), p), html: readFileSync(p, 'utf8') })) : [];
 const dev = existsSync(join(dist, 'dev')) ? ['dev'] : [];
 
@@ -22,7 +24,10 @@ const groups = [
   ['Fehlende Bilder', checkScreenshots(SCREENSHOTS)],
   ['Bilddateien fehlen', checkScreenshotFiles(SCREENSHOTS, (p) => existsSync(join(process.cwd(), p)))],
   ['Platzhalter in gebauten Seiten', checkDistHtml(pages)],
+  ['dist/ fehlt', hasDist ? [] : ['dist/index.html fehlt: zuerst bauen']],
   ['Geplante Seiten', checkRoutes(ROUTES)],
+  ['Gebaute Routen fehlen in dist', hasDist ? checkRoutesBuilt(ROUTES, distExists) : []],
+  ['Tote interne Links', checkInternalLinks(pages, distExists)],
   ['Fehlende Anbieterangaben', checkSite(SITE)],
   ['Entwicklungsseiten im Build', checkDevPages(dev)],
 ];

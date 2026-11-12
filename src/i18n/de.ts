@@ -10,7 +10,7 @@ export const UI = {
       { key: 'pricing', label: 'Preise', href: '/preise/', match: '/preise/' },
     ],
   },
-  actions: { trial: '30 Tage testen', demo: 'Live-Demo', login: 'Anmelden', contact: 'Kontakt' },
+  actions: { trial: '30 Tage testen', demo: 'Live-Demo', login: 'Anmelden', contact: 'Kontakt' },
   lang: { label: 'Sprache', de: 'DE', en: 'EN', deHref: '/', enHref: '/en/' },
   footer: {
     columns: [
@@ -58,6 +58,7 @@ export const UI = {
   b2bShort: 'Angebot nur für Unternehmen',
   home: 'Startseite',
   copyFailed: 'Kopieren nicht möglich',
+  scrollHint: 'Schema seitlich verschiebbar.',
   skip: 'Zum Inhalt',
   menu: 'Menü',
   beleg: 'Beleg',

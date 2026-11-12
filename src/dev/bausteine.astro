@@ -40,13 +40,13 @@ const steps = [
   <Section id="aktionen" title="Knöpfe, Hinweise, Kennzeichen" lead="Eine Handlung je Knopf, ein Band je Abschnitt.">
     <div class="dev-stack">
       <div class="dev-row">
-        <Button variant="primary" href="#aktionen">30 Tage testen</Button>
+        <Button variant="primary" href="#aktionen">30 Tage testen</Button>
         <Button variant="secondary" href="#aktionen">Live-Demo</Button>
         <Button variant="quiet" href="#aktionen">Anmelden</Button>
         <Button variant="primary" type="button">Absenden</Button>
       </div>
       <div class="dev-row">
-        <Button variant="primary" size="lg" href="#aktionen">30 Tage testen</Button>
+        <Button variant="primary" size="lg" href="#aktionen">30 Tage testen</Button>
         <Button variant="secondary" size="lg" href="#aktionen">Live-Demo</Button>
       </div>
       <Notice lead="Nur für Unternehmen.">Reticora richtet sich ausschließlich an Unternehmen. Alle Preise zzgl. MwSt.</Notice>
@@ -63,16 +63,16 @@ const steps = [
   <Section id="daten" title="Betriebsleiste, Kennwerte, Beleg, Tabelle">
     <div class="dev-stack">
       <StatusStrip items={[
-        { label: 'Sweep', value: 'alle 24 h' },
-        { label: 'Poll', value: 'alle 15 min' },
+        { label: 'Sweep', value: 'alle 24 h' },
+        { label: 'Poll', value: 'alle 15 min' },
         { label: 'Verbindung', value: 'nur ausgehend · 443, 4222' },
         { label: 'Hosting', value: 'EU' },
       ]} />
       <div class="dev-narrow">
         <SpecList lang="de" items={[
-          { term: 'Sweep', value: 'alle 24 h' },
+          { term: 'Sweep', value: 'alle 24 h' },
           { term: 'Verbindung', value: 'nur ausgehend', claim: 'C-02' },
-          { term: 'Puffer ohne Verbindung', value: 'bis 24 h' },
+          { term: 'Puffer ohne Verbindung', value: 'bis 24 h' },
         ]} />
       </div>
       <div class="rt-para dev-measure" role="paragraph" id="beleg-absatz">Der Collector baut ausschließlich ausgehende Verbindungen auf. Die Datenhaltung liegt in der EU. <Beleg claim="C-07" lang="de" /></div>

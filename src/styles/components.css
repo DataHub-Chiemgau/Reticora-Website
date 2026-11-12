@@ -34,9 +34,9 @@
 .rt-menu-body .rt-lang { padding-top: var(--space-3); }
 
 /* Betriebsleiste */
-.rt-strip { display: flex; flex-wrap: wrap; border-block: var(--hairline) solid var(--line); font-family: var(--font-mono); }
-.rt-strip > div { display: flex; align-items: baseline; gap: var(--space-2); padding: var(--space-3) var(--space-6) var(--space-3) 0; margin-right: var(--space-6); border-right: var(--hairline) solid var(--line); }
-.rt-strip > div:last-child { border-right: 0; margin-right: 0; }
+.rt-strip { display: flex; flex-wrap: wrap; overflow: hidden; border-block: var(--hairline) solid var(--line); font-family: var(--font-mono); }
+/* Trenner als linke Kante; am Zeilenanfang rutscht sie per negativem Rand aus dem Bild und wird abgeschnitten. */
+.rt-strip > div { display: flex; align-items: baseline; gap: var(--space-2); padding: var(--space-3) calc(2 * var(--space-4) + var(--hairline)) var(--space-3) var(--space-4); margin-left: calc(-1 * (var(--space-4) + var(--hairline))); border-left: var(--hairline) solid var(--line); }
 .rt-strip dt { font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--fg-muted); }
 .rt-strip dd { font-size: 14px; line-height: 22px; font-weight: 500; color: var(--fg); }
 
@@ -124,8 +124,10 @@
 /* Preise */
 .rt-price .rt-tarif { font-size: 19px; line-height: 26px; font-weight: 600; font-variation-settings: "wdth" 106; }
 .rt-price .rt-tarif small { display: block; font-size: 13px; line-height: 20px; font-weight: 400; color: var(--fg-muted); font-variation-settings: "wdth" 100; }
-.rt-price .num { font-size: 17px; line-height: 26px; color: var(--fg); }
-.rt-price .num small { display: block; font-family: var(--font-text); font-size: 13px; line-height: 20px; color: var(--fg-muted); }
+.rt-price td.num { font-size: 17px; line-height: 26px; color: var(--fg); }
+.rt-price td.num small { display: block; font-family: var(--font-text); font-size: 13px; line-height: 20px; color: var(--fg-muted); }
+.rt-price .rt-tarif { display: block; }
+@media (max-width: 47.99rem) { .rt-price .rt-table th, .rt-price .rt-table td { padding-inline: var(--space-2); } .rt-price td.num { font-size: 15px; } }
 .rt-price .rt-beta { color: var(--accent-strong); }
 
 /* Ablauf in Schritten */
@@ -225,8 +227,10 @@ textarea.rt-input { min-height: 120px; resize: vertical; }
 @media (min-width: 64rem) { .rt-section { padding-block: var(--space-30); } }
 .rt-section + .rt-section { border-top: var(--hairline) solid var(--line); }
 .rt-steps .rt-para { font-size: 15px; line-height: 24px; color: var(--fg-muted); }
-@media (max-width: 47.99rem) { .rt-strip > div { width: 100%; margin-right: 0; padding-right: 0; border-right: 0; } }
+@media (max-width: 47.99rem) { .rt-strip > div { width: 100%; margin-left: 0; padding-inline: 0; border-left: 0; } }
 .rt-strip dd { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); }
+/* Ab Tablet steht der Beleg unter dem Wert, damit die fünf Einträge bei 1280 px in eine Zeile passen. */
+@media (min-width: 48rem) { .rt-strip dd { flex-direction: column; align-items: flex-start; } }
 .rt-schema-frame { overflow-x: auto; background: var(--panel); border: var(--hairline) solid var(--line); border-radius: var(--radius-lg); }
 .rt-schema-frame svg { display: block; width: 100%; min-width: 520px; height: auto; }
 .rt-schema-frame .s-zone { fill: none; stroke: var(--line-strong); stroke-width: 1.25; }
@@ -272,3 +276,8 @@ textarea.rt-input { min-height: 120px; resize: vertical; }
 .home-caption { font-size: 13px; line-height: 20px; color: var(--fg-subtle); }
 .home-link { align-self: flex-start; }
 }
+
+/* Hinweis „Schema seitlich verschiebbar“: nur, solange der Rahmen tatsächlich scrollt (Schemabreite 760 bzw. 520 px gegen die Rahmenbreite; Schwellen in px gemessen, Medienabfragen kennen keine Tokens; zwischen 1024 und 1154 px steht Abb. 1 in der schmalen Spalte). */
+.rt-scroll-hint { display: none; margin-top: var(--space-2); font-size: 13px; line-height: 20px; color: var(--fg-subtle); }
+@media (max-width: 809px) { .rt-topo > .rt-scroll-hint { display: block; margin-top: 0; } }
+@media (max-width: 569px), (min-width: 1024px) and (max-width: 1154px) { .rt-schema > .rt-scroll-hint { display: block; } }

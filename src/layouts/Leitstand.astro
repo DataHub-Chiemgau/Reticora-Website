@@ -25,6 +25,7 @@ const hideFromIndex = noindex || process.env.RETICORA_RELEASE !== '1';
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     {hideFromIndex && <meta name="robots" content="noindex" />}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preload" href={archivoUrl} as="font" type="font/woff2" crossorigin />
   </head>
   <body>

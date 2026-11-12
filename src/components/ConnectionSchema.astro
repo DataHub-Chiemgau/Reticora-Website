@@ -1,6 +1,7 @@
 ---
 import type { Lang } from '../data/types';
 import { SCHEMA } from '../content/schema';
+import { UI } from '../i18n/de';
 
 interface Props { lang: Lang; id?: string }
 const { lang, id = `verbindung-${lang}` } = Astro.props;
@@ -9,6 +10,7 @@ const T = SCHEMA[lang];
 const devices = [76, 116, 156, 196];
 ---
 
+<div class="rt-schema">
 <section class="rt-schema-frame" tabindex="0" aria-label={T.title}>
   <svg viewBox="0 0 560 250" role="img" aria-labelledby={`${id}-t ${id}-d`}>
     <title id={`${id}-t`}>{T.title}</title>
@@ -37,3 +39,5 @@ const devices = [76, 116, 156, 196];
     <text class="s-wire-label" x="298" y="182">NATS mTLS 4222</text>
   </svg>
 </section>
+<p class="rt-scroll-hint">{lang === 'de' ? UI.scrollHint : 'Schematic scrolls sideways.'}</p>
+</div>

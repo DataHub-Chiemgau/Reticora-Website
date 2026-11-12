@@ -13,7 +13,7 @@ const H2 = [
   'Sicherheit, die man nachprüfen kann',
   'Erkennt, was in Ihren Racks steht',
   'Pakete und Preise',
-  'Testen Sie Reticora 30 Tage mit Ihrem eigenen Netz.',
+  'Testen Sie Reticora 30\u00a0Tage mit Ihrem eigenen Netz.',
 ];
 
 test('Titel und Beschreibung wie im Textdokument', async ({ page }) => {
@@ -94,9 +94,9 @@ test('Betriebsleiste nennt Sweep, Poll, Puffer, Verbindung, Hosting mit den Wert
     els.map((e) => [e.querySelector('dt')!.textContent!.trim(), e.querySelector('dd')!.firstChild!.textContent!.trim()]),
   );
   expect(rows).toEqual([
-    ['Sweep', 'alle 24 h'],
-    ['Poll', 'alle 15 min'],
-    ['Puffer', 'bis 24 h'],
+    ['Sweep', 'alle 24\u00a0h'],
+    ['Poll', 'alle 15\u00a0min'],
+    ['Puffer', 'bis 24\u00a0h'],
     ['Verbindung', 'nur ausgehend · 443, 4222'],
     ['Hosting', 'EU'],
   ]);
@@ -106,14 +106,30 @@ test('Betriebsleiste nennt Sweep, Poll, Puffer, Verbindung, Hosting mit den Wert
 test('Pakettabelle zeigt fünf Pakete mit 49 €, 119 €, 299 €, ab 999 €, ab 1.999 € und den CI-Limits', async ({ page }) => {
   await page.goto('/');
   const table = page.locator('#pakete table');
+  await expect(table.locator('thead th')).toHaveText(['Paket', 'CIs', 'im Monat']);
   const rows = await table.locator('tbody tr').evaluateAll((trs) =>
     trs.map((tr) => [...tr.children].map((c) => c.textContent!.trim())),
   );
-  expect(rows.map((r) => r[0])).toEqual(['Essentials', 'Standard', 'Pro', 'Enterprise Shared', 'Enterprise Local']);
-  expect(rows.map((r) => r[2])).toEqual(['500', '2.500', '10.000', '50.000', '50.000']);
-  expect(rows.map((r) => r[3])).toEqual(['49 €', '119 €', '299 €', 'ab 999 €', 'ab 1.999 €']);
-  expect(rows[1][1]).toBe('dazu Lager, Inventur, Etiketten, Unterschrift, SLAs, DATEV-Export');
+  const nbsp = '\u00a0';
+  expect(rows.map((r) => r.length)).toEqual([3, 3, 3, 3, 3]);
+  expect(rows.map((r) => r[1])).toEqual(['500', '2.500', '10.000', '50.000', '50.000']);
+  expect(rows.map((r) => r[2])).toEqual([`49${nbsp}€`, `119${nbsp}€`, `299${nbsp}€`, `ab 999${nbsp}€`, `ab 1.999${nbsp}€`]);
+  const names = await table.locator('tbody th .rt-tarif').evaluateAll((els) => els.map((e) => e.firstChild!.textContent));
+  expect(names).toEqual(['Essentials', 'Standard', 'Pro', 'Enterprise Shared', 'Enterprise Local']);
+  await expect(table.locator('tbody th small').nth(1)).toHaveText('dazu Lager, Inventur, Etiketten, Unterschrift, SLAs, DATEV-Export');
   await expect(page.locator('#pakete .rt-notice')).toHaveText('Beta-Rabatt: 20 % in den ersten sechs Monaten, 10 % in den folgenden sechs Monaten, danach der volle Preis.');
+});
+
+test('Pakettabelle bei 360 px: Paket, CIs und Preis liegen ohne seitliches Scrollen im Bild', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto('/');
+  const wrap = page.locator('#pakete .rt-table-wrap');
+  await wrap.scrollIntoViewIfNeeded();
+  const m = await wrap.evaluate((e) => ({ s: e.scrollWidth, c: e.clientWidth }));
+  expect(m.s).toBeLessThanOrEqual(m.c);
+  const rights = await page.locator('#pakete tbody td.num').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().right));
+  expect(rights).toHaveLength(10);
+  for (const r of rights) expect(r).toBeLessThanOrEqual(360);
 });
 
 test('Belege: Rangfolge der Quellen und Absätze mit Beleg sind keine p-Elemente', async ({ page }) => {
@@ -121,6 +137,7 @@ test('Belege: Rangfolge der Quellen und Absätze mit Beleg sind keine p-Elemente
   await expect(page.locator('main p:has(details)')).toHaveCount(0);
   const rang = page.locator('main details', { hasText: 'manuell 100 · Import 95 · Workflow 92 · Redfish 90 · Agent 85 · SNMP 80 · API 75 · WMI 70 · SSH 60 · Sweep 20.' });
   await expect(rang).toHaveCount(1);
+  await expect(rang).toHaveAttribute('data-claim', 'C-03');
   await expect(page.locator('main .rt-beleg')).not.toHaveCount(0);
   await expect(page.locator('main code')).toContainText('curl "https://www.reticora.cloud/api/v1/cis?q=core&limit=50"');
 });
@@ -217,4 +234,53 @@ test('Belege hängen an der richtigen Aussage: Puffer an C-27, Limit an C-38', a
   await expect(limit.locator('.rt-beleg')).toHaveAttribute('data-claim', 'C-38');
   await limit.locator('summary').click();
   await expect(limit.locator('.rt-beleg-body')).toContainText('Die API erlaubt 600 Anfragen je Minute und Schlüssel.');
+});
+
+test('Startseite lädt ohne fehlgeschlagene oder 404-Antworten (Favicon eingeschlossen)', async ({ page }) => {
+  const bad: string[] = [];
+  page.on('response', (r) => { if (r.status() >= 400) bad.push(`${r.status()} ${r.url()}`); });
+  page.on('requestfailed', (r) => bad.push(`failed ${r.url()}`));
+  await page.goto('/', { waitUntil: 'networkidle' });
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/favicon.svg');
+  const icon = await page.request.get('/favicon.svg');
+  expect(icon.status()).toBe(200);
+  expect(icon.headers()['content-type']).toContain('image/svg+xml');
+  expect(bad).toEqual([]);
+});
+
+test('Betriebsleiste bei 1280 px: alle fünf Einträge in einer Zeile', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/');
+  const tops = await page.locator('main dl.rt-strip > div').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+  expect(tops).toHaveLength(5);
+  expect(new Set(tops).size).toBe(1);
+});
+
+test('Betriebsleiste: der Trenner am Zeilenanfang liegt außerhalb des Bildes, bei keiner Breite bleibt einer stehen', async ({ page }) => {
+  for (const w of [1024, 900, 768, 600, 360]) {
+    await page.setViewportSize({ width: w, height: 900 });
+    await page.goto('/');
+    const { left, items } = await page.locator('main dl.rt-strip').evaluate((strip) => ({
+      left: strip.getBoundingClientRect().left,
+      items: [...strip.children].map((e) => ({ top: Math.round(e.getBoundingClientRect().top), x: e.getBoundingClientRect().left, sep: getComputedStyle(e).borderLeftWidth })),
+    }));
+    items.forEach((it, i) => {
+      const first = i === 0 || items[i - 1].top !== it.top;
+      if (first && it.sep !== '0px') expect(it.x, `Breite ${w}, Eintrag ${i}`).toBeLessThan(left);
+      if (!first) expect(it.x, `Breite ${w}, Eintrag ${i}`).toBeGreaterThanOrEqual(left);
+    });
+  }
+});
+
+test('Hinweis „Schema seitlich verschiebbar.“ steht genau dann da, wenn der Schemarahmen scrollt', async ({ page }) => {
+  for (const w of [320, 360, 569, 570, 768, 809, 810, 1023, 1024, 1154, 1155, 1280]) {
+    await page.setViewportSize({ width: w, height: 900 });
+    await page.goto('/');
+    for (const [frame, hint] of [['.rt-topo-frame', '.rt-topo > .rt-scroll-hint'], ['.rt-schema-frame', '.rt-schema > .rt-scroll-hint']]) {
+      const scrolls = await page.locator(frame).first().evaluate((e) => e.scrollWidth > e.clientWidth);
+      const shown = await page.locator(hint).first().isVisible();
+      expect(shown, `${frame} bei ${w} px`).toBe(scrolls);
+      if (shown) await expect(page.locator(hint).first()).toHaveText('Schema seitlich verschiebbar.');
+    }
+  }
 });

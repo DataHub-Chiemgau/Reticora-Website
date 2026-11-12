@@ -24,11 +24,10 @@ const planRows = PLANS.map((p) => ({
   plan: p.name,
   summary: p.summary.de,
   cis: grouped(p.limits.cis),
-  price: `${p.from ? 'ab ' : ''}${grouped(p.monthly)} €`,
+  price: `${p.from ? 'ab ' : ''}${grouped(p.monthly)} €`,
 }));
 const planColumns = [
-  { key: 'plan', head: H.pakete.heads.plan },
-  { key: 'summary', head: H.pakete.heads.summary },
+  { key: 'plan', head: H.pakete.heads.plan, sub: 'summary' },
   { key: 'cis', head: H.pakete.heads.cis, numeric: true },
   { key: 'price', head: H.pakete.heads.price, numeric: true },
 ];
@@ -70,7 +69,7 @@ const planColumns = [
       <div class="home-split home-split--figure">
         <div class="home-block">
           <h3>{H.vertrauen.herkunft.title}</h3>
-          <div class="rt-para" role="paragraph">{H.vertrauen.herkunft.text}{' '}<Beleg claim={H.vertrauen.herkunft.claim} lang={lang} />{' '}<details class="rt-beleg"><summary>{H.vertrauen.rang.title}</summary><div class="rt-beleg-body"><b>{H.vertrauen.rang.title}</b><br />{H.vertrauen.rang.text}</div></details></div>
+          <div class="rt-para" role="paragraph">{H.vertrauen.herkunft.text}{' '}<Beleg claim={H.vertrauen.herkunft.claim} lang={lang} />{' '}<details class="rt-beleg" data-claim={H.vertrauen.herkunft.claim}><summary>{H.vertrauen.rang.title}</summary><div class="rt-beleg-body"><b>{H.vertrauen.rang.title}</b><br />{H.vertrauen.rang.text}</div></details></div>
         </div>
         <ScreenshotSlot id="S-02" figure={2} caption={H.vertrauen.herkunft.caption} lang={lang} />
       </div>

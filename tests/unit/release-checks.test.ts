@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { checkClaims, checkDevPages, checkDistHtml, checkNotEmpty, checkRoutes, checkScreenshotFiles, checkScreenshots, checkSite } from '../../scripts/lib/release-checks.mjs';
+import { checkClaims, checkDevPages, checkDistHtml, checkInternalLinks, checkNotEmpty, checkRoutes, checkRoutesBuilt, checkScreenshotFiles, checkScreenshots, checkSite } from '../../scripts/lib/release-checks.mjs';
 
 describe('Release-Prüfungen', () => {
   test('offener Claim wird mit ID gemeldet', () => {
@@ -59,5 +59,37 @@ describe('Release-Prüfungen', () => {
   test('leere Daten sperren den Release', () => {
     expect(checkNotEmpty([], [], [])).toEqual(['Claim-Register ist leer', 'Screenshot-Liste ist leer', 'Routen-Liste ist leer']);
     expect(checkNotEmpty([1], [1], [1])).toEqual([]);
+  });
+
+  test('Claim mit leerem Namen oder ungültigem Datum wird gemeldet', () => {
+    const ok = { id: 'C-05', status: 'geprüft', checkedBy: 'A', checkedOn: '2026-11-12' };
+    expect(checkClaims([ok])).toEqual([]);
+    expect(checkClaims([{ ...ok, checkedBy: '   ' }])).toHaveLength(1);
+    expect(checkClaims([{ ...ok, checkedOn: '12.11.2026' }])).toHaveLength(1);
+    expect(checkClaims([{ ...ok, checkedOn: '2026-13-45x' }])).toHaveLength(1);
+    expect(checkClaims([{ ...ok, checkedOn: '' }])).toHaveLength(1);
+  });
+  test.each(['todo', 'TODO', 'Tbd', 'xxx', '?', ' ? '])('Platzhalterwert %j im Anbieterfeld zählt als fehlend', (v) => {
+    expect(checkSite({ ...full, vatId: v })).toEqual(['Anbieter: USt-IdNr. fehlt']);
+  });
+  test('gebaute Route muss in dist für de und en existieren', () => {
+    const routes = [
+      { de: '/', en: '/en/', status: 'gebaut' },
+      { de: '/a/', en: null, status: 'gebaut' },
+      { de: '/b/', en: '/en/b/', status: 'geplant' },
+    ];
+    const exists = (p: string) => ['index.html', 'a/index.html'].includes(p);
+    expect(checkRoutesBuilt(routes, exists)).toEqual(['/en/: Seite fehlt in dist']);
+    expect(checkRoutesBuilt(routes, () => true)).toEqual([]);
+    expect(checkRoutesBuilt(routes, () => false)).toEqual(['/: Seite fehlt in dist', '/en/: Seite fehlt in dist', '/a/: Seite fehlt in dist']);
+  });
+  test('interner Link auf nicht gebaute Seite wird gemeldet', () => {
+    const exists = (p: string) => ['index.html', 'a/index.html', 'x.svg', '_astro/s.css'].includes(p);
+    const pages = [{
+      path: 'dist/index.html',
+      html: '<a href="/en/">EN</a><a href="/a/#frag">A</a><a href="/a/?q=1">A</a><link rel="icon" href="/x.svg"><link href="/_astro/s.css"><a href="https://x.de/">ext</a><a href="//cdn.x/y">ext</a><a href="#top">t</a><a href="mailto:a@b.de">m</a><img src="/weg.png">',
+    }];
+    expect(checkInternalLinks(pages, exists)).toEqual(['dist/index.html: /en/ nicht gebaut', 'dist/index.html: /weg.png nicht gebaut']);
+    expect(checkInternalLinks([{ path: 'dist/index.html', html: '<a href="/">x</a>' }], exists)).toEqual([]);
   });
 });

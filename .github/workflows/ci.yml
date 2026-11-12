@@ -26,4 +26,6 @@ jobs:
       - run: npx playwright install --with-deps
       - run: npm run test:e2e -- --trace off
       - run: npm run lhci
-      - run: npm audit --omit=dev --audit-level=high
+      # Alle Pakete sind devDependencies (nichts davon läuft im ausgelieferten Build), daher wird der ganze Baum geprüft.
+      # Stand: 9 high, 0 critical; alle 9 stammen aus der Kette @lhci/cli (basic-ftp über proxy-agent). Kritische Funde sperren.
+      - run: npm audit --audit-level=critical
