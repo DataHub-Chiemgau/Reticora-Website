@@ -41,4 +41,11 @@ describe.skipIf(!hasDist)('dist', () => {
     expect(archivo).toBeDefined();
     expect(archivo).toMatch(/font-stretch:\s*100%\s*112%/);
   });
+
+  test('Insel impact höchstens 8 KB', () => {
+    const files = walk(join(dist, '_astro'), '.js').filter((f) => /TopologyStage/.test(f));
+    expect(files.length).toBeGreaterThanOrEqual(1);
+    const sum = files.reduce((s, f) => s + statSync(f).size, 0);
+    expect(sum).toBeLessThanOrEqual(8 * 1024);
+  });
 });

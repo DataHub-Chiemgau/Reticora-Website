@@ -181,8 +181,8 @@ textarea.rt-input { min-height: 120px; resize: vertical; }
 /* Ergänzungen der Website */
 .rt-slot--4x5 { aspect-ratio: 4 / 5; }
 .rt-slot img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-lg); }
-.rt-topo .lbl-start { text-anchor: start; }
-.rt-topo .lbl-end { text-anchor: end; }
+.rt-topo .n text.lbl-start { text-anchor: start; }
+.rt-topo .n text.lbl-end { text-anchor: end; }
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .rt-container { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
 .rt-section { padding-block: var(--space-16); }

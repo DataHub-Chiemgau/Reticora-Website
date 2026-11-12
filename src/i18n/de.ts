@@ -63,4 +63,14 @@ export const UI = {
   darkTheme: 'dunkles Thema',
   figure: 'Abb.',
   asOf: 'Stand',
+  topo: {
+    section: 'Ausfallsimulation',
+    title: 'Schema einer Stromkette mit Ausfallsimulation',
+    desc: 'usv-01 versorgt pdu-a und pdu-b. srv-01 und srv-02 hängen an beiden PDUs, sw-access-01 nur an pdu-a, nas-01 nur an pdu-b. vm-app-01 läuft auf srv-01, vm-db-01 auf srv-02.',
+    group: 'Ausfall simulieren',
+    legendActive: 'CI, Status „Aktiv“',
+    legendFailed: 'ausgefallen',
+    legendAffected: 'betroffen (grau dargestellt)',
+    legendNote: 'Schemazeichnung, kein Screenshot',
+  },
 } as const;
