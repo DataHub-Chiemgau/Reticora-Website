@@ -114,7 +114,7 @@ test('Kopf und Fuß lesen ihre Texte in der Sprache der Seite', async ({ page })
 test('sitemap.xml listet nur gebaute Seiten, ohne noindex-Seiten, mit Alternativen nur bei gebautem Gegenstück', async ({ request }) => {
   const res = await request.get('/sitemap.xml');
   expect(res.status()).toBe(200);
-  expect(res.headers()['content-type']).toMatch(/xml/);
+  expect(res.headers()['content-type']).toMatch(/^application\/xml/);
   const xml = await res.text();
   const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
   const expected = ROUTES.flatMap((r) => [r.de, r.en].filter((p) => isBuilt(p) && !r.noindex)).map((p) => SITE.url + p);
@@ -128,6 +128,7 @@ test('sitemap.xml listet nur gebaute Seiten, ohne noindex-Seiten, mit Alternativ
 test('robots.txt verweist auf die Sitemap und sperrt im Entwicklungs-Build alles', async ({ request }) => {
   const res = await request.get('/robots.txt');
   expect(res.status()).toBe(200);
+  expect(res.headers()['content-type']).toMatch(/^text\/plain/);
   const txt = await res.text();
   expect(txt).toContain(`Sitemap: ${SITE.url}/sitemap.xml`);
   expect(txt).toMatch(/User-agent: \*\s+Disallow: \/\s/);

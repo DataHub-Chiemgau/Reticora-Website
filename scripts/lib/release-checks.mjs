@@ -21,7 +21,7 @@ export function checkRoutes(routes) {
   const out = [];
   for (const r of routes) {
     if (r.status === 'geplant') out.push(`${r.de}: Seite nur geplant, nicht gebaut`);
-    else if (r.en && (r.enStatus ?? r.status) === 'geplant') out.push(`${r.en}: Seite nur geplant, nicht gebaut`);
+    else if (r.en && r.enStatus === 'geplant') out.push(`${r.en}: Seite nur geplant, nicht gebaut`);
   }
   return out;
 }
@@ -37,7 +37,7 @@ function distCandidates(url) {
 export function checkRoutesBuilt(routes, exists) {
   const out = [];
   for (const r of routes) {
-    const pairs = [[r.de, r.status], [r.en, r.enStatus ?? r.status]];
+    const pairs = [[r.de, r.status], [r.en, r.enStatus]];
     for (const [url, status] of pairs) {
       if (status === 'gebaut' && url && !distCandidates(url).some(exists)) out.push(`${url}: Seite fehlt in dist`);
     }

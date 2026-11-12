@@ -53,7 +53,6 @@ export const UI = {
       { label: 'AGB', href: '/agb/' },
     ],
     switch: 'English',
-    switchSoon: 'English (Fassung folgt)',
   },
   b2b: 'Angebot nur für Unternehmen.',
   b2bShort: 'Angebot nur für Unternehmen',

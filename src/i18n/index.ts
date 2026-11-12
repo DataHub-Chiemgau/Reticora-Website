@@ -9,4 +9,4 @@ export type UiStrings = typeof DE;
 export function ui(lang: Lang): UiStrings {
   return lang === 'en' ? EN : DE;
 }
-export { counterpart, localize, dePath, isBuilt, routeOf, langOf, ROUTES } from './routes';
+export { counterpart, localize, dePath, isBuilt, switchTarget, alternates, routeOf, langOf, ROUTES } from './routes';

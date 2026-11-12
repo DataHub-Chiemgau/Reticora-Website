@@ -2,8 +2,8 @@
 import type { Lang } from '../data/types';
 import { ui } from '../i18n';
 
-interface Props { title: string; copyLabel: string; copiedLabel: string; failedLabel?: string; lang?: Lang }
-const { title, copyLabel, copiedLabel, failedLabel, lang = 'de' } = Astro.props;
+interface Props { title: string; copyLabel: string; copiedLabel: string; failedLabel?: string; lang: Lang }
+const { title, copyLabel, copiedLabel, failedLabel, lang } = Astro.props;
 ---
 
 <div class="rt-code">

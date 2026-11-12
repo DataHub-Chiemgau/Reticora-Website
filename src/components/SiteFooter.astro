@@ -3,15 +3,15 @@ import { LINKS } from '../data/links';
 import { SITE } from '../data/site';
 import type { Lang } from '../data/types';
 import { ui } from '../i18n';
-import { counterpart, isBuilt, localize } from '../i18n/routes';
+import { counterpart, localize, switchTarget } from '../i18n/routes';
 
 interface Props { lang: Lang; path: string }
 const { lang, path } = Astro.props;
 const T = ui(lang);
 const f = T.footer;
-const other = counterpart(path);
+const target = switchTarget(path);
+const pending = counterpart(path);
 const otherLang: Lang = lang === 'de' ? 'en' : 'de';
-const live = other !== null && isBuilt(other);
 const L = (href: string) => localize(href, lang);
 ---
 
@@ -32,9 +32,9 @@ const L = (href: string) => localize(href, lang);
     <span>{SITE.company}</span>
     {f.legal.map((l) => <a href={L(l.href)}>{l.label}</a>)}
     <span>{T.b2bShort}</span>
-    {live
-      ? <a href={other} lang={otherLang} hreflang={otherLang}>{f.switch}</a>
-      : other !== null && <span class="is-off" lang={otherLang} title={T.lang.soon}>{f.switchSoon}</span>}
+    {target !== null
+      ? <a href={target} lang={otherLang} hreflang={otherLang}>{f.switch}</a>
+      : pending !== null && <span class="is-off" title={T.lang.soon}><span lang={otherLang}>{otherLang === 'en' ? T.lang.enName : T.lang.deName}</span> ({T.lang.soon})</span>}
   </div>
   </div>
 </footer>

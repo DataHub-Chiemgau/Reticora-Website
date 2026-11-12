@@ -1,9 +1,6 @@
 import type { APIRoute } from 'astro';
 import { SITE } from '../data/site';
+import { robotsTxt } from '../lib/discover';
 
-/** Nur der Release-Build (RETICORA_RELEASE=1) erlaubt das Durchsuchen. */
-export const GET: APIRoute = () => {
-  const open = process.env.RETICORA_RELEASE === '1';
-  const body = ['User-agent: *', open ? 'Allow: /' : 'Disallow: /', '', `Sitemap: ${SITE.url}/sitemap.xml`, ''].join('\n');
-  return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
-};
+export const GET: APIRoute = () =>
+  new Response(robotsTxt(process.env.RETICORA_RELEASE === '1', SITE.url), { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });

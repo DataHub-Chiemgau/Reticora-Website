@@ -74,9 +74,9 @@ describe('Release-Prüfungen', () => {
   });
   test('gebaute Route muss in dist für de und en existieren', () => {
     const routes = [
-      { de: '/', en: '/en/', status: 'gebaut' },
-      { de: '/a/', en: null, status: 'gebaut' },
-      { de: '/b/', en: '/en/b/', status: 'geplant' },
+      { de: '/', en: '/en/', status: 'gebaut', enStatus: 'gebaut' },
+      { de: '/a/', en: null, status: 'gebaut', enStatus: 'geplant' },
+      { de: '/b/', en: '/en/b/', status: 'geplant', enStatus: 'geplant' },
     ];
     const exists = (p: string) => ['index.html', 'a/index.html'].includes(p);
     expect(checkRoutesBuilt(routes, exists)).toEqual(['/en/: Seite fehlt in dist']);

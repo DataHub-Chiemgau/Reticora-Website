@@ -56,7 +56,6 @@ export const UI: typeof DeUI = {
       { label: 'Terms', href: '/agb/' },
     ],
     switch: 'Deutsch',
-    switchSoon: 'Deutsch (version coming soon)',
   },
   b2b: 'Offer for businesses only.',
   b2bShort: 'Offer for businesses only',

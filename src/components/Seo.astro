@@ -1,23 +1,20 @@
 ---
 import { SITE } from '../data/site';
 import type { Lang } from '../data/types';
-import { counterpart, isBuilt } from '../i18n/routes';
+import { alternates } from '../i18n/routes';
 
 interface Props { title: string; description: string; lang: Lang; path: string; noindex: boolean }
 const { title, description, lang, path, noindex } = Astro.props;
 const canonical = SITE.url + path;
-const other = counterpart(path);
-const alt = other !== null && isBuilt(path) && isBuilt(other) ? SITE.url + other : null;
-const de = lang === 'de' ? canonical : alt;
-const en = lang === 'en' ? canonical : alt;
+const alt = alternates(path);
 ---
 
 <link rel="canonical" href={canonical} />
-{alt && de && en && (
+{alt && (
   <Fragment>
-    <link rel="alternate" hreflang="de" href={de} />
-    <link rel="alternate" hreflang="en" href={en} />
-    <link rel="alternate" hreflang="x-default" href={de} />
+    <link rel="alternate" hreflang="de" href={SITE.url + alt.de} />
+    <link rel="alternate" hreflang="en" href={SITE.url + alt.en} />
+    <link rel="alternate" hreflang="x-default" href={SITE.url + alt.xDefault} />
   </Fragment>
 )}
 {noindex && <meta name="robots" content="noindex" />}

@@ -1,13 +1,13 @@
 import type { Lang } from '../data/types';
 
 /** Alle Seiten aus docs/content-plan.md §2 (ohne /404) mit deutscher und englischer Adresse.
- *  `status` gilt für die deutsche Seite, `enStatus` für die englische (fehlt es, gilt `status`).
+ *  `status` gilt für die deutsche Seite, `enStatus` für die englische; beide sind Pflicht und starten auf 'geplant'.
  *  Eine neue Seite trägt sich hier ein: Status auf 'gebaut' setzen, sonst bleibt sie aus Sprachumschalter,
  *  `hreflang` und Sitemap draußen. */
 export type Status = 'gebaut' | 'geplant';
-export interface Route { de: string; en: string; status: Status; enStatus?: Status; noindex?: boolean }
+export interface Route { de: string; en: string; status: Status; enStatus: Status; noindex?: boolean }
 
-const r = (de: string, en: string, extra: Partial<Route> = {}): Route => ({ de, en, status: 'geplant', ...extra });
+const r = (de: string, en: string, extra: Partial<Route> = {}): Route => ({ de, en, status: 'geplant', enStatus: 'geplant', ...extra });
 
 export const ROUTES: Route[] = [
   { de: '/', en: '/en/', status: 'gebaut', enStatus: 'geplant' },
@@ -36,27 +36,26 @@ export const ROUTES: Route[] = [
 const stripSuffix = (p: string) => p.split(/[?#]/)[0];
 
 /** Route zu einer deutschen oder englischen Adresse (ohne Query und Fragment). */
-export function routeOf(path: string): Route | undefined {
+export function routeOf(path: string, routes: Route[] = ROUTES): Route | undefined {
   const p = stripSuffix(path);
-  return ROUTES.find((x) => x.de === p || x.en === p);
+  return routes.find((x) => x.de === p || x.en === p);
 }
 
-export function langOf(path: string): Lang | null {
-  const p = stripSuffix(path);
-  const x = ROUTES.find((e) => e.de === p || e.en === p);
-  return x ? (x.de === p ? 'de' : 'en') : null;
+export function langOf(path: string, routes: Route[] = ROUTES): Lang | null {
+  const x = routeOf(path, routes);
+  return x ? (x.de === stripSuffix(path) ? 'de' : 'en') : null;
 }
 
 /** Adresse der anderen Sprache; null für Adressen ohne Paar (z. B. /404/). Sagt nichts darüber, ob sie gebaut ist. */
-export function counterpart(path: string): string | null {
-  const x = routeOf(path);
+export function counterpart(path: string, routes: Route[] = ROUTES): string | null {
+  const x = routeOf(path, routes);
   if (!x) return null;
   return stripSuffix(path) === x.de ? x.en : x.de;
 }
 
 /** Deutsche Adresse zu einer Adresse in beliebiger Sprache (unbekannt: unverändert). */
-export function dePath(path: string): string {
-  const x = routeOf(path);
+export function dePath(path: string, routes: Route[] = ROUTES): string {
+  const x = routeOf(path, routes);
   return x ? x.de : path;
 }
 
@@ -67,10 +66,28 @@ export function localize(dePath: string, lang: Lang): string {
   return lang === 'de' ? dePath : x.en + dePath.slice(stripSuffix(dePath).length);
 }
 
-/** Gibt es die Seite unter dieser Adresse schon? Nur dann verlinken Sprachumschalter und hreflang dorthin. */
-export function isBuilt(path: string | null): boolean {
+/** Gibt es die Seite unter dieser Adresse schon? Deutsch und Englisch zählen getrennt (`status`, `enStatus`). */
+export function isBuilt(path: string | null, routes: Route[] = ROUTES): boolean {
   if (path === null) return false;
-  const x = routeOf(path);
+  const x = routeOf(path, routes);
   if (!x) return false;
-  return stripSuffix(path) === x.de ? x.status === 'gebaut' : (x.enStatus ?? x.status) === 'gebaut';
+  return (stripSuffix(path) === x.de ? x.status : x.enStatus) === 'gebaut';
+}
+
+/** Ziel des Sprachumschalters: das Gegenstück, wenn Seite und Gegenstück gebaut sind, sonst null (kein Link). */
+export function switchTarget(path: string, routes: Route[] = ROUTES): string | null {
+  const other = counterpart(path, routes);
+  return other !== null && isBuilt(path, routes) && isBuilt(other, routes) ? other : null;
+}
+
+export interface Alternates { de: string; en: string; xDefault: string }
+
+/** hreflang-Satz (Adressen ohne Ursprung) nur bei gebautem Paar, sonst null. */
+export function alternates(path: string, routes: Route[] = ROUTES): Alternates | null {
+  const other = switchTarget(path, routes);
+  if (other === null) return null;
+  const lang = langOf(path, routes)!;
+  const de = lang === 'de' ? stripSuffix(path) : other;
+  const en = lang === 'en' ? stripSuffix(path) : other;
+  return { de, en, xDefault: de };
 }
