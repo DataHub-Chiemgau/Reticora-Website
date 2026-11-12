@@ -12,6 +12,7 @@
     "build": "npm run tokens && astro build",
     "check": "astro check",
     "test": "vitest run",
+    "serve": "bash tests/server/start.sh",
     "test:e2e": "playwright test"
   },
   "devDependencies": {

@@ -15,7 +15,7 @@ export default defineConfig({
   use: { baseURL: 'http://127.0.0.1:8080' },
   projects,
   webServer: {
-    command: 'npm run build && npx astro preview --host 127.0.0.1 --port 8080',
+    command: 'npm run build && npm run serve',
     url: 'http://127.0.0.1:8080',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
