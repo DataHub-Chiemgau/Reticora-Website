@@ -245,7 +245,7 @@ export type ClaimId = `C-${string}`;
 export type ScreenshotId = `S-${string}`;
 export interface Claim { id: ClaimId; title: Record<Lang, string>; evidence: Record<Lang, string>; asOf: string; status: 'offen' | 'geprüft'; checkedBy?: string; checkedOn?: string }
 export interface Screenshot { id: ScreenshotId; motif: Record<Lang, string>; width: number; height: number; file?: string }
-export interface Plan { id: 'essentials' | 'standard' | 'pro' | 'enterprise-shared' | 'enterprise-local'; name: string; monthly: number; from: boolean; yearly: number | null; betaYearly: number | null; summary: Record<Lang, string> }
+export interface Plan { id: 'essentials' | 'standard' | 'pro' | 'enterprise-shared' | 'enterprise-local'; name: string; monthly: number; from: boolean; yearly: number | null; betaYearly: number | null; limits: { cis: number; collectors: number | null; users: number | null }; summary: Record<Lang, string> }   // null = unbegrenzt
 export interface TopoNode { id: string; x: number; y: number; label: 'top' | 'left' | 'right' | 'side' | 'below' }
 export interface TopoEdge { from: string; to: string; rel: 'powered_by' | 'hosted_on'; labelAt: number }
 
@@ -264,7 +264,7 @@ export function computeImpact(nodes: readonly string[], edges: readonly Pick<Top
 export function impactSentence(lang: Lang, r: ImpactResult): { main: string; guarded: string | null };
 ```
 
-- [ ] **Step 1: Fehlschlagende Tests schreiben.** `impact.test.ts` prüft die sechs Zeilen aus `docs/design-system.md` §6.2 (z. B. `computeImpact(N, E, ['pdu-a'])` → `affected: ['sw-access-01']`, `guarded: ['srv-01', 'srv-02']`; `['usv-01']` → acht betroffene) und je Fall den Satz aus §6.4 wörtlich in beiden Sprachen (z. B. `main: 'Fällt „pdu-a“ aus, ist 1 weiteres CI betroffen (grau dargestellt).'`, `guarded: 'Durch Redundanz geschützt: srv-01, srv-02.'`; leere Auswahl → `'Wählen Sie ein CI, um seinen Ausfall zu simulieren.'`). Dazu: Ein Knoten mit zwei `hosted_on`-Versorgern fällt aus, sobald einer ausfällt; ein unbekannter Knoten in `failed` wird ignoriert. `data.test.ts` prüft: `betaYearly === Math.round(yearly * 0.9)` für jedes Paket mit Jahrespreis; Preise 49/490, 119/1190, 299/2990, 999 und 1999 mit `from: true`; Claim-IDs eindeutig, jede mit deutschem Titel und Beleg, alle `status: 'offen'`; Screenshots S-01 bis S-18 lückenlos; alle Werte in `LINKS` beginnen mit `https://` außer `demoUser` und `demoPassword`.
+- [ ] **Step 1: Fehlschlagende Tests schreiben.** `impact.test.ts` prüft die sechs Zeilen aus `docs/design-system.md` §6.2 (z. B. `computeImpact(N, E, ['pdu-a'])` → `affected: ['sw-access-01']`, `guarded: ['srv-01', 'srv-02']`; `['usv-01']` → acht betroffene) und je Fall den Satz aus §6.4 wörtlich in beiden Sprachen (z. B. `main: 'Fällt „pdu-a“ aus, ist 1 weiteres CI betroffen (grau dargestellt).'`, `guarded: 'Durch Redundanz geschützt: srv-01, srv-02.'`; leere Auswahl → `'Wählen Sie ein CI, um seinen Ausfall zu simulieren.'`). Dazu: Ein Knoten mit zwei `hosted_on`-Versorgern fällt aus, sobald einer ausfällt; ein unbekannter Knoten in `failed` wird ignoriert. `data.test.ts` prüft: `betaYearly === Math.round(yearly * 0.9)` für jedes Paket mit Jahrespreis; Preise 49/490, 119/1190, 299/2990, 999 und 1999 mit `from: true`; Limits 500/2/5, 2500/5/25, 10000/20/100 und für beide Enterprise-Pakete 50000/`null`/`null`; Claim-IDs eindeutig, jede mit deutschem Titel und Beleg, alle `status: 'offen'`; Screenshots S-01 bis S-18 lückenlos; alle Werte in `LINKS` beginnen mit `https://` außer `demoUser` und `demoPassword`.
 
 - [ ] **Step 2: Tests laufen lassen.** Run: `npm test` · Expected: FAIL.
 
@@ -399,7 +399,7 @@ test('Hauptknopf führt zu LINKS.signup, „Live-Demo“ zu /demo/, „Anmelden�
 test('„Angebot nur für Unternehmen.“ steht am Einstieg, bei den Paketen und im Abschluss', ...);
 test('Platzhalter S-02, S-03, S-04, S-05, S-06, S-18 vorhanden; Abb. 1 bis 7 in Reihenfolge', ...);
 test('Betriebsleiste nennt Sweep, Poll, Puffer, Verbindung, Hosting mit den Werten aus dem Textdokument', ...);
-test('Pakettabelle zeigt fünf Pakete mit 49 €, 119 €, 299 €, ab 999 €, ab 1.999 €', ...);
+test('Pakettabelle zeigt fünf Pakete mit 49 €, 119 €, 299 €, ab 999 €, ab 1.999 € und den CI-Limits 500, 2.500, 10.000, 50.000, 50.000', ...);
 test('axe ohne Befunde', ...);
 for (const w of [320, 360, 768, 1280]) test(`kein waagerechtes Scrollen bei ${w} px`, ...);   // scrollWidth === clientWidth
 test('ohne JavaScript: alle zehn h2 sichtbar, Menü öffnet, Belege öffnen', ...);

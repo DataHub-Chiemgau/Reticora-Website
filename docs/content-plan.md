@@ -179,6 +179,15 @@ Angabe des Auftraggebers vom 2026-11-12. Sie ersetzt die Preise in
 | Enterprise Shared | ab 999 € | auf Anfrage | – |
 | Enterprise Local | ab 1.999 € | auf Anfrage | – |
 
+Limits je Paket nach `README.md` §14 (W-E16):
+
+| Paket | CIs | Collectors | Nutzer |
+|---|---|---|---|
+| Essentials | 500 | 2 | 5 |
+| Standard | 2.500 | 5 | 25 |
+| Pro | 10.000 | 20 | 100 |
+| Enterprise Shared, Enterprise Local | 50.000 | unbegrenzt | unbegrenzt |
+
 - **Enterprise Shared:** in der Cloud auf getrennter Infrastruktur.
   **Enterprise Local:** beim Kunden gehostet; der Preis enthält alle Arbeiten.
 - **Beta-Rabatt:** 20 % in den ersten sechs Monaten, 10 % in den folgenden
@@ -191,11 +200,13 @@ Angabe des Auftraggebers vom 2026-11-12. Sie ersetzt die Preise in
 - **Downgrade:** Es gehen keine Daten verloren. CIs über dem Limit des neuen
   Tarifs werden als zusätzliche CIs abgerechnet. Funktionen, die der Tarif
   nicht enthält, werden gesperrt, ihre Daten bleiben erhalten (W-E15).
-- **Darstellung:** Nettopreise mit dem Zusatz „zzgl. USt.“ und dem Hinweis
+- **Darstellung:** Nettopreise mit dem Zusatz „zzgl. MwSt.“ und dem Hinweis
   „Angebot nur für Unternehmen“ (`compliance-matrix.md` B-02). Die
   Bedingungen des Beta-Rabatts stehen direkt bei den Preisen (I-03).
-- **Offen (F-04):** netto ja/nein; Schreibweise „Essentials“; Limits je
-  Tarif; Buchungszeitraum des Beta-Rabatts; Weg vom Test zum Vertrag (F-19).
+- **Geklärt (W-E16):** Nettopreise mit „zzgl. MwSt.“; der Paketname lautet
+  „Essentials“; die Limits stehen oben.
+- **Offen:** Buchungszeitraum des Beta-Rabatts; Weg vom Test zum Vertrag
+  (F-19).
 
 ### 6.2 Funktionen je Paket
 
@@ -216,14 +227,11 @@ zusammen.
 | Compliance, Befunde und Endpoint-Agent | Enterprise |
 | Add-ons: IGA, KI-Assistent | zu jedem Paket buchbar |
 
-Zu klären (F-23): Code und `README.md` §14 weichen ab (Befunde: Enterprise
-im Code, Pro in der README; Schulungen: Pro im Code, Enterprise in der
-README). Die README nennt außerdem Funktionen ohne Schlüssel im Code
-(SMS/Pager, Ticketing Pro, Disposition, erweitertes Audit, Reseller, RFID,
-GIS). Limits für CIs, Collectors und Nutzer stehen nur in der README
-(500 / 2.500 / 10.000 / 50.000 CIs; 2 / 5 / 20 / unbegrenzt Collectors;
-5 / 25 / 100 / unbegrenzt Nutzer) und sind dort als unbestätigt markiert.
-Ohne enthaltene Menge hat der Preis je zusätzlichem CI keine Basis.
+Zu klären (F-23): Code und `README.md` §14 weichen bei einzelnen Funktionen
+ab (Befunde: Enterprise im Code, Pro in der README; Schulungen: Pro im Code,
+Enterprise in der README). Die README nennt außerdem Funktionen ohne
+Schlüssel im Code (SMS/Pager, Ticketing Pro, Disposition, erweitertes Audit,
+Reseller, RFID, GIS). Bis zur Klärung gilt die Zuordnung des Codes.
 
 ### 6.3 Begriffe in beiden Sprachen
 

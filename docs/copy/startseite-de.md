@@ -184,24 +184,24 @@ curl "https://www.reticora.cloud/api/v1/cis?q=core&limit=50" \
 
 - **Überschrift:** Pakete und Preise
 - **Vorspann:** Alle Pakete enthalten CMDB, Discovery, Topologie, Racks und
-  API. Preise im Monat, zzgl. USt.
+  API. Preise im Monat, zzgl. MwSt.
 - **Tabelle** (Werte aus `src/data/pricing.ts`):
 
-| Paket | Kurzbeschreibung | im Monat |
-|---|---|---|
-| Essentials | CMDB, Discovery, Topologie, Racks, API, Assets, Tickets | 49 € |
-| Standard | dazu Lager, Inventur, Etiketten, Unterschrift, SLAs, DATEV-Export | 119 € |
-| Pro | dazu Monitoring, Workflows, Formulare, Bestellungen | 299 € |
-| Enterprise Shared | dazu Compliance und Endpoint-Agent, in der Cloud auf getrennter Infrastruktur | ab 999 € |
-| Enterprise Local | bei Ihnen gehostet, inklusive aller Arbeiten | ab 1.999 € |
+| Paket | Kurzbeschreibung | CIs | im Monat |
+|---|---|---|---|
+| Essentials | CMDB, Discovery, Topologie, Racks, API, Assets, Tickets | 500 | 49 € |
+| Standard | dazu Lager, Inventur, Etiketten, Unterschrift, SLAs, DATEV-Export | 2.500 | 119 € |
+| Pro | dazu Monitoring, Workflows, Formulare, Bestellungen | 10.000 | 299 € |
+| Enterprise Shared | dazu Compliance und Endpoint-Agent, in der Cloud auf getrennter Infrastruktur | 50.000 | ab 999 € |
+| Enterprise Local | bei Ihnen gehostet, inklusive aller Arbeiten | 50.000 | ab 1.999 € |
 
 - **Hinweisband:** **Beta-Rabatt:** 20 % in den ersten sechs Monaten, 10 %
   in den folgenden sechs Monaten, danach der volle Preis.
 - **Zeile darunter:** Angebot nur für Unternehmen.
 - **Verweis:** „Alle Preise und Funktionen“ → `/preise/`
 
-Die Kurzbeschreibungen folgen der Paketmatrix des Codes und stehen unter dem
-Vorbehalt von F-23.
+Die Kurzbeschreibungen folgen der Paketmatrix des Codes (Vorbehalt F-23),
+die CI-Limits der `README.md` §14 (W-E16).
 
 ## 11. Abschluss
 
