@@ -3,8 +3,8 @@
 | | |
 |---|---|
 | Stand | 2026-11-12 |
-| Status | **Entwurf zur Freigabe.** Erst nach Freigabe dieses Dokuments und von `design-system.md` entsteht ein Umsetzungsplan, danach Code. |
-| Geltung | beschreibt, was gebaut wird und wie es geprüft wird. Inhalte, Gestaltung und Rechtliches stehen in den sechs Dokumenten unter `website/docs/`; diese Spezifikation verweist darauf und wiederholt sie nicht. |
+| Status | **Freigegeben vom Auftraggeber am 2026-11-12** (`project-brief.md` W-E11). Änderungen nach der Freigabe stehen in §14. |
+| Geltung | beschreibt, was gebaut wird und wie es geprüft wird. Inhalte, Gestaltung und Rechtliches stehen in den sechs Dokumenten unter `docs/`; diese Spezifikation verweist darauf und wiederholt sie nicht. |
 
 ## 1. Ziel und Abgrenzung
 
@@ -23,7 +23,7 @@ Newsletter, Reichweitenmessung, CRM-Anbindung.
 ## 2. Aufbau im Repository
 
 ```
-website/
+(Wurzel des privaten Repositorys)
 ├── docs/                     Dokumente (diese Spezifikation unter specs/)
 ├── astro.config.ts           Ausgabe static, i18n, Sitemap
 ├── package.json              Skripte: dev, build, check, test, test:e2e
@@ -269,3 +269,32 @@ Geschrieben wird testgetrieben: erst der Test, dann der Baustein.
   `/login` (F-02).
 - Offene Geschäftsfakten stehen in `project-brief.md` §8; sie blockieren
   erst die Phasen, die dort genannt sind.
+
+## 14. Änderungen nach der Freigabe
+
+Die Freigabe vom 2026-11-12 gilt dem Stand ohne diesen Abschnitt. Die
+folgenden Punkte stammen aus der technischen Gegenprüfung und aus den
+Antworten des Auftraggebers vom selben Tag. Sie ändern nicht, was gebaut
+wird, sondern machen es auf dem Zielsystem lauffähig und prüfbar. Wo ein
+Punkt einer früheren Stelle widerspricht, gilt dieser Abschnitt.
+
+| Nr. | Betrifft | Änderung | Grund |
+|---|---|---|---|
+| Ä-01 | §2 | Eigenes privates Repository; die Wurzel ist das, was bisher `website/` war. | Entscheidung W-E10 |
+| Ä-02 | §3, §4 | Neue Seite `/demo/` (englisch `/en/demo/`) mit Zugangsdaten und Link zur Demo. `data/links.ts` führt zusätzlich die Demo-Zugangsdaten. | Entscheidung W-E13 |
+| Ä-03 | §4 | `data/pricing.ts`: Zusatzkosten 0,05 € je zusätzlichem CI und 0,03 € je Monitoring-Service im Monat; Beschreibungen der beiden Enterprise-Pakete; Regeln zu Testende und Downgrade. Die Stufen heißen „Paket“. | W-E12, W-E14, W-E15 |
+| Ä-04 | §4 | `data/devices.ts` wird nicht beim Build aus dem Produkt-Repository gelesen, sondern von einem Skript als Datei übernommen und eingecheckt. Der Stand (Commit des Produkts) steht in der Datei. | getrennte Repositories |
+| Ä-05 | §5 | Kein Inline-Skript im HTML: Inseln sind eigene Dateien, die Astro nicht einbettet (`vite.build.assetsInlineLimit: 0`, keine `client:`-Direktiven, kein Framework). Stile liegen in Dateien (`build.inlineStylesheets: 'never'`). Ein Test durchsucht den Build nach `<script>` ohne `src` und nach `style`-Attributen. | sonst blockiert die Content-Security-Policy die Inseln |
+| Ä-06 | §5 | Schriften liegen unter `src/assets/fonts/` und bekommen einen Hash im Namen. Archivo wird auf die genutzten Zeichen und den genutzten Bereich der Achsen gekürzt; Ziel beider Schriften zusammen unter 90 KB. | Budget; lange Cache-Dauer |
+| Ä-07 | §6.1 | Die Zeitfalle (`ts`, `sig`) entfällt. Eine statische Seite kann keinen vom Server signierten Zeitstempel tragen. Schutz: Köderfeld, Rate-Limit je Herkunft, Obergrenze für alle Anfragen je Stunde. | technisch nicht umsetzbar ohne weiteren dynamischen Pfad |
+| Ä-08 | §6.1, §9 | Ohne JavaScript zeigt `lead.php` bei Eingabefehlern die Kontaktseite selbst an: Der Build legt die fertige Kontaktseite je Sprache als Vorlage außerhalb des Webroots ab; PHP setzt Fehlertexte und die maskierten Eingaben ein und antwortet mit `422`. Keine Fehlercodes in der Adresse. | Eingaben bleiben erhalten; Fehler stehen am Feld |
+| Ä-09 | §6.2 | Das Formular sendet nur an das Vertriebspostfach. Es geht keine automatische E-Mail an die eingegebene Adresse; den Eingang bestätigt die Dankeseite. | sonst ließe sich das Formular zum Versand an Dritte missbrauchen |
+| Ä-10 | §6.2, §6.3 | Rate-Limit: HMAC der Adresse (IPv6 auf das /64-Präfix gekürzt) mit einem Schlüssel, der täglich überschrieben wird. Abgelaufene Einträge löscht ein stündlicher Lauf und jeder Aufruf des Endpunkts. | ein gesalzener Hash einer IP-Adresse ist umkehrbar; ein täglicher Lauf löscht nicht nach 24 Stunden |
+| Ä-11 | §6.4, §8 | PHP 8.4. Eine gepflegte SMTP-Bibliothek über Composer mit `composer.lock`; `vendor/` liegt außerhalb des Webroots, `composer audit` läuft im CI. Im Webroot liegt vom Backend nur `api/lead.php`. Eigener Datenbankbenutzer mit zufälligem Passwort, weil der Datenbankserver des Hosters von außen erreichbar ist. | Sicherheit auf Shared Hosting |
+| Ä-12 | §8 | Kopfzeilen mit `Header always set`, damit sie auch für Umleitungen und Fehlerseiten gelten. Eine Umleitung in einem Schritt von `http` und von der Adresse ohne `www` auf `https://www.reticora.de`. Astro: `trailingSlash: 'always'`, `build.format: 'directory'`. Englische 404-Seite über `/en/.htaccess`. Komprimierung und HTTP/2 werden im Hosting-Konto je Domain eingeschaltet. | Verhalten von Apache |
+| Ä-13 | §8 | `/.well-known/security.txt` mit `Contact` und `Expires` (Build-Datum plus 180 Tage); ein geplanter CI-Lauf meldet eine Datei, die in weniger als 30 Tagen abläuft. | RFC 9116 verlangt beide Felder |
+| Ä-14 | §10 | Seiten-, Formular-, Kopfzeilen- und Leistungstests laufen gegen einen Container mit Apache 2.4, PHP 8.4, MariaDB und einem SMTP-Fänger, mit demselben Build und derselben `.htaccess` wie im Deploy. | `.htaccess` und PHP wirken nur dort |
+| Ä-15 | §10 | Leistung: LCP und CLS aus Lighthouse (Mobilprofil, Median aus fünf Läufen), dazu TBT ≤ 150 ms; INP wird mit Playwright bei gedrosselter CPU gemessen. Der SEO-Wert gilt nicht für Seiten mit `noindex` und nicht für die 404-Seite. | INP ist im Seitenaufruf nicht messbar |
+| Ä-16 | §11 | Deploy über SSH auf Port 222 mit dem Schlüssel des Hauptbenutzers, SFTP als Rückweg. Vorschau in einem Verzeichnis mit Zugangsschutz. | Angaben des Hosters, im Konto zu bestätigen |
+| Ä-17 | §5 | Der Filter der Geräteliste ist eine vierte Insel (2 KB); ohne JavaScript steht die vollständige Tabelle mit Sprungmarken je Kategorie. | war in der Liste der Inseln nicht genannt |
+

@@ -39,6 +39,7 @@
   msp/                         Für Managed-Service-Provider
 /sicherheit/                   Sicherheit, Datenschutz, Betriebsmodelle
 /preise/                       Pakete, Add-ons, Fragen
+/demo/                         Live-Demo: Zugangsdaten, was es zu sehen gibt, Link
 /kontakt/                      Kontakt (Formular)
 /kontakt/danke/                Bestätigung (noindex)
 /impressum/                    Rechtstext vom Auftraggeber
@@ -55,8 +56,9 @@ Seiten:
 
 - **„30 Tage testen“** → `https://www.reticora.cloud/onboarding`
   (Registrierung in der App).
-- **„Live-Demo“** → `https://www.demo.reticora.cloud` (Demo-Instanz; wie der
-  Zugang funktioniert, ist offen, F-18).
+- **„Live-Demo“** führt zuerst auf die Seite `/demo/`. Dort stehen die
+  Zugangsdaten (`demo@reticora.cloud`, Passwort `Demo`), drei Dinge zum
+  Ausprobieren und der Link zu `https://www.demo.reticora.cloud`.
 
 | Seite | Zweck | Hauptrolle | Handlungsaufruf | Start |
 |---|---|---|---|---|
@@ -72,6 +74,7 @@ Seiten:
 | Lösungen ISP / MSP | Nutzen je Geschäftsmodell | Entscheider | Live-Demo, Kontakt | Pflicht |
 | Sicherheit | Erstprüfung bestehen | Sicherheit, Einkauf | Kontakt | Pflicht |
 | Preise | Paket wählen | Entscheider | Testen, Kontakt (Enterprise) | Pflicht |
+| Live-Demo | Zugang zur Demo geben und sagen, was man dort ausprobieren kann | alle | Demo öffnen | Pflicht |
 | Kontakt | Anfrage stellen | Entscheider | Absenden | Pflicht |
 | Rechtsseiten | Pflichtangaben | alle | – | Pflicht |
 | Englisch | internationale Interessenten | alle | wie oben | Pflicht (W-E09) |
@@ -153,6 +156,11 @@ für Prüfer und für Enterprise-Interessenten steht der Kontakt vorn.
 - **Preise:** Paketmatrix aus einer Datendatei (§6.1); Add-ons; Test; Fragen
   (Was zählt als CI? Was passiert über dem Limit? Was passiert nach Ablauf?).
   Antworten stehen in `README.md` §14.
+- **Live-Demo:** Zugangsdaten in einer Kennwertliste (Adresse, Benutzer,
+  Passwort) mit Kopierknopf; drei Dinge zum Ausprobieren (Ausfall in der
+  Topologie simulieren, Herkunft eines Feldes ansehen, ein Review
+  entscheiden); Hinweis, dass alle Besucher dasselbe Konto nutzen und keine
+  eigenen Daten eingeben sollen; Knopf „Demo öffnen“.
 - **Kontakt:** Formular (§9), daneben direkte Kontaktdaten (F-01).
 
 ### 6.1 Preise
@@ -161,7 +169,7 @@ Angabe des Auftraggebers vom 2026-11-12. Sie ersetzt die Preise in
 `README.md` §14. Die Website führt sie an genau einer Stelle
 (`src/data/pricing.ts`).
 
-| Tarif | monatlich | jährlich | erstes Beta-Jahr bei jährlicher Zahlung |
+| Paket | monatlich | jährlich | erstes Beta-Jahr bei jährlicher Zahlung |
 |---|---|---|---|
 | Essentials | 49 € | 490 € | 441 € |
 | Standard | 119 € | 1.190 € | 1.071 € |
@@ -169,18 +177,79 @@ Angabe des Auftraggebers vom 2026-11-12. Sie ersetzt die Preise in
 | Enterprise Shared | ab 999 € | auf Anfrage | – |
 | Enterprise Local | ab 1.999 € | auf Anfrage | – |
 
+- **Enterprise Shared:** in der Cloud auf getrennter Infrastruktur.
+  **Enterprise Local:** beim Kunden gehostet; der Preis enthält alle Arbeiten.
 - **Beta-Rabatt:** 20 % in den ersten sechs Monaten, 10 % in den folgenden
   sechs Monaten, danach der volle Preis. Bei jährlicher Vorauszahlung gilt
   der Preis der letzten Spalte.
-- **Zusatzkosten:** je zusätzlichem CI 0,003 €, je Monitoring-Zeitreihe
-  0,05 €.
+- **Zusatzkosten im Monat:** je zusätzlichem CI 0,05 €, je Monitoring-Service
+  0,03 € (W-E12).
+- **Test:** 30 Tage, Standard-Umfang, bis 100 CIs. Nach dem Test bleibt die
+  CMDB 30 Tage aktiv; ohne Tarif wird sie danach gelöscht (W-E15).
+- **Downgrade:** Es gehen keine Daten verloren. CIs über dem Limit des neuen
+  Tarifs werden als zusätzliche CIs abgerechnet. Funktionen, die der Tarif
+  nicht enthält, werden gesperrt, ihre Daten bleiben erhalten (W-E15).
 - **Darstellung:** Nettopreise mit dem Zusatz „zzgl. USt.“ und dem Hinweis
   „Angebot nur für Unternehmen“ (`compliance-matrix.md` B-02). Die
   Bedingungen des Beta-Rabatts stehen direkt bei den Preisen (I-03).
-- **Offen (F-04):** netto ja/nein; Abrechnungszeitraum der Zusatzkosten und
-  Bestätigung der Werte, weil `README.md` §14 andere nennt; Schreibweise
-  „Essentials“; Unterschied der beiden Enterprise-Tarife; Limits je Tarif;
-  Buchungszeitraum des Beta-Rabatts.
+- **Offen (F-04):** netto ja/nein; Schreibweise „Essentials“; Limits je
+  Tarif; Buchungszeitraum des Beta-Rabatts; Weg vom Test zum Vertrag (F-19).
+
+### 6.2 Funktionen je Paket
+
+Die App nennt die Stufen „Paket“ (englisch „plan“); die Website übernimmt
+das Wort. Die Zeilen fassen die Funktionsschlüssel des Codes
+(`backend/internal/entitlement/entitlement.go`) in der Sprache der App
+zusammen.
+
+| Zeile | ab Paket |
+|---|---|
+| CMDB, Discovery und Reviews | Essentials |
+| Topologie, Ausfallsimulation und Racks | Essentials |
+| API, Webhooks, Export und Import | Essentials; DATEV-Export ab Standard |
+| Inventar, Zuweisungen, Verträge und Dokumente | Essentials; Dokumentenspeicher 1.000 / 10.000 / 50.000 MiB / unbegrenzt |
+| Tickets | Essentials; SLAs und Geschäftskalender ab Standard |
+| Lagerbestand, Inventur, Etiketten und Unterschrift | Standard; Bestellungen ab Pro |
+| Monitoring, Workflows und Formulare | Pro |
+| Compliance, Befunde und Endpoint-Agent | Enterprise |
+| Add-ons: IGA, KI-Assistent | zu jedem Paket buchbar |
+
+Zu klären (F-23): Code und `README.md` §14 weichen ab (Befunde: Enterprise
+im Code, Pro in der README; Schulungen: Pro im Code, Enterprise in der
+README). Die README nennt außerdem Funktionen ohne Schlüssel im Code
+(SMS/Pager, Ticketing Pro, Disposition, erweitertes Audit, Reseller, RFID,
+GIS). Limits für CIs, Collectors und Nutzer stehen nur in der README
+(500 / 2.500 / 10.000 / 50.000 CIs; 2 / 5 / 20 / unbegrenzt Collectors;
+5 / 25 / 100 / unbegrenzt Nutzer) und sind dort als unbestätigt markiert.
+Ohne enthaltene Menge hat der Preis je zusätzlichem CI keine Basis.
+
+### 6.3 Begriffe in beiden Sprachen
+
+Die Website nimmt die Wörter der Oberfläche, im Englischen in
+US-Schreibweise.
+
+| Deutsch | Englisch |
+|---|---|
+| Organisation | Organization |
+| Kunde | Customer |
+| Standort | Site (oberste Ebene), Location (jede Ebene) |
+| CI, CI-Typ | CI, CI type |
+| Collector, Discovery, Scope | Collector, Discovery, Scope |
+| Review-Inbox, Review | Review inbox, review |
+| Abgleich | Reconciliation |
+| Herkunft, Quelle, Rang | Provenance, Source, Rank |
+| Override, Effektiv | Override, Effective |
+| Beziehung, Beziehungstyp | Relationship, Relationship type |
+| Topologie, Ausfallsimulation | Topology, Outage simulation |
+| Ausfall simulieren | Simulate outage |
+| Betroffene CIs | Affected CIs |
+| Durch Redundanz geschützt | Protected by redundancy |
+| Auswirkungsanalyse | Impact analysis |
+| Paket | Plan |
+| Testzeitraum | Trial |
+| Konto anlegen | Create account |
+| Anmelden | Sign in |
+| Höheneinheit (HE) | Rack unit (U) |
 
 ## 7. Claim-Register
 
@@ -211,7 +280,7 @@ benannte Person ihn abgehakt hat (F-14).
 | C-19 | Berichte für ISO 27001, NIS2, KRITIS | `README.md` §12 | Formulierung: Berichtsfunktion, keine Zertifizierung des Anbieters, keine Garantie der Konformität des Kunden |
 | C-20 | KI-Add-on: Verarbeitung in der EU oder selbst betrieben, kein Training mit Kundendaten, Einschalten je Organisation | `README.md` §13 | Anbieter und Region bestätigen |
 | C-21 | Paketumfang, Limits, Preise | Preise: Auftraggeber, 2026-11-12 (§6.1). Umfang und Limits: `README.md` §14, dort „noch zu bestätigen“ | **offene Punkte aus F-04** |
-| C-22 | Test: 30 Tage, Standard-Umfang, 100 CIs | `README.md` §14, Katalog ENT-07; im Code 30 Tage, Tarif `standard`, 100 CIs (`backend/internal/config/config.go`) | **Was nach 30 Tagen geschieht, ist zu klären (F-19).** Bis dahin nennt die Website nur Dauer, Umfang und Limit. |
+| C-22 | Test: 30 Tage, Standard-Umfang, 100 CIs; danach 30 Tage weiter aktiv, dann Löschung; Downgrade ohne Datenverlust | Dauer, Tarif und Limit im Code (`backend/internal/config/config.go`); Testende und Downgrade: Auftraggeber, 2026-11-12 (W-E15) | **Produkt muss der Zusage folgen:** README und Code beschreiben das Testende anders (F-19) |
 | C-23 | Barrierefreiheit der App | Ziel WCAG 2.2 AA (`frontend/DESIGN.md` §7) | als Ziel formulieren, nicht als Konformität |
 | C-24 | Funktionen späterer Produktphasen (Monitoring-Alarme, Workflows, Compliance-Befunde, Endpoint-Agent, SAML/SCIM, Reseller, RFID, GIS, Mobil) | `README.md` §14, §17 | **gegen Launch-Umfang prüfen (F-03)** |
 | C-25 | Dedicated Instance und Air-Gapped-Betrieb | `docs/betrieb/referenzmodell.md` | Angebot bestätigen |

@@ -3,9 +3,9 @@
 | | |
 |---|---|
 | Stand | 2026-11-12 |
-| Status | **Entwurf zur Freigabe (Phase 4).** Die Richtung ist entschieden (`project-brief.md` W-E04), dieses Dokument noch nicht freigegeben. |
+| Status | **Freigegeben vom Auftraggeber am 2026-11-12** (`project-brief.md` W-E11). Verbindliche Quelle für die Umsetzung. |
 | Ansicht | Tokens, Bausteine mit Vorschau und der Seitenanfang der Startseite stehen als durchsehbares Design-System unter https://claude.ai/artifact/Ajb6TSMRYLnmyhTw53PNaj (privat, nur für den Auftraggeber sichtbar). |
-| Nach Freigabe | Dieses Dokument ist die verbindliche Quelle für die Umsetzung. Bei Widerspruch zwischen Dokument und Ansicht gilt das Dokument. |
+| Vorrang | Bei Widerspruch zwischen Dokument und Ansicht gilt das Dokument. Änderungen brauchen eine neue Freigabe. |
 
 Die Idee und die verworfenen Richtungen A und C stehen in
 `brand-strategy.md` §6.
@@ -301,4 +301,4 @@ Simulationsmodus (eine USV, zwei PDUs, Server mit zwei Netzteilen).
 | DS-1 | Die beiden Schriftdateien wiegen zusammen 130 KB. | bei der Umsetzung auf die genutzten Zeichen kürzen; Ziel unter 90 KB |
 | DS-2 | Die Entwurfstafel zeigte das Schema vor der Überschrift. | Überschrift zuerst (§2); auf Wunsch umkehrbar |
 | DS-3 | Englische Einheit im Rack: Die App schreibt auch englisch „HE“. | auf der englischen Website „U“, weil „HE“ dort unverständlich ist |
-| DS-4 | Untertitel der Enterprise-Tarife („gemeinsame Plattform“, „eigene Instanz“) sind eine Annahme. | Bestätigung über F-04 |
+| DS-4 | erledigt: Enterprise Shared „Cloud, getrennte Infrastruktur“, Enterprise Local „beim Kunden gehostet, inklusive aller Arbeiten“ (W-E14) | – |
