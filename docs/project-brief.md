@@ -225,7 +225,7 @@ zur Klärung gilt die Annahme in der dritten Spalte.
 | 2 | Informationsarchitektur, Inhaltsstrategie | Entwurf liegt vor (`content-plan.md`) |
 | 3 | Drei Art Directions | **entschieden: B „Leitstand“** (2026-11-12) |
 | 4 | **Freigabe Design-System** | **freigegeben am 2026-11-12:** `design-system.md` und `specs/2026-11-12-website-spec.md` |
-| 5 | Startseite | Umsetzungsplan liegt vor; wartet auf dessen Freigabe und auf das private Repository |
+| 5 | Startseite | Umsetzungsplan `plans/2026-11-12-phase-5-startseite.md` und Texte `copy/startseite-de.md` liegen zur Freigabe vor |
 | 6 | Übrige Seiten, Formulare | gesperrt |
 | 7 | QA, Sicherheit, Datenschutz, Barrierefreiheit | gesperrt |
 | 8 | Menschliche Freigabe, Deploy | gesperrt |
