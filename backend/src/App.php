@@ -10,26 +10,29 @@ use Throwable;
 
 /**
  * Anwendungslogik: Request -> Response. Keine Globals, kein header()/exit.
- * Uhr, PDO (lazy), Mail-Transport und Protokoll werden injiziert.
+ * Uhr, PDO (lazy), Mail-Transport (lazy), Protokoll und Kontaktseiten-Vorlage werden injiziert.
+ * Fehler in Datenbank- oder Mail-Konfiguration entstehen erst in handle() und ergeben dort das allgemeine 500.
  */
 final class App
 {
     public const TARGETS = [
-        'de' => ['thanks' => '/kontakt/danke/', 'form' => '/kontakt/', 'param' => 'fehler', 'anchor' => 'fehler'],
-        'en' => ['thanks' => '/en/contact/thanks/', 'form' => '/en/contact/', 'param' => 'error', 'anchor' => 'error'],
+        'de' => ['thanks' => '/kontakt/danke/', 'form' => '/kontakt/'],
+        'en' => ['thanks' => '/en/contact/thanks/', 'form' => '/en/contact/'],
     ];
 
     /**
      * @param Closure():PDO $pdoFactory
+     * @param Closure():MailTransport $transportFactory
      * @param Closure():int $clock
      * @param Closure(string):void $log
      */
     public function __construct(
         private readonly Config $config,
         private readonly Closure $pdoFactory,
-        private readonly MailTransport $transport,
+        private readonly Closure $transportFactory,
         private readonly Closure $clock,
         private readonly Closure $log,
+        private readonly ContactPage $contactPage,
     ) {
     }
 
@@ -38,7 +41,7 @@ final class App
         try {
             return $this->dispatch($request);
         } catch (Throwable $e) {
-            // Nur Klasse und Ort, keine Meldung (Meldungen könnten Eingaben enthalten).
+            // Nur Klasse und Ort, keine Meldung (Meldungen könnten Eingaben oder Zugangsdaten enthalten).
             ($this->log)('error ' . $e::class . ' at ' . basename($e->getFile()) . ':' . $e->getLine());
             return $this->failure($request, 500);
         }
@@ -46,14 +49,9 @@ final class App
 
     private function dispatch(Request $request): Response
     {
-        $now = ($this->clock)();
-        $signer = new Signer($this->config->string('secret'));
-
-        if ($request->method === 'GET' && ($request->query['token'] ?? null) === '1') {
-            return Response::json(200, $signer->issue($now));
-        }
+        // Ä-07: kein Token-Endpunkt; jede andere Methode als POST ist 405.
         if ($request->method !== 'POST') {
-            return $this->reject($request, 405, 'Method Not Allowed', ['Allow' => 'GET, POST']);
+            return $this->reject($request, 405, 'Method Not Allowed', ['Allow' => 'POST']);
         }
         $declared = (int) ($request->header('content-length') ?? 0);
         if ($declared > Request::MAX_BODY || strlen($request->body) > Request::MAX_BODY) {
@@ -67,8 +65,11 @@ final class App
             return $this->reject($request, 415, 'Unsupported Media Type');
         }
 
+        $now = ($this->clock)();
         $pdo = ($this->pdoFactory)();
-        [$allowed, $retryAfter] = (new RateLimiter($pdo, $this->config->string('secret'), $this->config->int('rate_limit.max', RateLimiter::LIMIT)))->hit($request->ip, $now);
+        $limiter = new RateLimiter($pdo, $this->config->rateLimitMax(), $this->config->globalMax());
+        $limiter->purgeExpired($now); // Ä-10: abgelaufene Zähler bei jedem Aufruf löschen
+        [$allowed, $retryAfter] = $limiter->hit($request->ip, $now);
         $form = $request->form();
         $lang = $this->lang($form);
         if (!$allowed) {
@@ -76,42 +77,33 @@ final class App
             return $this->tooManyRequests($request, $lang, $retryAfter);
         }
 
+        // Prüfen vor allem anderen: Ein ungültiges oder leeres Formular endet nie auf der Dankeseite.
+        $result = (new Validator())->validate($form);
+        if (!$result['valid']) {
+            return $this->validationError($request, $lang, $result['errors'], $form);
+        }
         if (($form['website'] ?? '') !== '') {
             ($this->log)('honeypot');
             return $this->accepted($request, $lang);
         }
-        $ts = $form['ts'] ?? '';
-        $sig = $form['sig'] ?? '';
-        if ($ts !== '' || $sig !== '') {
-            if ($ts === '' || $sig === '' || $signer->verify($ts, $sig, $now) !== Signer::OK) {
-                ($this->log)('time_trap');
-                return $this->accepted($request, $lang);
-            }
-        }
 
-        $result = (new Validator())->validate($form);
-        if (!$result['valid']) {
-            return $this->validationError($request, $lang, $result['errors']);
+        $transport = ($this->transportFactory)(); // Fehlkonfiguration: 500, bevor etwas gespeichert ist
+        [$allowed, $retryAfter] = $limiter->hitGlobal($now);
+        if (!$allowed) {
+            ($this->log)('global_limit');
+            return $this->tooManyRequests($request, $lang, $retryAfter);
         }
 
         $leads = new LeadRepository($pdo);
         $lead = $result['lead'];
         $id = $leads->insert($lead, $now);
-        $mailer = new Mailer($this->transport, $this->config, $this->clock);
         $status = LeadRepository::DELIVERED;
         try {
-            $mailer->sendToSales($lead);
+            // Ä-09: nur an das Vertriebspostfach; an die eingegebene Adresse geht nie eine Mail.
+            (new Mailer($transport, $this->config, $this->clock))->sendToSales($lead);
         } catch (Throwable $e) {
             $status = LeadRepository::NOT_DELIVERED;
-            ($this->log)('mail_failed sales lead=' . $id . ' ' . $e::class);
-        }
-        if ($status === LeadRepository::DELIVERED) {
-            try {
-                $mailer->sendConfirmation($lead);
-            } catch (Throwable $e) {
-                $status = LeadRepository::CONFIRMATION_FAILED;
-                ($this->log)('mail_failed confirmation lead=' . $id . ' ' . $e::class);
-            }
+            ($this->log)('mail_failed lead=' . $id . ' ' . $e::class);
         }
         $leads->setDelivery($id, $status);
         ($this->log)('lead_stored id=' . $id . ' delivery=' . $status);
@@ -146,15 +138,23 @@ final class App
         return Response::redirect(self::TARGETS[$lang]['thanks']);
     }
 
-    /** @param array<string,string> $errors */
-    private function validationError(Request $request, string $lang, array $errors): Response
+    /**
+     * Ä-08: ohne JSON die Kontaktseite selbst mit 422, Fehlern am Feld und den maskierten Eingaben. Keine Weiterleitung,
+     * nichts davon in einer Adresse. Fehlt die Vorlage, eine kurze Hinweisseite (ebenfalls 422).
+     * @param array<string,string> $errors
+     * @param array<string,string> $form
+     */
+    private function validationError(Request $request, string $lang, array $errors, array $form): Response
     {
         if ($request->wantsJson()) {
             return Response::json(422, ['ok' => false, 'errors' => $errors]);
         }
-        $codes = array_values(array_intersect(Validator::ERROR_CODES, array_values($errors)));
-        $t = self::TARGETS[$lang];
-        return Response::redirect($t['form'] . '?' . $t['param'] . '=' . implode(',', $codes) . '#' . $t['anchor']);
+        $page = $this->contactPage->render($lang, $errors, $form);
+        if ($page !== null) {
+            return Response::page(422, $page);
+        }
+        ($this->log)('template_missing ' . $lang);
+        return Response::html(422, $this->invalidNotice($lang, $errors));
     }
 
     private function tooManyRequests(Request $request, string $lang, int $retryAfter): Response
@@ -184,9 +184,27 @@ final class App
         return Response::text($status, $text, $extra);
     }
 
+    /** Ersatz, wenn die Vorlage fehlt: Fehlertexte als Liste und ein Link zurück. Keine Eingaben. @param array<string,string> $errors */
+    private function invalidNotice(string $lang, array $errors): string
+    {
+        $texts = $this->contactPage->texts($lang);
+        $en = $lang === 'en';
+        $title = $texts['generic'] ?? ($en ? 'The form was not sent. Please check your entries.' : 'Das Formular wurde nicht gesendet. Bitte prüfen Sie Ihre Angaben.');
+        $items = '';
+        foreach ($errors as $code) {
+            $text = $texts['errors'][$code] ?? null;
+            if (is_string($text)) {
+                $items .= '<li>' . ContactPage::esc($text) . '</li>';
+            }
+        }
+        $back = $en ? 'Back to the form' : 'Zurück zum Formular';
+        return $this->shell($lang, $title, ($items !== '' ? '<ul>' . $items . '</ul>' : '')
+            . '<p><a href="' . self::TARGETS[$lang]['form'] . '">' . $back . '</a></p>');
+    }
+
     private function noticePage(string $lang, bool $rateLimited): string
     {
-        $mail = htmlspecialchars($this->config->string('contact_email'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $mail = ContactPage::esc($this->config->string('contact_email'));
         if ($lang === 'en') {
             $title = $rateLimited ? 'Too many requests' : 'Something went wrong';
             $text = $rateLimited ? 'Please try again later.' : 'Your enquiry could not be processed.';
@@ -196,10 +214,15 @@ final class App
             $text = $rateLimited ? 'Bitte versuchen Sie es später erneut.' : 'Ihre Anfrage konnte nicht verarbeitet werden.';
             $contact = 'Schreiben Sie uns bitte direkt:';
         }
+        return $this->shell($lang, $title, '<p>' . $text . '</p><p>' . $contact . ' <a href="mailto:' . $mail . '">' . $mail . '</a></p>');
+    }
+
+    private function shell(string $lang, string $title, string $body): string
+    {
+        $title = ContactPage::esc($title);
         return '<!doctype html><html lang="' . $lang . '"><head><meta charset="utf-8">'
             . '<meta name="viewport" content="width=device-width, initial-scale=1">'
             . '<meta name="robots" content="noindex"><title>' . $title . '</title></head><body>'
-            . '<h1>' . $title . '</h1><p>' . $text . '</p><p>' . $contact . ' <a href="mailto:' . $mail . '">' . $mail . '</a></p>'
-            . "</body></html>\n";
+            . '<h1>' . $title . '</h1>' . $body . "</body></html>\n";
     }
 }

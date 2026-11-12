@@ -12,7 +12,6 @@ final class LeadRepository
     public const PENDING = 'pending';
     public const DELIVERED = 'delivered';
     public const NOT_DELIVERED = 'not_delivered';
-    public const CONFIRMATION_FAILED = 'confirmation_failed';
 
     public function __construct(private readonly PDO $pdo)
     {

@@ -18,7 +18,6 @@ const T = ui(lang);
 const F = T.form;
 const C = content(lang).kontakt;
 const path = localize('/kontakt/', lang);
-const errorId = lang === 'de' ? 'fehler' : 'error';
 const topics = (['demo', 'enterprise', 'security', 'other'] as const).map((v) => ({ value: v, text: F.fields.topic.options[v] }));
 const codes = Object.entries(F.errors).flatMap(([field, byCode]) => Object.keys(byCode).map((code) => [`${field}.${code}`, (byCode as Record<string, string>)[code]] as const));
 ---
@@ -31,8 +30,6 @@ const codes = Object.entries(F.errors).flatMap(([field, byCode]) => Object.keys(
       <div class="contact-main">
         <p class="home-b2b">{T.b2b}</p>
         <p class="contact-required">{F.required}</p>
-
-        <p class="rt-notice rt-notice--signal contact-nojs" id={errorId}><b>{F.generic}</b></p>
 
         <ErrorSummary />
         {(['429', '500'] as const).map((n) => (
@@ -53,8 +50,6 @@ const codes = Object.entries(F.errors).flatMap(([field, byCode]) => Object.keys(
           <Field name="message" kind="textarea" label={F.fields.message.label} hint={F.fields.message.hint} autocomplete="off" />
 
           <input type="hidden" name="lang" value={lang} />
-          <input type="hidden" name="ts" value="" />
-          <input type="hidden" name="sig" value="" />
           <div class="contact-trap" aria-hidden="true">
             <label for="f-website">{F.trap}</label>
             <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off" />

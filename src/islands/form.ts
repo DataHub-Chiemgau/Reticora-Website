@@ -1,5 +1,6 @@
-// Kontaktformular: Token holen, per fetch senden, Fehler am Feld und in der Zusammenfassung zeigen.
-// Alle Texte kommen aus dem Dokument (#form-msgs, [data-notice]); aus der Adresse wird nie Text übernommen.
+// Kontaktformular: per fetch senden, Fehler am Feld und in der Zusammenfassung zeigen.
+// Alle Texte kommen aus dem Dokument (#form-msgs, [data-notice]). Aus der Adresse wird nur `?topic=` gelesen,
+// und nur, wenn der Wert in der festen Liste der Anliegen steht.
 export {}; // Modul, damit `f` nicht im globalen Gültigkeitsbereich liegt
 const f = document.querySelector<HTMLFormElement>('form[data-lead]');
 if (f) {
@@ -9,37 +10,34 @@ if (f) {
   const sum = q('#form-summary')!;
   const btn = q<HTMLButtonElement>('button[type=submit]', f)!;
   const label = btn.textContent!;
-  const ts = f.elements.namedItem('ts') as HTMLInputElement;
-  const sig = f.elements.namedItem('sig') as HTMLInputElement;
-  const val = (n: string) => (f.elements.namedItem(n) as HTMLInputElement).value;
   f.noValidate = true;
 
-  const token = () =>
-    fetch(f.action + '?token=1')
-      .then((r) => r.json())
-      .then((t) => ((ts.value = t.ts), (sig.value = t.sig)))
-      .catch(() => {});
-  token();
-  // Das Token gilt zwei Stunden; eine lange offene Seite holt rechtzeitig ein neues.
-  setInterval(token, 6e6);
+  const topic = f.elements.namedItem('topic') as HTMLSelectElement;
+  const want = new URLSearchParams(location.search).get('topic');
+  if (!topic.value && want && ['demo', 'enterprise', 'security', 'other'].includes(want)) topic.value = want;
 
   const clear = () => {
     document.querySelectorAll<HTMLElement>('.rt-error').forEach((e) => ((e.hidden = true), (e.textContent = '')));
     f.querySelectorAll('[aria-invalid]').forEach((e) => e.removeAttribute('aria-invalid'));
     document.querySelectorAll<HTMLElement>('[data-notice]').forEach((e) => (e.hidden = true));
     sum.hidden = true;
-    q('.contact-nojs')?.remove();
   };
 
   const show = (el: HTMLElement) => ((el.hidden = false), el.focus());
+  // Fehlerseite des Servers (422, Ä-08): die Zusammenfassung ist schon gefüllt; Fokus auch dort, wo autofocus nicht greift.
+  if (!sum.hidden) sum.focus();
+
+  const notice = (n: string) => {
+    clear();
+    show(q(`[data-notice="${n}"]`)!);
+  };
 
   const errors = (codes: string[]) => {
     clear();
     const list = q('ul', sum)!;
     list.textContent = '';
     let n = 0;
-    for (let c of codes) {
-      if (c === 'topic.invalid' && !val('topic')) c = 'topic.required';
+    for (const c of codes) {
       const text = msg.get(c);
       if (!text || c === 'one' || c === 'many') continue;
       n++;
@@ -62,16 +60,6 @@ if (f) {
     q('#form-summary-title')!.textContent = n > 1 ? msg.get('many')!.replace('{n}', String(n)) : msg.get('one')!;
     show(sum);
   };
-
-  const notice = (n: string) => {
-    clear();
-    show(q(`[data-notice="${n}"]`)!);
-  };
-
-  // Rückkehr vom Server ohne JavaScript: ?fehler=… bzw. ?error=… (nur bekannte Codes werden übernommen).
-  const p = new URLSearchParams(location.search);
-  const back = (p.get('fehler') ?? p.get('error') ?? '').split(',').filter((c) => msg.has(c));
-  if (back.length) errors(back);
 
   f.addEventListener('submit', (ev) => {
     ev.preventDefault();

@@ -1,0 +1,42 @@
+{
+  "de": {
+    "summaryOne": "Bitte korrigieren Sie 1 Angabe.",
+    "summaryMany": "Bitte korrigieren Sie {n} Angaben.",
+    "generic": "Das Formular wurde nicht gesendet. Bitte prüfen Sie Ihre Angaben.",
+    "errors": {
+      "name.required": "Bitte geben Sie Ihren Namen an.",
+      "name.too_long": "Der Name ist zu lang. Erlaubt sind höchstens 200 Zeichen.",
+      "name.invalid": "Bitte verwenden Sie keine Zeilenumbrüche oder Steuerzeichen.",
+      "email.required": "Bitte geben Sie Ihre geschäftliche E-Mail-Adresse an.",
+      "email.too_long": "Die E-Mail-Adresse ist zu lang. Erlaubt sind höchstens 254 Zeichen.",
+      "email.invalid": "Bitte geben Sie eine gültige E-Mail-Adresse an, zum Beispiel name@example.com.",
+      "company.required": "Bitte geben Sie Ihr Unternehmen an.",
+      "company.too_long": "Der Name des Unternehmens ist zu lang. Erlaubt sind höchstens 200 Zeichen.",
+      "company.invalid": "Bitte verwenden Sie keine Zeilenumbrüche oder Steuerzeichen.",
+      "topic.required": "Bitte wählen Sie ein Anliegen.",
+      "topic.invalid": "Bitte wählen Sie eines der vier Anliegen aus der Liste.",
+      "message.too_long": "Die Nachricht ist zu lang. Erlaubt sind höchstens 4.000 Zeichen.",
+      "message.invalid": "Bitte verwenden Sie keine Steuerzeichen."
+    }
+  },
+  "en": {
+    "summaryOne": "Please correct 1 entry.",
+    "summaryMany": "Please correct {n} entries.",
+    "generic": "The form was not sent. Please check your entries.",
+    "errors": {
+      "name.required": "Please enter your name.",
+      "name.too_long": "The name is too long. At most 200 characters are allowed.",
+      "name.invalid": "Please do not use line breaks or control characters.",
+      "email.required": "Please enter your business email address.",
+      "email.too_long": "The email address is too long. At most 254 characters are allowed.",
+      "email.invalid": "Please enter a valid email address, for example name@example.com.",
+      "company.required": "Please enter your company.",
+      "company.too_long": "The company name is too long. At most 200 characters are allowed.",
+      "company.invalid": "Please do not use line breaks or control characters.",
+      "topic.required": "Please choose an enquiry.",
+      "topic.invalid": "Please choose one of the four enquiries from the list.",
+      "message.too_long": "The message is too long. At most 4,000 characters are allowed.",
+      "message.invalid": "Please do not use control characters."
+    }
+  }
+}

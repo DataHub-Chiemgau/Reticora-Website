@@ -1,9 +1,10 @@
 ---
 /** Fehlerzusammenfassung über dem Formular. Verborgen, bis die Insel `form` sie füllt; `role="alert"`, erhält den Fokus.
- *  Die Überschrift setzt die Insel (Texte `summaryOne`/`summaryMany` stehen in der Meldungsliste), die Einträge sind Links zu den Feldern. */
+ *  Die Überschrift setzt die Insel (Texte `summaryOne`/`summaryMany` stehen in der Meldungsliste), die Einträge sind Links zu den Feldern.
+ *  Ohne JavaScript füllt `backend/src/ContactPage.php` dieselben Stellen über die Marken `data-rt` (Spec Ä-08). */
 ---
 
-<div class="rt-summary" id="form-summary" role="alert" tabindex="-1" hidden>
-  <p class="rt-summary-title" id="form-summary-title"></p>
-  <ul></ul>
+<div class="rt-summary" id="form-summary" role="alert" tabindex="-1" data-rt="summary" hidden>
+  <p class="rt-summary-title" id="form-summary-title" data-rt="summary-title"></p>
+  <ul data-rt="summary-items"></ul>
 </div>

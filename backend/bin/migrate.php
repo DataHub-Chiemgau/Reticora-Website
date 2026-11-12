@@ -6,7 +6,7 @@ declare(strict_types=1);
 if (PHP_SAPI !== 'cli') {
     exit(1);
 }
-require __DIR__ . '/../src/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 use Reticora\Lead\Config;
 use Reticora\Lead\Database;

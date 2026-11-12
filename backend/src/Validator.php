@@ -13,7 +13,7 @@ final class Validator
         'name.required', 'name.too_long', 'name.invalid',
         'email.required', 'email.invalid', 'email.too_long',
         'company.required', 'company.too_long', 'company.invalid',
-        'topic.invalid',
+        'topic.required', 'topic.invalid',
         'message.too_long', 'message.invalid',
         'lang.invalid',
     ];
@@ -56,7 +56,9 @@ final class Validator
         }
 
         $topic = $input['topic'] ?? '';
-        if (!in_array($topic, self::TOPICS, true)) {
+        if ($topic === '') {
+            $errors['topic'] = 'topic.required';
+        } elseif (!in_array($topic, self::TOPICS, true)) {
             $errors['topic'] = 'topic.invalid';
         }
 
@@ -89,7 +91,8 @@ final class Validator
 
     /**
      * Getrimmt. '' wenn kein sichtbares Zeichen übrig bleibt (Leerraum, Cf, Steuerzeichen);
-     * null bei ungültigem UTF-8, Steuerzeichen, Zeilenumbruch (auch U+2028/2029) oder Cf (Bidi/Zero-Width).
+     * null bei ungültigem UTF-8, Steuerzeichen, Zeilenumbruch (auch U+2028/2029) oder Cf (Bidi, Zero-Width-Space, BOM …).
+     * Ausnahme: U+200C (ZWNJ) und U+200D (ZWJ) gehören in manchen Schriften zur Schreibung von Namen und sind erlaubt.
      */
     private function singleLine(string $value): ?string
     {
@@ -103,7 +106,7 @@ final class Validator
         if (preg_replace('/[\p{Cf}\p{Z}\p{C}]/u', '', $trimmed) === '') {
             return '';
         }
-        if (preg_match('/[\p{C}\p{Zl}\p{Zp}]/u', $trimmed) === 1) {
+        if (preg_match('/(?![\x{200C}\x{200D}])[\p{C}\p{Zl}\p{Zp}]/u', $trimmed) === 1) {
             return null; // \p{C} umfasst Cc und Cf
         }
         return $trimmed;

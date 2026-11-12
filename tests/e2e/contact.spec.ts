@@ -1,19 +1,28 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { SITE } from '../../src/data/site';
 import { ui } from '../../src/i18n';
 import { KONTAKT_DE } from '../../src/content/de/kontakt';
-import { leadCount, mailCount, uniqueEmail } from './helpers/backend';
+import { E2E_DIR, leadCount, uniqueEmail } from './helpers/backend';
 
 const T = ui('de');
 const F = T.form;
 const E = F.errors;
 const ORIGIN = 'http://127.0.0.1:8080';
+const SITE_CSP = /Content-Security-Policy "([^"]+)"/.exec(readFileSync(join(process.cwd(), 'public/.htaccess'), 'utf8'))![1];
 
-/** Wartet auf das Token der Insel und danach die 3 s der Zeitfalle (frühere Absendungen gelten dem Backend als Bot). */
-async function ready(page: Page) {
-  await page.waitForFunction(() => (document.querySelector('input[name=sig]') as HTMLInputElement | null)?.value.length === 64);
-  await page.waitForTimeout(3300);
+/** Führt PHP mit PDO gegen die SQLite-Datei einer Testinstanz aus (kein sqlite3-CLI nötig). */
+const sql = (instance: 'main' | 'limit', statement: string) =>
+  execFileSync('php', ['-r', '$p = new PDO("sqlite:" . $argv[1]); $p->setAttribute(PDO::ATTR_TIMEOUT, 10); $p->exec($argv[2]);', '--', join(E2E_DIR, `${instance}.sqlite`), statement]);
+
+/** Mails der Hauptinstanz, die diese Adresse betreffen, getrennt nach Empfänger und Antwortadresse. */
+function mails(email: string) {
+  const f = join(E2E_DIR, 'main-mails.jsonl');
+  const all = existsSync(f) ? readFileSync(f, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l) as { to: string; reply_to: string | null }) : [];
+  return { to: all.filter((m) => m.to === email).length, replyTo: all.filter((m) => m.reply_to === email).length, sales: all.filter((m) => m.reply_to === email && m.to === 'vertrieb@example.com').length };
 }
 
 async function fill(page: Page, email: string, over: Partial<Record<'name' | 'company' | 'topic' | 'message', string>> = {}) {
@@ -25,6 +34,13 @@ async function fill(page: Page, email: string, over: Partial<Record<'name' | 'co
 }
 
 const submit = (page: Page) => page.getByRole('button', { name: F.submit }).click();
+const leadPost = (page: Page) => page.waitForResponse((r) => r.url() === `${ORIGIN}/api/lead.php` && r.request().method() === 'POST');
+
+// Die Hauptinstanz zählt je Herkunft höchstens 100 Anfragen in der Stunde; alle Tests kommen von 127.0.0.1.
+// Jeder Test beginnt deshalb mit leeren Zählern. Das Limit selbst prüft der Test gegen die Instanz „limit“.
+test.beforeEach(() => {
+  sql('main', 'DELETE FROM rate_limit');
+});
 
 test.describe('Seite', () => {
   test('Kopf, Texte und Felder wie im Textdokument', async ({ page }) => {
@@ -45,6 +61,8 @@ test.describe('Seite', () => {
     await expect(page.locator('form')).toHaveAttribute('method', 'post');
     await expect(page.locator('input[name=lang]')).toHaveValue('de');
     await expect(page.locator('form')).toHaveAttribute('data-thanks', '/kontakt/danke/');
+    // Ä-07: keine Zeitfalle mehr
+    await expect(page.locator('input[name=ts], input[name=sig]')).toHaveCount(0);
   });
 
   test('Köderfeld: verborgen für Hilfstechnik, nicht fokussierbar', async ({ page }) => {
@@ -81,44 +99,59 @@ test.describe('Seite', () => {
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
     expect(await page.title()).toBe(KONTAKT_DE.danke.meta.title);
   });
+
+  test('?topic= wählt das Anliegen vor, nur Werte aus der festen Liste', async ({ page }) => {
+    for (const v of ['security', 'enterprise', 'demo', 'other']) {
+      await page.goto(`/kontakt/?topic=${v}`);
+      await expect(page.locator('#f-topic')).toHaveValue(v);
+    }
+    for (const v of ['', 'Security', 'x"><img src=x>', 'constructor', 'toString']) {
+      await page.goto(`/kontakt/?topic=${encodeURIComponent(v)}`);
+      await expect(page.locator('#f-topic')).toHaveValue('');
+    }
+    // Sonst wird aus der Adresse nichts übernommen (auch keine früheren Fehlercodes).
+    await page.goto('/kontakt/?fehler=name.required&error=email.invalid&name=X');
+    await expect(page.locator('#form-summary')).toBeHidden();
+    await expect(page.locator('#f-name-err')).toBeHidden();
+    await expect(page.locator('#f-name')).toHaveValue('');
+  });
 });
 
 test.describe('Absenden mit JavaScript', () => {
-  test('Erfolg: Dankeseite, Anfrage gespeichert, Mails geschrieben', async ({ page }) => {
+  test('Erfolg sofort nach dem Laden: Dankeseite, Anfrage gespeichert, nur eine Mail an den Vertrieb', async ({ page }) => {
     const email = uniqueEmail('ok');
     await page.goto('/kontakt/');
     await fill(page, email);
-    await ready(page);
     await submit(page);
     await expect(page).toHaveURL(/\/kontakt\/danke\/$/);
     await expect(page.locator('h1')).toHaveText(KONTAKT_DE.danke.h1);
     expect(page.url()).not.toContain(email);
     expect(leadCount(email)).toBe(1);
-    expect(mailCount(email)).toBeGreaterThanOrEqual(1);
+    expect(mails(email)).toEqual({ to: 0, replyTo: 1, sales: 1 });
   });
 
-  test('Tastaturweg durch das ganze Formular bis zur Dankeseite', async ({ page }) => {
+  test('Tastaturweg durch das Formular bis zur Dankeseite', async ({ page }) => {
     const email = uniqueEmail('kbd');
-    await page.goto('/kontakt/');
-    await ready(page);
+    await page.goto('/kontakt/?topic=demo');
+    const active = () => page.evaluate(() => document.activeElement?.id ?? '');
     await page.locator('#f-name').focus();
     await page.keyboard.type('Tastatur Test');
     await page.keyboard.press('Tab');
-    await expect(page.locator('#f-email')).toBeFocused();
+    expect(await active()).toBe('f-email');
     await page.keyboard.type(email);
     await page.keyboard.press('Tab');
-    await expect(page.locator('#f-company')).toBeFocused();
+    expect(await active()).toBe('f-company');
     await page.keyboard.type('Tastatur GmbH');
     await page.keyboard.press('Tab');
-    await expect(page.locator('#f-topic')).toBeFocused();
-    await page.keyboard.press('ArrowDown');
-    await expect(page.locator('#f-topic')).toHaveValue('demo');
-    await page.keyboard.press('Tab');
-    await expect(page.locator('#f-message')).toBeFocused();
+    // Nächstes Ziel ist die Auswahl; Browser, die Auswahllisten beim Tabben überspringen (WebKit je nach
+    // Einstellung), landen auf der Nachricht. Nie auf dem Köderfeld.
+    expect(['f-topic', 'f-message']).toContain(await active());
+    await page.locator('#f-message').focus();
     await page.keyboard.type('Nachricht per Tastatur');
     await page.keyboard.press('Tab');
-    // Das Köderfeld wird übersprungen: nach der Nachricht folgt der Knopf.
-    await expect(page.getByRole('button', { name: F.submit })).toBeFocused();
+    expect(await active()).not.toBe('f-website');
+    // Absenden mit Enter in einem Textfeld (implizites Absenden, in allen Browsern gleich)
+    await page.locator('#f-company').focus();
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/kontakt\/danke\/$/);
     expect(leadCount(email)).toBe(1);
@@ -126,7 +159,6 @@ test.describe('Absenden mit JavaScript', () => {
 
   test('leeres Formular: Zusammenfassung mit Fokus, Fehler am Feld, Links, aria-invalid', async ({ page }) => {
     await page.goto('/kontakt/');
-    await ready(page);
     await submit(page);
     const sum = page.locator('#form-summary');
     await expect(sum).toBeVisible();
@@ -143,6 +175,7 @@ test.describe('Absenden mit JavaScript', () => {
       await expect(sum.getByRole('link', { name: text })).toHaveAttribute('href', `#f-${name}`);
     }
     await expect(page.locator('#f-message-err')).toBeHidden();
+    await expect(page).toHaveURL(/\/kontakt\/$/);
     // Link in der Zusammenfassung führt zum Feld
     await sum.getByRole('link', { name: E.name.required }).click();
     await expect(page.locator('#f-name')).toBeFocused();
@@ -162,28 +195,28 @@ test.describe('Absenden mit JavaScript', () => {
     { title: 'email.invalid', over: {}, email: 'keine-adresse', field: 'email', text: E.email.invalid },
     { title: 'email.too_long', over: {}, email: `${'a'.repeat(250)}@example.com`, field: 'email', text: E.email.too_long },
     { title: 'message.too_long', over: { message: 'x'.repeat(4001) }, field: 'message', text: E.message.too_long },
+    { title: 'topic.required', over: { topic: '' }, field: 'topic', text: E.topic.required },
   ];
   for (const c of cases)
     test(`Feldfehler ${c.title}`, async ({ page }) => {
       const email = c.email ?? uniqueEmail('err');
       await page.goto('/kontakt/');
       await fill(page, email, c.over);
-      await ready(page);
       await submit(page);
       await expect(page.locator(`#f-${c.field}-err`)).toHaveText(c.text);
       await expect(page.locator('#form-summary')).toBeFocused();
       await expect(page.locator('#form-summary-title')).toHaveText(F.summaryOne);
-      expect(page.url()).toContain('/kontakt/');
+      await expect(page).toHaveURL(/\/kontakt\/$/);
       expect(leadCount(email)).toBe(0);
     });
 
-  test('Anliegen nicht gewählt ergibt den Text „required“ des Feldes', async ({ page }) => {
+  test('Name mit Zero-Width-Joiner (U+200D) wird angenommen', async ({ page }) => {
+    const email = uniqueEmail('zwj');
     await page.goto('/kontakt/');
-    await fill(page, uniqueEmail('topic'));
-    await page.locator('#f-topic').selectOption('');
-    await ready(page);
+    await fill(page, email, { name: 'क्‍ष Beispiel' });
     await submit(page);
-    await expect(page.locator('#f-topic-err')).toHaveText(E.topic.required);
+    await expect(page).toHaveURL(/\/kontakt\/danke\/$/);
+    expect(leadCount(email)).toBe(1);
   });
 
   test('Köderfeld gefüllt: scheinbarer Erfolg, aber nichts gespeichert', async ({ page }) => {
@@ -191,34 +224,19 @@ test.describe('Absenden mit JavaScript', () => {
     await page.goto('/kontakt/');
     await fill(page, email);
     await page.locator('#f-website').evaluate((e: HTMLInputElement) => (e.value = 'https://spam.example'));
-    await ready(page);
     await submit(page);
     await expect(page).toHaveURL(/\/kontakt\/danke\/$/);
     expect(leadCount(email)).toBe(0);
-    expect(mailCount(email)).toBe(0);
-  });
-
-  test('zu früh abgesendet (unter 3 s): scheinbarer Erfolg, nichts gespeichert', async ({ page }) => {
-    const email = uniqueEmail('fast');
-    await page.goto('/kontakt/');
-    await fill(page, email);
-    await page.waitForFunction(() => (document.querySelector('input[name=sig]') as HTMLInputElement).value.length === 64);
-    await submit(page);
-    await expect(page).toHaveURL(/\/kontakt\/danke\/$/);
-    expect(leadCount(email)).toBe(0);
+    expect(mails(email)).toEqual({ to: 0, replyTo: 0, sales: 0 });
   });
 
   test('Rate-Limit (429) und Serverfehler (500) und fehlende Verbindung: Meldung mit direktem Kontakt, Fokus, Knopf wieder frei', async ({ page }) => {
     const email = uniqueEmail('net');
     await page.goto('/kontakt/');
     await fill(page, email);
-    await ready(page);
     const contact = SITE.email ?? T.placeholders.email;
     for (const [mode, text] of [[429, F.rate], [500, F.server], ['abort', F.server]] as const) {
-      await page.route('**/api/lead.php', (route) => {
-        if (route.request().method() !== 'POST') return route.continue();
-        return mode === 'abort' ? route.abort() : route.fulfill({ status: mode, contentType: 'application/json', body: '{"ok":false}' });
-      });
+      await page.route('**/api/lead.php', (route) => (mode === 'abort' ? route.abort() : route.fulfill({ status: mode, contentType: 'application/json', body: '{"ok":false}' })));
       await submit(page);
       const notice = page.locator(`[data-notice="${mode === 429 ? '429' : '500'}"]`);
       await expect(notice).toBeVisible();
@@ -229,24 +247,6 @@ test.describe('Absenden mit JavaScript', () => {
       await page.unroute('**/api/lead.php');
     }
     expect(leadCount(email)).toBe(0);
-  });
-
-  test('Rückkehr mit ?fehler=: Zusammenfassung aus bekannten Codes, nie Text aus der Adresse', async ({ page }) => {
-    await page.goto('/kontakt/?fehler=name.required,email.invalid,<img src=x onerror=alert(1)>,gibt.es.nicht#fehler');
-    const sum = page.locator('#form-summary');
-    await expect(sum).toBeVisible();
-    await expect(sum).toBeFocused();
-    await expect(page.locator('#form-summary-title')).toHaveText(F.summaryMany.replace('{n}', '2'));
-    await expect(sum.locator('li')).toHaveText([E.name.required, E.email.invalid]);
-    await expect(page.locator('#f-name-err')).toHaveText(E.name.required);
-    await expect(page.locator('main img')).toHaveCount(0);
-    await expect(page.locator('.contact-nojs')).toHaveCount(0);
-  });
-
-  test('?fehler= ohne bekannte Codes zeigt keine Zusammenfassung', async ({ page }) => {
-    await page.goto('/kontakt/?fehler=nur.unsinn');
-    await expect(page.locator('#form-summary')).toBeHidden();
-    await expect(page.locator('[data-notice]').first()).toBeHidden();
   });
 });
 
@@ -262,31 +262,134 @@ test.describe('Absenden ohne JavaScript', () => {
     await expect(page.locator('h1')).toHaveText(KONTAKT_DE.danke.h1);
     expect(page.url()).not.toContain(email);
     expect(leadCount(email)).toBe(1);
+    expect(mails(email)).toEqual({ to: 0, replyTo: 1, sales: 1 });
   });
 
-  test('Fehler vom Server: Rücksprung auf /kontakt/?fehler=…#fehler, allgemeine Zeile sichtbar, keine Eingaben in der Adresse', async ({ page }) => {
+  test('Eingabefehler: 422 mit der Kontaktseite, Fehler am Feld und in der Zusammenfassung, Eingaben erhalten, keine Adresse mit Query', async ({ page }) => {
     const email = uniqueEmail('nojserr');
+    const name = 'Geheimer-Name-' + 'x'.repeat(200);
+    const message = 'Zeile 1\nZeile 2 mit <b>HTML</b> & "Zitat"';
     await page.goto('/kontakt/');
-    await expect(page.locator('#fehler')).toBeHidden();
-    await fill(page, email, { name: 'Geheimer-Name-' + 'x'.repeat(200) });
+    await fill(page, email, { name, company: 'Firma​GmbH', topic: 'enterprise', message });
+    const response = leadPost(page);
     await submit(page);
-    await expect(page).toHaveURL(/\/kontakt\/\?fehler=name\.too_long#fehler$/);
-    expect(page.url()).not.toContain(email);
-    expect(page.url()).not.toContain('Geheimer');
-    await expect(page.locator('#fehler')).toBeVisible();
-    await expect(page.locator('#fehler')).toContainText(F.generic);
+    const r = await response;
+    expect(r.status()).toBe(422);
+    expect(r.headers()['content-security-policy']).toBe(SITE_CSP);
+    expect(r.headers()['location']).toBeUndefined();
+    await expect(page).toHaveURL(`${ORIGIN}/api/lead.php`);
+    expect(page.url()).not.toContain('?');
+    await expect(page.locator('h1')).toHaveText(KONTAKT_DE.hero.h1);
+    const sum = page.locator('#form-summary');
+    await expect(sum).toBeVisible();
+    await expect(page.locator('#form-summary-title')).toHaveText(F.summaryMany.replace('{n}', '2'));
+    await expect(sum.locator('li')).toHaveText([E.name.too_long, E.company.invalid]);
+    await expect(sum.getByRole('link', { name: E.name.too_long })).toHaveAttribute('href', '#f-name');
+    await expect(page.locator('#f-name-err')).toHaveText(E.name.too_long);
+    await expect(page.locator('#f-company-err')).toHaveText(E.company.invalid);
+    await expect(page.locator('#f-email-err')).toBeHidden();
+    await expect(page.locator('#f-name')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#f-email')).not.toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#f-name')).toHaveValue(name);
+    await expect(page.locator('#f-email')).toHaveValue(email);
+    await expect(page.locator('#f-company')).toHaveValue('Firma​GmbH');
+    await expect(page.locator('#f-topic')).toHaveValue('enterprise');
+    await expect(page.locator('#f-message')).toHaveValue(message);
+    await expect(page.locator('#f-website')).toHaveValue('');
     expect(leadCount(email)).toBe(0);
+    // Korrigieren und erneut absenden führt zur Dankeseite.
+    await page.locator('#f-name').fill('Erika Beispiel');
+    await page.locator('#f-company').fill('Beispiel GmbH');
+    await submit(page);
+    await expect(page).toHaveURL(/\/kontakt\/danke\/$/);
+    expect(leadCount(email)).toBe(1);
+  });
+
+  test('XSS-Versuche in den Feldern erscheinen als Text', async ({ page }) => {
+    const email = uniqueEmail('xss');
+    const xss = {
+      name: '"><script>alert(1)</script>',
+      company: 'Firma​" autofocus onfocus="alert(2)',
+      message: "</textarea><script>alert(3)</script><img src=x onerror=alert(4)>' onmouseover='alert(5)",
+    };
+    await page.goto('/kontakt/');
+    await fill(page, email, xss);
+    const response = leadPost(page);
+    await submit(page);
+    expect((await response).status()).toBe(422);
+    await expect(page.locator('#f-name')).toHaveValue(xss.name);
+    await expect(page.locator('#f-company')).toHaveValue(xss.company);
+    await expect(page.locator('#f-message')).toHaveValue(xss.message);
+    await expect(page.locator('script:not([src])')).toHaveCount(0);
+    await expect(page.locator('main img, [onfocus], [onerror], [onmouseover], input[autofocus]')).toHaveCount(0);
+  });
+});
+
+test.describe('Fehlerseite des Servers mit JavaScript', () => {
+  /** Sendet das Formular wie ohne Insel (form.submit() löst kein submit-Ereignis aus und prüft nichts). */
+  const nativeSubmit = (page: Page) => page.locator('form[data-lead]').evaluate((f: HTMLFormElement) => f.submit());
+
+  test('XSS in jedem Feld: kein Dialog, keine CSP-Verstöße, Stile und Insel laden, Korrektur führt zur Dankeseite', async ({ page }) => {
+    const dialogs: string[] = [];
+    const errors: string[] = [];
+    page.on('dialog', (d) => (dialogs.push(d.message()), d.dismiss()));
+    page.on('pageerror', (e) => errors.push(e.message));
+    page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+    await page.addInitScript(() => {
+      (window as unknown as { __csp: string[] }).__csp = [];
+      document.addEventListener('securitypolicyviolation', (e) => (window as unknown as { __csp: string[] }).__csp.push(`${e.violatedDirective} ${e.blockedURI}`));
+    });
+    const email = uniqueEmail('xssjs');
+    await page.goto('/kontakt/');
+    const wanted = { left: await page.locator('#f-name').evaluate((e) => getComputedStyle(e).borderTopWidth) };
+    await page.locator('#f-name').fill('"><script>alert(1)</script>');
+    await page.locator('#f-email').fill('x"><svg onload=alert(2)>@example.com');
+    await page.locator('#f-company').fill("' autofocus onfocus='alert(3)");
+    await page.locator('#f-topic').evaluate((s: HTMLSelectElement) => {
+      const o = document.createElement('option');
+      o.value = 'demo" selected onfocus="alert(4)';
+      s.append(o);
+      s.value = o.value;
+    });
+    await page.locator('#f-message').fill('</textarea><script>alert(5)</script>');
+    const response = leadPost(page);
+    await nativeSubmit(page);
+    expect((await response).status()).toBe(422);
+    await expect(page).toHaveURL(`${ORIGIN}/api/lead.php`);
+    await expect(page.locator('#form-summary')).toBeFocused();
+    await expect(page.locator('#f-name')).toHaveValue('"><script>alert(1)</script>');
+    await expect(page.locator('#f-email')).toHaveValue('x"><svg onload=alert(2)>@example.com');
+    await expect(page.locator('#f-company')).toHaveValue("' autofocus onfocus='alert(3)");
+    await expect(page.locator('#f-topic')).toHaveValue('');
+    await expect(page.locator('#f-topic option[selected]')).toHaveCount(0);
+    await expect(page.locator('#f-topic-err')).toHaveText(E.topic.invalid);
+    await expect(page.locator('#f-message')).toHaveValue('</textarea><script>alert(5)</script>');
+    await expect(page.locator('script:not([src]), svg[onload], [onfocus]')).toHaveCount(0);
+    // Stile der Website greifen (gleiche Rahmenbreite wie auf /kontakt/), CSP ohne Verstoß
+    expect(await page.locator('#f-name').evaluate((e) => getComputedStyle(e).borderTopWidth)).toBe(wanted.left);
+    expect(await page.evaluate(() => (window as unknown as { __csp: string[] }).__csp)).toEqual([]);
+    // Die Insel läuft auch auf der Fehlerseite: Korrektur per fetch, dann Dankeseite
+    await page.locator('#f-name').fill('Erika Beispiel');
+    await page.locator('#f-email').fill(email);
+    await page.locator('#f-company').fill('Beispiel GmbH');
+    await page.locator('#f-topic').selectOption('security');
+    await page.locator('#f-message').fill('');
+    await submit(page);
+    await expect(page).toHaveURL(/\/kontakt\/danke\/$/);
+    expect(leadCount(email)).toBe(1);
+    expect(dialogs).toEqual([]);
+    expect(errors.filter((e) => !/422/.test(e))).toEqual([]);
   });
 });
 
 test.describe('Backend hinter Apache', () => {
-  test('Token-Endpunkt liefert ts und sig ohne Cookie', async ({ request }) => {
-    const r = await request.get('/api/lead.php?token=1');
-    expect(r.status()).toBe(200);
-    expect(r.headers()['cache-control']).toBe('no-store');
-    expect(r.headers()['set-cookie']).toBeUndefined();
-    const j = await r.json();
-    expect(j.sig).toMatch(/^[0-9a-f]{64}$/);
+  test('kein Token-Endpunkt: jeder GET ergibt 405', async ({ request }) => {
+    for (const q of ['?token=1', '', '?topic=demo']) {
+      const r = await request.get(`/api/lead.php${q}`);
+      expect(r.status()).toBe(405);
+      expect(r.headers()['allow']).toBe('POST');
+      expect(r.headers()['set-cookie']).toBeUndefined();
+    }
   });
 
   test('Origin wird unverändert durchgereicht: fremde Origin 403, eigene 200', async ({ request }) => {
@@ -301,27 +404,46 @@ test.describe('Backend hinter Apache', () => {
     expect(leadCount(form.email)).toBe(1);
   });
 
-  test('Rate-Limit: spätestens die sechste Anfrage je Stunde ergibt 429 mit Retry-After (eigene Instanz mit Standardlimit)', async ({ request, browserName }) => {
-    test.skip(browserName !== 'chromium', 'Der Zähler gilt je Herkunft und wird von allen Browsern geteilt; ein Lauf genügt.');
-    const statuses: number[] = [];
-    let retry: string | undefined;
-    for (let i = 0; i < 7; i++) {
-      const r = await request.post('/api-limit/lead.php', {
+  test('422-Seite: maskierte Eingaben, CSP der Website, Stile und Insel aus /_astro/ erreichbar', async ({ request }) => {
+    const form = {
+      name: '"><script>alert(1)</script>',
+      email: "x' onfocus='alert(2)",
+      company: '</textarea><script>alert(3)</script>',
+      topic: 'security" selected x="',
+      message: '</textarea><img src=x onerror=alert(4)>',
+      lang: 'de',
+    };
+    const r = await request.post('/api/lead.php', { form, headers: { Origin: ORIGIN }, maxRedirects: 0 });
+    expect(r.status()).toBe(422);
+    expect(r.headers()['content-type']).toBe('text/html; charset=utf-8');
+    expect(r.headers()['content-security-policy']).toBe(SITE_CSP);
+    const html = await r.text();
+    for (const raw of ['<script>alert', '<img src=x', "' onfocus='", '" selected x="']) expect(html).not.toContain(raw);
+    expect(html).toContain('value="&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;"');
+    expect(html).toContain('value="x&#039; onfocus=&#039;alert(2)"');
+    expect(html).toContain('&lt;/textarea&gt;&lt;img src=x onerror=alert(4)&gt;</textarea>');
+    expect(html).not.toMatch(/data-rt-option="[a-z]+" selected/);
+    const assets = [...html.matchAll(/(?:href|src)="(\/_astro\/[^"]+\.(?:css|js))"/g)].map((m) => m[1]);
+    expect(assets.length).toBeGreaterThanOrEqual(2);
+    for (const a of assets) expect((await request.get(a)).status(), a).toBe(200);
+  });
+
+  test('Rate-Limit: nach fünf erfolgreichen Anfragen 429 mit Retry-After (eigene Instanz mit Standardlimit, Zähler frisch)', async ({ request, browserName }) => {
+    test.skip(browserName !== 'chromium', 'Die Instanz „limit“ wird von allen Browsern geteilt; ein Lauf genügt.');
+    // Frischer Zähler: auch ein zweiter Lauf in derselben Stunde (wiederverwendeter Server) prüft wirklich.
+    sql('limit', 'DELETE FROM rate_limit');
+    const post = () =>
+      request.post('/api-limit/lead.php', {
         form: { name: 'Limit', email: uniqueEmail('limit'), company: 'X GmbH', topic: 'demo', message: '', lang: 'de' },
         headers: { Origin: ORIGIN, Accept: 'application/json' },
       });
-      statuses.push(r.status());
-      if (r.status() === 429) {
-        retry = r.headers()['retry-after'];
-        break;
-      }
-    }
-    const first429 = statuses.indexOf(429);
-    expect(first429, statuses.join()).toBeGreaterThanOrEqual(0);
-    expect(first429).toBeLessThanOrEqual(5);
-    expect(statuses.slice(0, first429).every((s) => s === 200)).toBe(true);
-    expect(Number(retry)).toBeGreaterThan(0);
-    expect(Number(retry)).toBeLessThanOrEqual(3600);
+    const statuses: number[] = [];
+    for (let i = 0; i < 5; i++) statuses.push((await post()).status());
+    expect(statuses).toEqual([200, 200, 200, 200, 200]);
+    const r = await post();
+    expect(r.status()).toBe(429);
+    expect(Number(r.headers()['retry-after'])).toBeGreaterThan(0);
+    expect(Number(r.headers()['retry-after'])).toBeLessThanOrEqual(3600);
   });
 });
 
@@ -331,25 +453,34 @@ test.describe('Barrierefreiheit und Hygiene', () => {
     await page.goto('/kontakt/');
     let r = await new AxeBuilder({ page }).analyze();
     expect(r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
-    await ready(page);
     await submit(page);
     await expect(page.locator('#form-summary')).toBeVisible();
     r = await new AxeBuilder({ page }).analyze();
     expect(r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
   });
 
+  test('axe: Fehlerseite des Servers (422 ohne JavaScript-Absenden)', async ({ page }) => {
+    await page.goto('/kontakt/');
+    await page.locator('#f-email').fill('keine-adresse');
+    const response = leadPost(page);
+    await page.locator('form[data-lead]').evaluate((f: HTMLFormElement) => f.submit());
+    expect((await response).status()).toBe(422);
+    await expect(page.locator('#form-summary')).toBeVisible();
+    const r = await new AxeBuilder({ page }).analyze();
+    expect(r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
+  });
+
   test('axe: Meldung bei Serverfehler', async ({ page }) => {
     await page.goto('/kontakt/');
     await fill(page, uniqueEmail('axe'));
-    await ready(page);
-    await page.route('**/api/lead.php', (route) => (route.request().method() === 'POST' ? route.fulfill({ status: 500, body: '{"ok":false}' }) : route.continue()));
+    await page.route('**/api/lead.php', (route) => route.fulfill({ status: 500, body: '{"ok":false}' }));
     await submit(page);
     await expect(page.locator('[data-notice="500"]')).toBeVisible();
     const r = await new AxeBuilder({ page }).analyze();
     expect(r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
   });
 
-  test('keine fremden Hosts, keine Konsolenfehler, keine CSP-Verstöße, keine Cookies, leerer Web Storage', async ({ page, context, baseURL }) => {
+  test('keine fremden Hosts, keine Konsolenfehler, keine CSP-Verstöße, keine Cookies', async ({ page, context, baseURL }) => {
     const hosts = new Set<string>();
     const errors: string[] = [];
     page.on('request', (r) => {
@@ -359,14 +490,13 @@ test.describe('Barrierefreiheit und Hygiene', () => {
     page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
     page.on('pageerror', (e) => errors.push(e.message));
     await page.addInitScript(() => {
-      (window as any).__csp = [];
-      document.addEventListener('securitypolicyviolation', (e) => (window as any).__csp.push(`${e.violatedDirective} ${e.blockedURI}`));
+      (window as unknown as { __csp: string[] }).__csp = [];
+      document.addEventListener('securitypolicyviolation', (e) => (window as unknown as { __csp: string[] }).__csp.push(`${e.violatedDirective} ${e.blockedURI}`));
     });
     await page.goto('/kontakt/', { waitUntil: 'networkidle' });
-    await ready(page);
     await submit(page); // 422
     await expect(page.locator('#form-summary')).toBeVisible();
-    expect(await page.evaluate(() => (window as any).__csp)).toEqual([]);
+    expect(await page.evaluate(() => (window as unknown as { __csp: string[] }).__csp)).toEqual([]);
     await fill(page, uniqueEmail('hyg'));
     await submit(page); // 200, Navigation
     await expect(page).toHaveURL(/danke/);

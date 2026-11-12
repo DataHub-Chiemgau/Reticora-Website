@@ -60,8 +60,15 @@ fehlende Angaben stehen als Platzhalter mit `data-placeholder`.
   - Überschrift bei einem Fehler: „Bitte korrigieren Sie 1 Angabe.“
   - Überschrift bei mehreren: „Bitte korrigieren Sie {n} Angaben.“
   - Darunter je Fehler ein Link zum Feld mit dem Fehlertext.
-- **Allgemeine Zeile ohne JavaScript** (`#fehler`): „Das Formular wurde
-  nicht gesendet. Bitte prüfen Sie Ihre Angaben.“
+- **Ohne JavaScript** zeigt der Server bei Eingabefehlern dieselbe Seite mit
+  denselben Texten an Feld und Zusammenfassung (Spezifikation Ä-08); die
+  frühere Zeile unter `#fehler` und die Fehlercodes in der Adresse entfallen.
+- **Allgemeine Zeile** (Schlüssel `form.generic`): „Das Formular wurde
+  nicht gesendet. Bitte prüfen Sie Ihre Angaben.“ Steht jetzt nur noch in der
+  Zusammenfassung für einen Fehler ohne Feld (ungültige Sprache) und als
+  Überschrift der Ersatzseite, wenn dem Server die Vorlage der Kontaktseite
+  fehlt. Darunter auf der Ersatzseite der Link „Zurück zum Formular“
+  (*eigene Formulierung der Umsetzung, nicht abgestimmt*).
 
 | Code | Feld | Text am Feld |
 |---|---|---|

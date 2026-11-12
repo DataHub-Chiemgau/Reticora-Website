@@ -1,6 +1,9 @@
 ---
 /** Formularfeld mit sichtbarer Beschriftung, optionalem Hilfetext und Fehlerplatz.
- *  Der Fehlerplatz (`#f-<name>-err`) ist leer und verborgen; die Insel `form` füllt und zeigt ihn und setzt `aria-invalid`. */
+ *  Der Fehlerplatz (`#f-<name>-err`) ist leer und verborgen; die Insel `form` füllt und zeigt ihn und setzt `aria-invalid`.
+ *  Ohne JavaScript tut das `backend/src/ContactPage.php` in der Vorlage der Seite (Spec Ä-08). Dafür tragen Steuerelement,
+ *  Optionen und Fehlerplatz feste Marken (`data-rt-field`, `data-rt-option`, `data-rt-error`); sie müssen jeweils das
+ *  letzte Attribut sein, damit PHP sie als feste Zeichenfolge findet (geprüft beim Build in `scripts/lib/lead-templates.mjs`). */
 interface Option { value: string; text: string }
 interface Props {
   name: string;
@@ -22,13 +25,13 @@ const describedby = [hint ? `${id}-hint` : null, `${id}-err`].filter(Boolean).jo
 <div class="rt-field" data-field={name}>
   <label for={id}>{label}</label>
   {hint && <p class="rt-hint" id={`${id}-hint`}>{hint}</p>}
-  {kind === 'textarea' && <textarea class="rt-input" id={id} name={name} rows={rows} required={required} autocomplete={autocomplete} aria-describedby={describedby}></textarea>}
+  {kind === 'textarea' && <textarea class="rt-input" id={id} name={name} rows={rows} required={required} autocomplete={autocomplete} aria-describedby={describedby} data-rt-field={name}></textarea>}
   {kind === 'select' && (
-    <select class="rt-input" id={id} name={name} required={required} autocomplete={autocomplete} aria-describedby={describedby}>
+    <select class="rt-input" id={id} name={name} required={required} autocomplete={autocomplete} aria-describedby={describedby} data-rt-field={name}>
       <option value="">{choose}</option>
-      {options.map((o) => <option value={o.value}>{o.text}</option>)}
+      {options.map((o) => <option value={o.value} data-rt-option={o.value}>{o.text}</option>)}
     </select>
   )}
-  {kind === 'input' && <input class="rt-input" id={id} name={name} type={type} required={required} autocomplete={autocomplete} aria-describedby={describedby} />}
-  <p class="rt-error" id={`${id}-err`} hidden></p>
+  {kind === 'input' && <input class="rt-input" id={id} name={name} type={type} required={required} autocomplete={autocomplete} aria-describedby={describedby} data-rt-field={name} />}
+  <p class="rt-error" id={`${id}-err`} data-rt-error={name} hidden></p>
 </div>

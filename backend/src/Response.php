@@ -6,6 +6,12 @@ namespace Reticora\Lead;
 
 final class Response
 {
+    /** Gleiche Werte wie public/.htaccess für die statischen Seiten (geprüft in ContactPageTest). */
+    public const SITE_CSP = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'";
+    public const SITE_PERMISSIONS = 'camera=(), microphone=(), geolocation=(), payment=(), usb=()';
+    /** Wie die Website. Mit no-referrer sendete der Browser beim erneuten Absenden des Formulars `Origin: null` (dann 403). */
+    public const SITE_REFERRER = 'strict-origin-when-cross-origin';
+
     /** @param array<string,string> $headers */
     private function __construct(
         public readonly int $status,
@@ -44,6 +50,21 @@ final class Response
     {
         return self::make($status, 'text/html; charset=utf-8', $html, $extra + [
             'Content-Security-Policy' => "default-src 'none'; base-uri 'none'; frame-ancestors 'none'",
+        ]);
+    }
+
+    /**
+     * Fertige Seite der Website (Kontaktseite mit Fehlern, Ä-08): dieselbe Policy wie die statischen Seiten,
+     * damit Stile und Insel aus /_astro/ laden. Inline-Skript und -Stil bleiben verboten.
+     * @param array<string,string> $extra
+     */
+    public static function page(int $status, string $html, array $extra = []): self
+    {
+        return self::make($status, 'text/html; charset=utf-8', $html, $extra + [
+            'Content-Security-Policy' => self::SITE_CSP,
+            'Referrer-Policy' => self::SITE_REFERRER,
+            'Cross-Origin-Opener-Policy' => 'same-origin',
+            'Permissions-Policy' => self::SITE_PERMISSIONS,
         ]);
     }
 

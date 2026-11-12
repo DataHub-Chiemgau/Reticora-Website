@@ -18,3 +18,9 @@ CREATE TABLE IF NOT EXISTS rate_limit (
     counter       INTEGER NOT NULL,
     PRIMARY KEY (hash, window_start)
 );
+
+CREATE TABLE IF NOT EXISTS rate_limit_key (
+    id      INTEGER NOT NULL PRIMARY KEY,
+    day     TEXT NOT NULL,
+    secret  TEXT NOT NULL
+);

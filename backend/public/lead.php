@@ -6,29 +6,31 @@ declare(strict_types=1);
 
 use Reticora\Lead\App;
 use Reticora\Lead\Config;
+use Reticora\Lead\ContactPage;
 use Reticora\Lead\Database;
 use Reticora\Lead\FileTransport;
+use Reticora\Lead\MailTransport;
+use Reticora\Lead\PhpMailerTransport;
 use Reticora\Lead\Request;
 use Reticora\Lead\Responder;
 use Reticora\Lead\Response;
-use Reticora\Lead\SmtpTransport;
 
 ini_set('display_errors', '0');
 ini_set('html_errors', '0');
 ini_set('log_errors', '1');
 
-// Verzeichnis mit src/ und config.php: RETICORA_HOME oder ../../reticora (neben dem Webroot).
+// Verzeichnis mit vendor/, src/, templates/ und config.php: RETICORA_HOME oder ../../reticora (neben dem Webroot).
 // Kein Rückgriff auf ../ : Im Betrieb wäre das das Webroot.
 $home = getenv('RETICORA_HOME') ?: null;
-if ($home === null && is_file(__DIR__ . '/../../reticora/src/autoload.php')) {
+if ($home === null && is_file(__DIR__ . '/../../reticora/vendor/autoload.php')) {
     $home = __DIR__ . '/../../reticora';
 }
-if ($home === null) {
+if ($home === null || !is_file($home . '/vendor/autoload.php')) {
     http_response_code(500);
     header('Content-Type: text/plain; charset=utf-8');
     exit("Server error\n");
 }
-require $home . '/src/autoload.php';
+require $home . '/vendor/autoload.php';
 
 try {
     $config = Config::load((string) (getenv('RETICORA_CONFIG') ?: $home . '/config.php'));
@@ -51,22 +53,19 @@ $log = static function (string $line) use ($logPath): void {
     }
 };
 
-$transport = match ($config->string('mail.transport', 'smtp')) {
-    'file' => new FileTransport($config->string('mail.file_path')), // nur lokale Tests
-    default => new SmtpTransport(
-        $config->string('mail.host'),
-        $config->int('mail.port', 465),
-        $config->string('mail.encryption', 'ssl'),
-        $config->string('mail.user'),
-        $config->string('mail.pass'),
-        $config->string('mail.helo_name', 'localhost'),
-        $config->int('mail.timeout', 10),
-        $config->int('mail.deadline', 15),
-        $config->get('mail.allow_insecure') === true, // nur für Tests
-    ),
+// Erst in App::handle() aufgerufen: eine Fehlkonfiguration ergibt dort das allgemeine 500 (nie einen nackten PHP-Fehler).
+$transportFactory = static function () use ($config): MailTransport {
+    if ($config->string('mail.transport', 'smtp') === 'file') {
+        // Nur lokale Tests: schreibt Personendaten in eine Datei.
+        if ($config->get('mail.allow_insecure') !== true) {
+            throw new InvalidArgumentException("mail.transport 'file' nur mit mail.allow_insecure");
+        }
+        return new FileTransport($config->string('mail.file_path'));
+    }
+    return PhpMailerTransport::fromConfig($config);
 };
-
 $pdoFactory = static fn (): \PDO => Database::connect($config);
+$templates = new ContactPage($config->string('templates_dir') ?: $home . '/templates');
 
-$app = new App($config, $pdoFactory, $transport, static fn (): int => time(), $log);
+$app = new App($config, $pdoFactory, $transportFactory, static fn (): int => time(), $log, $templates);
 Responder::emit($app->handle(Request::fromGlobals()));

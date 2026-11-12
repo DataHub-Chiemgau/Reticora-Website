@@ -13,7 +13,9 @@ final class ValidatorTest extends TestCase
     /** @return array<string,string> */
     private function ok(array $o = []): array
     {
-        return $o + ['name' => 'Erika', 'email' => 'erika@example.com', 'company' => 'Beispiel GmbH', 'topic' => 'demo', 'message' => '', 'lang' => 'de'];
+        // null im Override entfernt das Feld ganz
+        $in = $o + ['name' => 'Erika', 'email' => 'erika@example.com', 'company' => 'Beispiel GmbH', 'topic' => 'demo', 'message' => '', 'lang' => 'de'];
+        return array_filter($in, fn ($v) => $v !== null);
     }
 
     public function testValidInputPasses(): void
@@ -41,7 +43,8 @@ final class ValidatorTest extends TestCase
             'company leer' => [['company' => ''], ['company' => 'company.required']],
             'company 200 ok' => [['company' => str_repeat('x', 200)], []],
             'company 201' => [['company' => str_repeat('x', 201)], ['company' => 'company.too_long']],
-            'topic leer' => [['topic' => ''], ['topic' => 'topic.invalid']],
+            'topic leer' => [['topic' => ''], ['topic' => 'topic.required']],
+            'topic fehlt' => [['topic' => null], ['topic' => 'topic.required']],
             'topic unbekannt' => [['topic' => 'verkauf'], ['topic' => 'topic.invalid']],
             'topic Gross' => [['topic' => 'Demo'], ['topic' => 'topic.invalid']],
             'topic enterprise' => [['topic' => 'enterprise'], []],
@@ -101,9 +104,22 @@ final class ValidatorTest extends TestCase
         self::assertSame('company.required', $r['errors']['company']);
     }
 
+    public function testZeroWidthJoinerAndNonJoinerAllowedInNamesAndCompanies(): void
+    {
+        // U+200C/U+200D gehören in manchen Schriften zur richtigen Schreibung (z. B. Persisch, Devanagari).
+        foreach (["\u{0645}\u{06CC}\u{200C}\u{062E}\u{0648}\u{0627}\u{0647}\u{0645}", "\u{0915}\u{094D}\u{200D}\u{0937}", "Er\u{200C}ika"] as $v) {
+            $r = (new Validator())->validate($this->ok(['name' => $v, 'company' => $v . ' GmbH']));
+            self::assertSame([], $r['errors'], $v);
+            self::assertSame($v, $r['lead']['name']);
+        }
+        // nur unsichtbare Zeichen bleiben ein Pflichtfehler, in der E-Mail-Adresse bleiben sie ungültig
+        $r = (new Validator())->validate($this->ok(['name' => "\u{200C}\u{200D}", 'email' => "a\u{200D}b@example.com"]));
+        self::assertSame(['name' => 'name.required', 'email' => 'email.invalid'], $r['errors']);
+    }
+
     public function testBidiAndZeroWidthRejectedInsideSingleLineFields(): void
     {
-        foreach (["Er\u{202E}ika", "Er\u{200B}ika", "Er\u{FEFF}ika"] as $v) {
+        foreach (["Er\u{202E}ika", "Er\u{200B}ika", "Er\u{FEFF}ika", "Er\u{2066}ika", "Er\u{200E}ika", "Er\u{061C}ika", "Er\u{2060}ika", "Er\u{00AD}ika"] as $v) {
             $r = (new Validator())->validate($this->ok(['name' => $v, 'company' => $v, 'email' => "a{$v}@example.com"]));
             self::assertSame('name.invalid', $r['errors']['name']);
             self::assertSame('company.invalid', $r['errors']['company']);
@@ -149,5 +165,7 @@ final class ValidatorTest extends TestCase
             self::assertContains($code, Validator::ERROR_CODES);
         }
         self::assertCount(6, $r['errors']);
+        self::assertSame('topic.invalid', $r['errors']['topic']);
+        self::assertContains('topic.required', Validator::ERROR_CODES);
     }
 }

@@ -10,6 +10,9 @@ export interface Site {
   registerCourt: string | null;
   registerNumber: string | null;
   vatId: string | null;
+  /** Meldeweg für Sicherheitslücken (RFC 9116 `Contact`): `mailto:`- oder `https:`-Adresse, oder eine bloße E-Mail-Adresse.
+   *  Solange null, entsteht keine `/.well-known/security.txt`, und die Release-Prüfung meldet die Lücke (Spec Ä-13). */
+  securityContact: string | null;
 }
 
 /** Fehlende Angaben bleiben null (Release-Sperre); sie werden nirgends gerendert. */
@@ -24,4 +27,5 @@ export const SITE: Site = {
   registerCourt: null,
   registerNumber: null,
   vatId: null,
+  securityContact: null,
 };

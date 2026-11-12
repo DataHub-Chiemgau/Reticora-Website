@@ -7,9 +7,9 @@ namespace Reticora\Lead;
 use Closure;
 
 /**
- * Baut die beiden Mails. Kopfzeilenwerte (From, To, Betreff) kommen aus der Konfiguration bzw. festen Texten;
- * einzig Reply-To (und bei der Bestätigung To) ist die bereits validierte Adresse der anfragenden Person.
- * Alle Rümpfe sind Klartext (UTF-8); HTML aus Formularfeldern wird nie interpretiert.
+ * Baut die einzige Mail: an das Vertriebspostfach (Spec Ä-09; keine Mail an die eingegebene Adresse).
+ * Kopfzeilenwerte (From, To, Betreff) kommen aus der Konfiguration bzw. festen Texten; einzig Reply-To ist die
+ * bereits validierte Adresse der anfragenden Person. Der Rumpf ist Klartext (UTF-8); HTML wird nie interpretiert.
  */
 final class Mailer
 {
@@ -48,25 +48,7 @@ final class Mailer
         ));
     }
 
-    /** Bestätigung ohne jede Eingabe der Person. @param array<string,string> $lead */
-    public function sendConfirmation(array $lead): void
-    {
-        $now = ($this->clock)();
-        $en = $lead['lang'] === 'en';
-        $subject = $en ? 'Your enquiry to Reticora' : 'Ihre Anfrage an Reticora';
-        // Bewusst ohne jede Eingabe der Person (kein Name, keine Firma, keine Nachricht):
-        // Das Formular darf nicht dazu taugen, beliebigen Text an Dritte zu senden.
-        $text = $en
-            ? "Hello,\r\n\r\nthank you for your enquiry. We have received it and will reply to this address.\r\n"
-            : "Guten Tag,\r\n\r\nvielen Dank für Ihre Anfrage. Sie ist bei uns eingegangen, wir antworten an diese Adresse.\r\n";
-        $signature = $this->config->string('signature.' . ($en ? 'en' : 'de'));
-        if ($signature !== '') {
-            $text .= "\r\n-- \r\n" . $signature . "\r\n";
-        }
-        $this->transport->send($this->message($lead['email'], null, $subject, $text, $now));
-    }
-
-    private function message(string $to, ?string $replyTo, string $subject, string $body, int $now): MailMessage
+    private function message(string $to, string $replyTo, string $subject, string $body, int $now): MailMessage
     {
         $host = parse_url($this->config->string('site_url'), PHP_URL_HOST);
         return new MailMessage(

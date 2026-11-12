@@ -50,28 +50,37 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-# Zwei Instanzen derselben Anwendung: "main" mit hohem Limit für alle Tests,
-# "limit" mit dem Standardlimit (5 je Stunde) nur für den Test des Limits selbst.
-secret="e2e-only-secret-0123456789-abcdefghijkl"
+if [ ! -f "$root/backend/vendor/autoload.php" ] || [ ! -d "$root/backend/vendor/phpmailer/phpmailer" ]; then
+  echo "backend/vendor fehlt. Bitte zuerst 'cd backend && composer install' ausführen." >&2
+  exit 1
+fi
+if [ ! -f "$root/backend/templates/contact.de.html" ]; then
+  echo "Hinweis: backend/templates/contact.de.html fehlt (entsteht bei 'npm run build'); Eingabefehler ohne JavaScript zeigen dann die kurze Hinweisseite." >&2
+fi
+
+# Zwei Instanzen derselben Anwendung, jede mit eigener, bei jedem Start neuer SQLite-Datei:
+# "main" für alle Tests (Limits an der oberen Grenze: 100 je Herkunft, 1000 insgesamt je Stunde),
+# "limit" mit den Standardwerten (5 je Herkunft, 60 insgesamt) nur für den Test des Rate-Limits selbst.
 start_backend() { # Name, Port, Limit-Zeile
   local name="$1" port="$2" limit="$3"
+  rm -f "$e2e/$name.sqlite"
   cat > "$e2e/$name.php" <<PHP
 <?php return [
   'site_url' => 'http://127.0.0.1:8080', 'contact_email' => 'kontakt@example.com',
-  'secret' => '$secret',
   $limit
+  'templates_dir' => '$root/backend/templates',
   'db' => ['dsn' => 'sqlite:$e2e/$name.sqlite'],
-  'mail' => ['transport' => 'file', 'file_path' => '$e2e/$name-mails.jsonl',
+  'mail' => ['transport' => 'file', 'allow_insecure' => true, 'file_path' => '$e2e/$name-mails.jsonl',
              'from_address' => 'versand@example.com', 'from_name' => 'Reticora Website', 'to_address' => 'vertrieb@example.com'],
-  'signature' => ['de' => '', 'en' => ''], 'log_path' => '$e2e/$name.log',
+  'log_path' => '$e2e/$name.log',
 ];
 PHP
   RETICORA_CONFIG="$e2e/$name.php" RETICORA_HOME="$root/backend" "$php" "$root/backend/bin/migrate.php" >/dev/null
   RETICORA_CONFIG="$e2e/$name.php" RETICORA_HOME="$root/backend" "$php" -S "127.0.0.1:$port" -t "$root/backend/public" >"$e2e/$name-server.log" 2>&1 &
   phppids="$phppids $!"
 }
-start_backend main 8081 "'rate_limit' => ['max' => 100000],"
-start_backend limit 8082 ""
+start_backend main 8081 "'rate_limit' => ['max' => 100, 'global_max' => 1000],"
+start_backend limit 8082 "'rate_limit' => ['max' => 5, 'global_max' => 60],"
 
 identity=""
 if [ "$(id -u)" = "0" ]; then identity="User www-data

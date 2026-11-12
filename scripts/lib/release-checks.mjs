@@ -1,5 +1,7 @@
 // Reine Prüffunktionen für die Release-Sperre. Jede liefert eine Liste von Mängeln; leer heißt in Ordnung.
 
+import { contactUri } from './security-txt.mjs';
+
 const blank = (v) => typeof v !== 'string' || v.trim() === '';
 const PLACEHOLDER = /^(todo|tbd|xxx|\?)$/i;
 const isoDate = (v) => typeof v === 'string' && /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(v);
@@ -70,6 +72,17 @@ export function checkSite(site) {
     ['vatId', 'USt-IdNr.'],
   ];
   return fields.filter(([k]) => blank(site[k]) || PLACEHOLDER.test(site[k].trim())).map(([, label]) => `Anbieter: ${label} fehlt`);
+}
+
+/** Spec Ä-13: ohne Meldeadresse keine /.well-known/security.txt. */
+export function checkSecurityContact(site) {
+  if (blank(site.securityContact)) return ['Anbieter: Meldeadresse für Sicherheitslücken fehlt'];
+  try {
+    contactUri(site.securityContact);
+    return [];
+  } catch {
+    return ['Anbieter: Meldeadresse für Sicherheitslücken ist ungültig'];
+  }
 }
 
 /** Ort einer Bilddatei unter public/, wie ScreenshotSlot sie ausliefert. */
