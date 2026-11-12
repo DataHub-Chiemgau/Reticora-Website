@@ -21,6 +21,9 @@ LoadModule expires_module @MODS@/mod_expires.so
 LoadModule deflate_module @MODS@/mod_deflate.so
 LoadModule setenvif_module @MODS@/mod_setenvif.so
 LoadModule filter_module @MODS@/mod_filter.so
+<IfModule !mod_log_config.c>
+  LoadModule log_config_module @MODS@/mod_log_config.so
+</IfModule>
 LoadModule alias_module @MODS@/mod_alias.so
 # nur im Test: /api/lead.php geht an den PHP-Entwicklungsserver (im Betrieb liegt lead.php im Webroot)
 LoadModule proxy_module @MODS@/mod_proxy.so
@@ -31,6 +34,11 @@ AddType font/woff2 .woff2
 AddDefaultCharset UTF-8
 
 ErrorLog "|/bin/sh -c 'exec cat >&2'"
+# Zugriffsprotokoll als Beleg für das Hängen von Firefox beim Laden (Ursache ungeklärt): Antwortzeit in µs (%D) und
+# Verbindungsstatus (%X: X abgebrochen, + bleibt offen, - wird geschlossen). start.sh kopiert die Datei beim Beenden
+# nach $RETICORA_ACCESS_LOG, wenn gesetzt (die CI lädt sie bei einem Fehlschlag hoch).
+LogFormat "%h %t \"%r\" %>s %b %D %X" reticora_access
+CustomLog "@TMP@/access.log" reticora_access
 LogLevel warn
 
 DocumentRoot "@DOCROOT@"

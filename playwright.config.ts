@@ -16,7 +16,8 @@ export default defineConfig({
   // Bericht weist solche Tests als „flaky“ aus.
   retries: process.env.CI ? 1 : 0,
   reporter: 'list',
-  use: { baseURL: 'http://127.0.0.1:8080' },
+  // In der CI: Trace beim ersten Wiederholungsversuch (Beleg für das Hängen von Firefox). Lokal aus.
+  use: { baseURL: 'http://127.0.0.1:8080', trace: process.env.CI ? 'on-first-retry' : 'off' },
   projects,
   webServer: {
     command: 'npm run build && npm run serve',

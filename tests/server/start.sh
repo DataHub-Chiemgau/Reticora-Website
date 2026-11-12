@@ -44,6 +44,8 @@ e2e="${TMPDIR:-/tmp}"; e2e="${e2e%/}/reticora-e2e"
 rm -rf "$e2e"; mkdir -p "$e2e"
 phppids=""
 cleanup() {
+  # Zugriffsprotokoll sichern, bevor das temporäre Verzeichnis verschwindet (CI: Artefakt bei Fehlschlag).
+  if [ -n "${RETICORA_ACCESS_LOG:-}" ] && [ -f "$tmp/access.log" ]; then cp "$tmp/access.log" "$RETICORA_ACCESS_LOG" 2>/dev/null || true; fi
   for p in $phppids ${pid:-}; do kill "$p" 2>/dev/null || true; done
   for p in $phppids ${pid:-}; do wait "$p" 2>/dev/null || true; done
   rm -rf "$tmp" "$e2e"

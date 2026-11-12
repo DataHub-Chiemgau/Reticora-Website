@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { UI as DE } from '../../src/i18n/de';
 import { UI as EN } from '../../src/i18n/en';
+import { germanLeftovers } from '../german-leftovers';
 import { counterpart, dePath, isBuilt, localize, ui } from '../../src/i18n';
 
 const keys = (o: unknown, prefix = ''): string[] =>
@@ -37,6 +38,15 @@ describe('ui()', () => {
         expect(v, k).not.toBe(de.get(k));
       }
     }
+  });
+  test('kein deutscher Rest in den englischen Oberflächentexten', () => {
+    const skip = /(href|match|\.key|\.de$|\.en$|\.lang\.|\.id$|\.topic$)/i;
+    const bad: string[] = [];
+    for (const [k, v] of leaves(EN)) {
+      if (typeof v !== 'string' || skip.test(k)) continue;
+      for (const h of germanLeftovers(v)) bad.push(`${k}: ${h}`);
+    }
+    expect(bad).toEqual([]);
   });
   test('vorgegebene Übersetzungen', () => {
     expect(EN.b2b).toBe('Offer for businesses only.');

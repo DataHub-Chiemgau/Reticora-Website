@@ -22,12 +22,12 @@ Zweisprachige (Deutsch, Englisch) Marketing-Website für Reticora, B2B. Astro 7 
 | `npm run validate` | HTML-Prüfung von `dist/` (html-validate) |
 | `npm run serve` | Apache auf `http://127.0.0.1:8080` mit `dist/` als Wurzel, dahinter das PHP-Backend (SQLite, Mails als Datei) |
 | `npm run test:e2e` | Playwright-Tests gegen den Apache-Testserver |
-| `npm run lhci` | Lighthouse (fünf Läufe, Mobilprofil) für sechs Seiten gegen den Apache-Testserver |
+| `npm run lhci` | Lighthouse (fünf Läufe, Mobilprofil) für sechs Seiten gegen den Apache-Testserver. Meldet Lighthouse einen Laufzeitfehler (`Runtime error encountered`, z. B. `NO_NAVSTART`) und ist kein Grenzwert verletzt, wiederholt `scripts/lhci.mjs` den Lauf einmal (deutlich ausgegeben); verletzte Grenzwerte scheitern sofort |
 | `npm run build:release` | Release-Build ohne Entwicklungsseiten, danach Release-Sperre |
 | `node scripts/check-security-txt.mjs` | Warnlauf für den Ablauf der `security.txt` (läuft wöchentlich in `.github/workflows/security-txt.yml`) |
 | `cd backend && vendor/bin/phpunit` | PHP-Tests des Backends |
 
-Die Prüfkette vor jedem Commit: `npm run check && npm run build && npm test && npm run validate && npm run test:e2e -- --trace off`, dazu `cd backend && vendor/bin/phpunit`.
+Die Prüfkette vor jedem Commit: `npm run check && npm run build && npm test && npm run validate && npm run test:e2e -- --trace off` (`--trace off` nur lokal; die CI lässt es weg), dazu `cd backend && vendor/bin/phpunit`.
 
 ## Aufbau
 
@@ -76,7 +76,8 @@ Die Prüfkette vor jedem Commit: `npm run check && npm run build && npm test && 
 - **Echter SMTP-Versand und TLS** über PHPMailer sind nicht getestet (Tests nutzen Dateitransport und Fälschungen).
 - **Client-IP hinter dem Proxy des Hosters:** Das Rate-Limit nutzt `REMOTE_ADDR`. Verbirgt ein Proxy die Adresse, zählen alle Besucher als eine Herkunft. Auf dem Hosting zu prüfen.
 - **`.htaccess` und Apache-Verhalten** (`LimitRequestBody`, Schutzdateien, doppelte Kopfzeilen von PHP und Apache auf der 422-Seite) sind nur gegen den lokalen Apache geprüft, nicht gegen Hetzner.
-- **Firefox:** In der CI hängt das Laden einer Seite vereinzelt (ein Test von rund 250, `goto`). Die CI wiederholt fehlgeschlagene Tests einmal (`retries: 1`); die Ursache ist nicht geklärt. Firefox und WebKit laufen nur in der CI, lokal nicht.
+- **Firefox:** In der CI hing das Laden einer Seite vereinzelt (ein Test von rund 250, `goto`). Die Ursache ist **ungeklärt**. `KeepAlive Off` im Testserver ist eine Vermutung, kein Beleg (mit `KeepAlive Off` lief der E2E-Schritt zuletzt durch). Die CI wiederholt fehlgeschlagene Tests einmal (`retries: 1`), zeichnet beim Wiederholen einen Trace auf und lädt bei einem Fehlschlag das Zugriffsprotokoll des Apache-Testservers (`%D` Antwortzeit, `%X` Verbindungsstatus) und `test-results/` als Artefakt `e2e-diagnose` hoch (7 Tage). Lokal bleibt `--trace off` ratsam. Firefox und WebKit laufen nur in der CI, lokal nicht.
+- **Obergrenze für alle Anfragen:** Über `rate_limit.global_max` (Standard 60 je Stunde) werden gültige Anfragen nur gespeichert (Status `held`, keine Mail), die Besucherin sieht die normale Dankeseite; `backend/bin/retry.php` stellt sie per Cron nach. Erst 10 × `global_max` je Stunde ergibt 429. `purge.php` löscht `held` und `not_delivered` nie und endet mit Exit-Code 1, solange es welche gibt (Cron-Mail an den Betreiber). Läuft `retry.php` nicht, sieht der Vertrieb diese Anfragen nicht. Details: `backend/README.md`.
 - **Fehlende Vorlagen:** Fehlt `backend/templates/contact.en.html` auf dem Server, zeigt `lead.php` bei Fehlern ohne JavaScript nur eine kurze Hinweisseite.
 - **Deploy ist nicht automatisiert.** Es gibt keinen Deploy-Workflow. Auf den Server gehören `dist/`, `backend/templates/` aus demselben Build, `lead.php`, `.htaccess` und `composer install --no-dev` (siehe `backend/README.md`).
 - **Gestapelte Tabellen** (`display: block` unter 48 rem) können in Safari mit VoiceOver die Tabellensemantik verlieren; nicht mit Screenreadern geprüft.
