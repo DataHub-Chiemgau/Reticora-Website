@@ -1,0 +1,31 @@
+---
+import '../styles/global.css';
+import archivoUrl from '../assets/fonts/archivo-leitstand.woff2?url';
+
+interface Props {
+  title: string;
+  description: string;
+  lang: 'de' | 'en';
+  path: string;
+  noindex?: boolean;
+}
+const { title, description, lang, path, noindex = false } = Astro.props;
+const canonical = new URL(path, Astro.site).href;
+const hideFromIndex = noindex || process.env.RETICORA_RELEASE !== '1';
+---
+
+<html lang={lang} data-theme="leitstand">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {hideFromIndex && <meta name="robots" content="noindex" />}
+    <link rel="preload" href={archivoUrl} as="font" type="font/woff2" crossorigin />
+  </head>
+  <body>
+    <a class="sr-skip" href="#inhalt">Zum Inhalt</a>
+    <main id="inhalt"><slot /></main>
+  </body>
+</html>

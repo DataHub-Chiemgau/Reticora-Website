@@ -1,0 +1,16 @@
+@font-face {
+  font-family: "Archivo";
+  src: url("../assets/fonts/archivo-leitstand.woff2") format("woff2");
+  font-weight: 400 600;
+  font-stretch: 100% 112%;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("../assets/fonts/jetbrains-mono-leitstand.woff2") format("woff2");
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}

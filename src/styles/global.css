@@ -1,5 +1,8 @@
 @import "tailwindcss";
 @import "./tokens.css";
+@import "./fonts.css";
+@import "./base.css";
+@import "./type.css";
 
 @theme inline {
   --color-*: initial;
