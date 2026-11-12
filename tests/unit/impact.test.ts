@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeImpact, impactSentence, IGNORED_RELS } from '../../src/lib/impact';
+import { computeImpact, edgeIsDim, impactSentence, IGNORED_RELS } from '../../src/lib/impact';
 
 const N = ['usv-01', 'pdu-a', 'pdu-b', 'sw-access-01', 'srv-01', 'srv-02', 'nas-01', 'vm-app-01', 'vm-db-01'];
 const E = [
@@ -126,5 +126,16 @@ describe('impactSentence', () => {
   it('nichts gewählt', () => {
     expect(s('de', [])).toEqual({ main: 'Wählen Sie ein CI, um seinen Ausfall zu simulieren.', guarded: null });
     expect(s('en', [])).toEqual({ main: 'Choose a CI to simulate its outage.', guarded: null });
+  });
+});
+
+describe('edgeIsDim', () => {
+  it('blass, wenn ein Endpunkt betroffen ist; ausgefallene Endpunkte zählen nicht', () => {
+    const r = computeImpact(N, E, ['pdu-a']);
+    expect(edgeIsDim(r.affected, { from: 'sw-access-01', to: 'pdu-a' })).toBe(true);
+    expect(edgeIsDim(r.affected, { from: 'srv-01', to: 'pdu-a' })).toBe(false);
+    expect(edgeIsDim(r.affected, { from: 'vm-db-01', to: 'srv-02' })).toBe(false);
+    const u = computeImpact(N, E, ['usv-01']);
+    expect(edgeIsDim(u.affected, { from: 'pdu-a', to: 'usv-01' })).toBe(true);
   });
 });

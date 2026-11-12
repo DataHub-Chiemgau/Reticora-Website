@@ -42,10 +42,24 @@ describe.skipIf(!hasDist)('dist', () => {
     expect(archivo).toMatch(/font-stretch:\s*100%\s*112%/);
   });
 
-  test('Insel impact höchstens 8 KB', () => {
-    const files = walk(join(dist, '_astro'), '.js').filter((f) => /TopologyStage/.test(f));
-    expect(files.length).toBeGreaterThanOrEqual(1);
-    const sum = files.reduce((s, f) => s + statSync(f).size, 0);
+  test('Insel impact: alle vom Schema geladenen Skripte zusammen höchstens 8 KB', () => {
+    const dir = join(dist, 'dev', 'bausteine');
+    const html = readFileSync(join(dir, 'index.html'), 'utf8');
+    const after = html.slice(html.indexOf('data-topo'));
+    const entry = /<script[^>]*type="module"[^>]*src="([^"]+)"/.exec(after)?.[1];
+    expect(entry).toBeDefined();
+    const seen = new Set<string>();
+    const load = (url: string) => {
+      const f = join(dist, url.replace(/^\//, ''));
+      if (seen.has(f)) return;
+      seen.add(f);
+      const code = readFileSync(f, 'utf8');
+      for (const m of code.matchAll(/(?:from|import)\s*["'](\.{1,2}\/[^"']+\.js)["']/g))
+        load(new URL(m[1]!, 'http://x' + (url.startsWith('/') ? url : '/' + url)).pathname);
+    };
+    load(entry!);
+    const sum = [...seen].reduce((n, f) => n + statSync(f).size, 0);
+    expect(seen.size).toBeGreaterThanOrEqual(1);
     expect(sum).toBeLessThanOrEqual(8 * 1024);
   });
 });

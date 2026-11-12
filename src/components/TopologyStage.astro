@@ -1,11 +1,11 @@
 ---
 import type { Lang } from '../data/types';
 import { TOPO_EDGES, TOPO_INITIAL_FAILED, TOPO_NODES } from '../data/topology';
-import { computeImpact, impactSentence } from '../lib/impact';
+import { computeImpact, edgeIsDim, impactSentence } from '../lib/impact';
 import { UI } from '../i18n/de';
 
-interface Props { lang: Lang }
-const { lang } = Astro.props;
+interface Props { lang: Lang; id?: string }
+const { lang, id = `topo-${lang}` } = Astro.props;
 
 const T = lang === 'de'
   ? UI.topo
@@ -14,7 +14,7 @@ const T = lang === 'de'
       title: 'Schematic of a power chain with outage simulation',
       desc: 'usv-01 powers pdu-a and pdu-b. srv-01 and srv-02 hang off both PDUs, sw-access-01 only off pdu-a, nas-01 only off pdu-b. vm-app-01 runs on srv-01, vm-db-01 on srv-02.',
       group: 'Simulate outage',
-      legendActive: 'CI, status "Active"',
+      legendActive: 'CI, status “Active”',
       legendFailed: 'failed',
       legendAffected: 'affected (shown in grey)',
       legendNote: 'Schematic, not a screenshot',
@@ -40,7 +40,7 @@ const edges = TOPO_EDGES.map((e) => {
   angle = ((angle % 360) + 360) % 360;
   const mx = a.x + dx * e.labelAt;
   const my = a.y + dy * e.labelAt;
-  const dim = (result.affected.includes(e.from)) || (result.affected.includes(e.to));
+  const dim = edgeIsDim(result.affected, e);
   return {
     ...e,
     x1: f1(b.x - ux * GAP), y1: f1(b.y - uy * GAP),
@@ -51,19 +51,19 @@ const edges = TOPO_EDGES.map((e) => {
 });
 
 const LABEL = {
-  top: { x: undefined, y: -18, cls: undefined },
-  left: { x: -18, y: 4, cls: 'lbl-end' },
-  right: { x: 18, y: 4, cls: 'lbl-start' },
-  side: { x: 16, y: 20, cls: 'lbl-start' },
-  below: { x: undefined, y: 28, cls: undefined },
+  top: { x: undefined, y: -24, cls: undefined },
+  left: { x: -24, y: 4, cls: 'lbl-end' },
+  right: { x: 24, y: 4, cls: 'lbl-start' },
+  side: { x: 18, y: 24, cls: 'lbl-start' },
+  below: { x: undefined, y: 32, cls: undefined },
 } as const;
 ---
 
 <section class="rt-topo" data-topo data-lang={lang} aria-label={T.section}>
   <div class="rt-topo-frame" role="region" tabindex="0" aria-label={T.title}>
-    <svg viewBox="0 0 1100 420" role="img" aria-labelledby="topo-t topo-d">
-      <title id="topo-t">{T.title}</title>
-      <desc id="topo-d">{T.desc}</desc>
+    <svg viewBox="0 0 1100 420" role="img" aria-labelledby={`${id}-t ${id}-d`}>
+      <title id={`${id}-t`}>{T.title}</title>
+      <desc id={`${id}-d`}>{T.desc}</desc>
       <g>
         {edges.map((e) => (
           <g class:list={['e', { 'is-dim': e.dim }]} data-from={e.from} data-to={e.to} data-rel={e.rel}>
@@ -82,7 +82,7 @@ const LABEL = {
               transform={`translate(${n.x} ${n.y})`}
             >
               <circle class="hit" r="22" />
-              <g class="focus"><circle r="17" /><path d="M0-17v-7M0 17v7M-17 0h-7M17 0h7" /></g>
+              <g class="focus"><circle r="14" /><path d="M0-14v-6" /><path d="M0 14v6" /><path d="M-14 0h-6" /><path d="M14 0h6" /></g>
               <circle class="dot" r="8" />
               <text class={l.cls} x={l.x} y={l.y}>{n.id}</text>
             </g>
@@ -104,9 +104,9 @@ const LABEL = {
   </div>
   <p class="rt-topo-result" role="status" aria-live="polite">{sentence.main}{sentence.guarded && <Fragment>{' '}<span>{sentence.guarded}</span></Fragment>}</p>
   <p class="rt-topo-legend">
-    <span><i></i>{T.legendActive}</span>
-    <span><i class="is-failed"></i>{T.legendFailed}</span>
-    <span><i class="is-affected"></i>{T.legendAffected}</span>
+    <span><i aria-hidden="true"></i>{T.legendActive}</span>
+    <span><i class="is-failed" aria-hidden="true"></i>{T.legendFailed}</span>
+    <span><i class="is-affected" aria-hidden="true"></i>{T.legendAffected}</span>
     <span>{T.legendNote}</span>
   </p>
 </section>

@@ -74,7 +74,10 @@
 .rt-topo-legend i { display: inline-block; width: 10px; height: 10px; margin-right: var(--space-2); border-radius: 50%; background: var(--graph-active); }
 .rt-topo-legend .is-failed { background: var(--graph-failed); transform: scale(1.4); }
 .rt-topo-legend .is-affected { background: var(--line-strong); }
-@media (prefers-reduced-motion: no-preference) { .rt-topo .dot, .rt-topo .e line { transition: fill .15s, stroke .15s, transform .15s; } }
+@media (prefers-reduced-motion: no-preference) {
+  .rt-topo .dot, .rt-topo .e line { transition: fill .15s, stroke .15s, transform .15s; }
+  .rt-chip { transition: background-color .15s, border-color .15s; }
+}
 .rt-topo .dot { transform-box: fill-box; transform-origin: center; }
 
 /* Platzhalter für Screenshots und Abbildungen */
@@ -203,5 +206,16 @@ textarea.rt-input { min-height: 120px; resize: vertical; }
 
 @media (forced-colors: active) {
   .rt-btn { border-color: ButtonText; }
+  .rt-topo .n .dot, .rt-topo .n:not(.is-failed):not(.is-affected) .dot { fill: CanvasText; }
+  .rt-topo .n.is-failed .dot { fill: Highlight; }
+  .rt-topo .n.is-affected .dot { fill: GrayText; }
+  .rt-topo .n text, .rt-topo .e text { fill: CanvasText; }
+  .rt-topo .n.is-affected text { fill: GrayText; }
+  .rt-topo .n .focus { stroke: Highlight; }
+  .rt-topo .e line, .rt-topo .e.is-dim line { stroke: CanvasText; }
+  .rt-chip, .rt-chip:hover, .rt-chip[aria-pressed="true"] { border-color: ButtonText; }
+  .rt-chip::before, .rt-topo-legend i { background: CanvasText; }
+  .rt-chip[aria-pressed="true"]::before, .rt-topo-legend .is-failed { background: Highlight; }
+  .rt-chip.is-affected::before, .rt-topo-legend .is-affected { background: GrayText; }
 }
 }

@@ -1,4 +1,4 @@
-import { computeImpact, impactSentence } from '../lib/impact';
+import { computeImpact, edgeIsDim, impactSentence } from '../lib/impact';
 import type { Lang } from '../data/types';
 
 function attr(el: Element, name: string): string {
@@ -24,7 +24,7 @@ for (const root of document.querySelectorAll<HTMLElement>('[data-topo]')) {
       n.classList.toggle('is-affected', r.affected.includes(id));
     }
     for (const e of edges) {
-      e.classList.toggle('is-dim', r.affected.includes(attr(e, 'data-from')) || r.affected.includes(attr(e, 'data-to')));
+      e.classList.toggle('is-dim', edgeIsDim(r.affected, { from: attr(e, 'data-from'), to: attr(e, 'data-to') }));
     }
     for (const c of chips) {
       const id = attr(c, 'data-ci');
@@ -32,12 +32,13 @@ for (const root of document.querySelectorAll<HTMLElement>('[data-topo]')) {
       c.classList.toggle('is-affected', r.affected.includes(id));
     }
     const s = impactSentence(lang, r);
-    out.textContent = s.main;
+    const parts: (string | HTMLSpanElement)[] = [s.main];
     if (s.guarded) {
       const span = document.createElement('span');
       span.textContent = s.guarded;
-      out.append(' ', span);
+      parts.push(' ', span);
     }
+    out.replaceChildren(...parts);
   };
   const toggle = (id: string) => {
     const now = chips.filter((c) => c.getAttribute('aria-pressed') === 'true').map((c) => attr(c, 'data-ci'));

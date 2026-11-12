@@ -54,6 +54,11 @@ export function computeImpact(nodes: readonly string[], edges: readonly Edge[], 
   };
 }
 
+/** Eine Kante wird blasser, sobald einer ihrer Endpunkte betroffen (grau dargestellt) ist. */
+export function edgeIsDim(affected: readonly string[], e: { from: string; to: string }): boolean {
+  return affected.includes(e.from) || affected.includes(e.to);
+}
+
 export function impactSentence(lang: Lang, r: ImpactResult): { main: string; guarded: string | null } {
   const de = lang === 'de';
   if (r.failed.length === 0) {
