@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('Startseite: keine fremden Hosts, keine Cookies, leerer Web Storage', async ({ page, context }) => {
+test('Startseite: keine fremden Hosts, keine Cookies, leerer Web Storage', async ({ page, context, baseURL }) => {
   const hosts = new Set<string>();
   const note = (url: string) => {
     const u = new URL(url);
@@ -14,7 +14,7 @@ test('Startseite: keine fremden Hosts, keine Cookies, leerer Web Storage', async
   });
   await page.goto('/', { waitUntil: 'networkidle' });
   await page.evaluate(() => document.fonts.ready);
-  expect([...hosts]).toEqual(['127.0.0.1:8080']);
+  expect([...hosts]).toEqual([new URL(baseURL!).host]);
   expect(await page.evaluate(() => (window as any).__csp)).toEqual([]);
   expect(await context.cookies()).toEqual([]);
   const state = await page.evaluate(async () => ({

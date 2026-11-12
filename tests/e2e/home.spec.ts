@@ -186,35 +186,35 @@ test('Fußzeile fluchtet mit dem Inhalt; Zeile mit Pflichtangaben auf einer Mitt
     els.map((e) => { const r = e.getBoundingClientRect(); return r.top + r.height / 2; }),
   );
   expect(centres.length).toBeGreaterThan(4);
-  // nur Elemente der ersten Zeile vergleichen
-  const first = centres.filter((c) => Math.abs(c - centres[0]) < 30);
-  for (const c of first) expect(Math.abs(c - first[0])).toBeLessThanOrEqual(1);
+  for (const c of centres) expect(Math.abs(c - centres[0])).toBeLessThanOrEqual(1);
 });
 
 test('Bildunterschriften trennen Nummer und Text mit „·“', async ({ page }) => {
   await page.goto('/');
   const caps = await page.locator('main figcaption').allTextContents();
   expect(caps).toHaveLength(7);
-  for (const c of caps) expect(c).toMatch(/^Abb\. \d ·\s*\S/);
-  expect(caps[0]).toBe('Abb. 1 ·Der Collector verbindet sich nach außen: HTTPS 443 und NATS mit mTLS 4222. Schemazeichnung.');
+  caps.forEach((c, i) => expect(c).toMatch(new RegExp(`^Abb\\. ${i + 1} · \\S`)));
+  expect(caps[0]).toBe('Abb. 1 · Der Collector verbindet sich nach außen: HTTPS 443 und NATS mit mTLS 4222. Schemazeichnung.');
 });
 
-test('Startseite: keine fremden Anfragen, keine Cookies', async ({ page, context }) => {
+test('Startseite: keine fremden Anfragen, keine Cookies', async ({ page, context, baseURL }) => {
   const hosts = new Set<string>();
   page.on('request', (r) => { const u = new URL(r.url()); if (u.protocol.startsWith('http')) hosts.add(u.host); });
   await page.goto('/', { waitUntil: 'networkidle' });
   await page.evaluate(() => document.fonts.ready);
-  expect([...hosts]).toEqual(['127.0.0.1:8080']);
+  expect([...hosts]).toEqual([new URL(baseURL!).host]);
   expect(await context.cookies()).toEqual([]);
 });
 
 test('Belege hängen an der richtigen Aussage: Puffer an C-27, Limit an C-38', async ({ page }) => {
   await page.goto('/');
   const puffer = page.locator('main dl.rt-strip > div', { has: page.locator('dt', { hasText: 'Puffer' }) });
+  await expect(puffer.locator('.rt-beleg')).toHaveAttribute('data-claim', 'C-27');
   await puffer.locator('summary').click();
   await expect(puffer.locator('.rt-beleg-body')).toContainText('Ohne Verbindung puffert der Collector bis zu 24 Stunden');
   const limit = page.locator('#schnittstellen dl.rt-spec > div', { has: page.locator('dt', { hasText: 'Limit' }) });
   await expect(limit.locator('dd')).toContainText('600 Anfragen je Minute und Schlüssel');
+  await expect(limit.locator('.rt-beleg')).toHaveAttribute('data-claim', 'C-38');
   await limit.locator('summary').click();
   await expect(limit.locator('.rt-beleg-body')).toContainText('Die API erlaubt 600 Anfragen je Minute und Schlüssel.');
 });

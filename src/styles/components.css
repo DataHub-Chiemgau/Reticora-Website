@@ -83,7 +83,7 @@
 /* Platzhalter für Screenshots und Abbildungen */
 .rt-figure { display: flex; flex-direction: column; gap: var(--space-3); }
 .rt-figure figcaption { font-size: 13px; line-height: 20px; color: var(--fg-subtle); }
-.rt-figure figcaption b { margin-right: var(--space-2); font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: .04em; color: var(--fg-muted); }
+.rt-figure figcaption b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: .04em; color: var(--fg-muted); }
 .rt-slot { position: relative; display: grid; place-items: center; aspect-ratio: 16 / 10; max-width: 100%; background: var(--panel); border: var(--hairline) solid var(--line); border-radius: var(--radius-lg); }
 .rt-slot::before, .rt-slot::after { content: ""; position: absolute; width: var(--space-5); height: var(--space-5); border: 1.5px solid var(--accent); }
 .rt-slot::before { left: var(--space-3); top: var(--space-3); border-right: 0; border-bottom: 0; }

@@ -8,4 +8,4 @@ const { claim: id, lang } = Astro.props;
 const c = belegText(id, lang);
 ---
 
-<details class="rt-beleg"><summary>{UI.beleg}<span class="sr-only">: {c.title}</span></summary><div class="rt-beleg-body"><b>{c.title}</b><br />{c.evidence}</div></details>
+<details class="rt-beleg" data-claim={id}><summary>{UI.beleg}<span class="sr-only">: {c.title}</span></summary><div class="rt-beleg-body"><b>{c.title}</b><br />{c.evidence}</div></details>
