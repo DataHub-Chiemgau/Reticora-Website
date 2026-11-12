@@ -90,7 +90,7 @@ export const sicherheit = {
       { label: 'Subprozessoren', href: '/subprozessoren/' },
       { label: 'Datenschutzerklärung', href: '/datenschutz/' },
     ] as LinkRef[],
-    placeholder: { key: 'Auftragsverarbeitung', text: '[Auftragsverarbeitung: Angabe vom Anbieter]' } as PlaceholderRef,
+    placeholder: { key: 'sicherheit-auftragsverarbeitung', text: '[Auftragsverarbeitung: Angabe vom Anbieter]' } as PlaceholderRef,
   },
   lieferkette: {
     id: 'lieferkette',
@@ -101,7 +101,7 @@ export const sicherheit = {
     id: 'luecke-melden',
     title: 'Sicherheitslücke melden',
     before: 'Haben Sie eine Schwachstelle gefunden, schreiben Sie uns bitte direkt: „',
-    placeholder: { key: 'Meldeweg Sicherheitslücken', text: '[Meldeweg für Sicherheitslücken: Adresse vom Anbieter]' } as PlaceholderRef,
+    placeholder: { key: 'sicherheit-meldeweg', text: '[Meldeweg für Sicherheitslücken: Adresse vom Anbieter]' } as PlaceholderRef,
     after: '“.',
   },
   closing: {

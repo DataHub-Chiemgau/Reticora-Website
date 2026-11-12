@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
@@ -10,9 +10,9 @@ export function chunkImports(code) {
 const gz = (file) => gzipSync(readFileSync(file)).length;
 const local = (dist, url) => join(dist, url.split(/[?#]/)[0].replace(/^\//, ''));
 
-/** Alle von der Startseite tatsächlich geladenen Dateien, nach Art gruppiert. */
-export function homepageAssets(dist) {
-  const html = readFileSync(join(dist, 'index.html'), 'utf8');
+/** Alle von einer gebauten Seite (Standard: Startseite) tatsächlich geladenen Dateien, nach Art gruppiert. */
+export function pageAssets(dist, htmlFile = join(dist, 'index.html')) {
+  const html = readFileSync(htmlFile, 'utf8');
   const js = new Set();
   const css = new Set();
   const fonts = new Set();
@@ -41,7 +41,43 @@ export function homepageAssets(dist) {
     else if (/rel="modulepreload"/.test(tag)) addJs(href);
     else if (/as="font"/.test(tag)) fonts.add(local(dist, href));
   }
-  return { html: join(dist, 'index.html'), js: [...js], css: [...css], fonts: [...fonts] };
+  return { html: htmlFile, js: [...js], css: [...css], fonts: [...fonts], entries: [...html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map((m) => m[1]) };
+}
+
+export const homepageAssets = (dist) => pageAssets(dist);
+
+/** Alle gebauten HTML-Seiten (ohne Entwicklungsseiten nicht ausgenommen: der Aufrufer filtert). */
+export function htmlPages(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const p = join(dir, e.name);
+    return e.isDirectory() ? htmlPages(p) : p.endsWith('.html') ? [p] : [];
+  });
+}
+
+/** Das Einstiegsskript samt aller statischen und dynamischen Importe (absolute Dateipfade). */
+export function scriptClosure(dist, url) {
+  const seen = new Set();
+  const load = (u) => {
+    const f = local(dist, u);
+    if (seen.has(f) || !existsSync(f)) return;
+    seen.add(f);
+    for (const imp of chunkImports(readFileSync(f, 'utf8'))) load(new URL(imp, 'http://x' + (u.startsWith('/') ? u : '/' + u)).pathname);
+  };
+  load(url);
+  return [...seen];
+}
+
+/** Unkomprimierte (minifizierte) Größe eines Skripts samt aller Importe. */
+export const scriptSize = (dist, url) => scriptClosure(dist, url).reduce((n, f) => n + statSync(f).size, 0);
+
+/** Welche Insel ein Einstiegsskript ist, erkannt am Inhalt des Skripts oder seiner Importe; sonst null. */
+export function islandOf(dist, url) {
+  const code = scriptClosure(dist, url).map((f) => readFileSync(f, 'utf8')).join('\n');
+  if (code.includes('form[data-lead]')) return 'form';
+  if (code.includes('[data-filter]') || code.includes('data-filter')) return 'filter';
+  if (code.includes('data-topo')) return 'impact';
+  if (code.includes('[data-copy]')) return 'copy';
+  return null;
 }
 
 export function gzipTotal(files) {

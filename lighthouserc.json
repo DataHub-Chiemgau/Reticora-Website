@@ -1,7 +1,14 @@
 {
   "ci": {
     "collect": {
-      "url": ["http://127.0.0.1:8080/"],
+      "url": [
+        "http://127.0.0.1:8080/",
+        "http://127.0.0.1:8080/preise/",
+        "http://127.0.0.1:8080/kontakt/",
+        "http://127.0.0.1:8080/produkt/discovery/",
+        "http://127.0.0.1:8080/en/",
+        "http://127.0.0.1:8080/en/pricing/"
+      ],
       "numberOfRuns": 5,
       "startServerCommand": "bash tests/server/start.sh",
       "startServerReadyPattern": "resuming normal operations",

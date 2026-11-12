@@ -261,6 +261,39 @@ US-Schreibweise.
 | Anmelden | Sign in |
 | Höheneinheit (HE) | Rack unit (U) |
 
+Begriffe, die die englische Fassung der Website selbst gebildet hat, weil die
+Oberfläche der App sie nicht kennt (oder deren Begriff mehrdeutig ist).
+**Vorgeschlagen, Freigabe ausstehend.** Der Auftraggeber entscheidet, ob sie
+bleiben oder durch Begriffe der App ersetzt werden.
+
+| Deutsch | Englisch | Anmerkung |
+|---|---|---|
+| Arbeitsbereich | Scope | folgt der englischen Beschriftung der App (Kopfzeilen-Auswahl „Scope“); kollidiert mit den Discovery-Scopes. Alternative: Workspace |
+| Lebenszeichen | Heartbeat | nicht in der App |
+| Puffer, Takt | Buffer, Intervals | nicht in der App |
+| Klick-Builder | Click builder | |
+| Massenänderung | Bulk change | |
+| Probelauf | Dry run | |
+| Stromkette | Power chain | passt zu Claim C-51 |
+| Mehrfachausfall | Multiple failures | |
+| Wartungsfenster | Maintenance window | die App kennt nur „Maintenance“ |
+| Rollen mit Geltungsbereich | Scoped roles | passt zu Claim C-33 |
+| Identitätsabgleich | Identity matching | |
+| Betriebsmodelle | Deployment models | |
+| Notfallzugang | Break-glass access | passt zu Claim C-82 |
+| Anliegen (Formularfeld) | Topic | statt „Enquiry“ |
+| Leitstand, Dokument (Darstellungen) | Control room, Document | Seite Barrierefreiheit |
+| Kontakt aufnehmen | Get in touch | |
+| erstes Beta-Jahr | first beta year | |
+
+Kurze Erläuterungen, die nur die englische Fassung enthält (Definitionen, keine
+Produktaussagen): DATEV („the format used by German accounting software“),
+DIN 66399 („the German standard for destroying data media“), KRITIS („the
+German framework for critical infrastructure“). Die englische Fassung nimmt
+außerdem Begriffe der App unverändert: Unclassified device, Serial number
+mismatch, Unlicensed CI, Repair, Review inbox, Simulate outage, Protected by
+redundancy, Field permissions, Business calendar, Stocktake.
+
 ## 7. Claim-Register
 
 Status „Beleg“ nennt die Quelle im Repository. „Vor Go-live“ nennt, was

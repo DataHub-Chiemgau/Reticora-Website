@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { SITE } from '../../src/data/site';
 import { ui } from '../../src/i18n';
-import { KONTAKT_DE } from '../../src/content/de/kontakt';
+import { kontakt } from '../../src/content/de/kontakt';
 import { content } from '../../src/content';
 import { E2E_DIR, leadCount, uniqueEmail } from './helpers/backend';
 
@@ -46,9 +46,9 @@ test.beforeEach(() => {
 test.describe('Seite', () => {
   test('Kopf, Texte und Felder wie im Textdokument', async ({ page }) => {
     await page.goto('/kontakt/');
-    expect(await page.title()).toBe(KONTAKT_DE.meta.title);
-    await expect(page.locator('h1')).toHaveText(KONTAKT_DE.hero.h1);
-    await expect(page.locator('.lead')).toHaveText(KONTAKT_DE.hero.lead);
+    expect(await page.title()).toBe(kontakt.meta.title);
+    await expect(page.locator('h1')).toHaveText(kontakt.hero.h1);
+    await expect(page.locator('.lead')).toHaveText(kontakt.hero.lead);
     await expect(page.getByText(F.required)).toBeVisible();
     for (const [name, label, ac] of [['name', F.fields.name.label, 'name'], ['email', F.fields.email.label, 'email'], ['company', F.fields.company.label, 'organization'], ['topic', F.fields.topic.label, 'off'], ['message', F.fields.message.label, 'off']] as const) {
       await expect(page.getByLabel(label, { exact: true })).toHaveAttribute('name', name);
@@ -78,14 +78,14 @@ test.describe('Seite', () => {
   test('Direkter Kontakt aus SITE, fehlende Angaben als Platzhalter; Verarbeitungshinweis als Platzhalter mit Link', async ({ page }) => {
     await page.goto('/kontakt/');
     const aside = page.locator('.contact-direct');
-    await expect(aside.getByRole('heading', { name: KONTAKT_DE.direct.title })).toBeVisible();
+    await expect(aside.getByRole('heading', { name: kontakt.direct.title })).toBeVisible();
     await expect(aside).toContainText(SITE.company);
     await expect(aside).toContainText(SITE.street);
     await expect(aside).toContainText(SITE.city);
     if (SITE.email) await expect(aside.getByRole('link', { name: SITE.email })).toBeVisible();
     else await expect(aside.locator('[data-placeholder="kontakt-email"]')).toHaveText(T.placeholders.email);
     if (!SITE.phone) await expect(aside.locator('[data-placeholder="kontakt-telefon"]')).toHaveText(T.placeholders.phone);
-    await expect(aside.getByRole('link', { name: KONTAKT_DE.direct.imprint })).toHaveAttribute('href', '/impressum/');
+    await expect(aside.getByRole('link', { name: kontakt.direct.imprint })).toHaveAttribute('href', '/impressum/');
     const note = page.locator('[data-placeholder="kontakt-verarbeitung"]');
     await expect(note).toContainText(F.processing);
     await expect(note.getByRole('link', { name: F.privacy })).toHaveAttribute('href', '/datenschutz/');
@@ -93,12 +93,12 @@ test.describe('Seite', () => {
 
   test('Danke-Seite: Text, Links, noindex', async ({ page }) => {
     await page.goto('/kontakt/danke/');
-    await expect(page.locator('h1')).toHaveText(KONTAKT_DE.danke.h1);
-    await expect(page.locator('.lead')).toHaveText(KONTAKT_DE.danke.text);
-    await expect(page.getByRole('link', { name: KONTAKT_DE.danke.demo })).toHaveAttribute('href', '/demo/');
-    await expect(page.getByRole('link', { name: KONTAKT_DE.danke.home })).toHaveAttribute('href', '/');
+    await expect(page.locator('h1')).toHaveText(kontakt.danke.h1);
+    await expect(page.locator('.lead')).toHaveText(kontakt.danke.text);
+    await expect(page.getByRole('link', { name: kontakt.danke.demo })).toHaveAttribute('href', '/demo/');
+    await expect(page.getByRole('link', { name: kontakt.danke.home })).toHaveAttribute('href', '/');
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
-    expect(await page.title()).toBe(KONTAKT_DE.danke.meta.title);
+    expect(await page.title()).toBe(kontakt.danke.meta.title);
   });
 
   test('?topic= wählt das Anliegen vor, nur Werte aus der festen Liste', async ({ page }) => {
@@ -125,7 +125,7 @@ test.describe('Absenden mit JavaScript', () => {
     await fill(page, email);
     await submit(page);
     await expect(page).toHaveURL(/\/kontakt\/danke\/$/);
-    await expect(page.locator('h1')).toHaveText(KONTAKT_DE.danke.h1);
+    await expect(page.locator('h1')).toHaveText(kontakt.danke.h1);
     expect(page.url()).not.toContain(email);
     expect(leadCount(email)).toBe(1);
     expect(mails(email)).toEqual({ to: 0, replyTo: 1, sales: 1 });
@@ -260,7 +260,7 @@ test.describe('Absenden ohne JavaScript', () => {
     await fill(page, email);
     await submit(page);
     await expect(page).toHaveURL(/\/kontakt\/danke\/$/);
-    await expect(page.locator('h1')).toHaveText(KONTAKT_DE.danke.h1);
+    await expect(page.locator('h1')).toHaveText(kontakt.danke.h1);
     expect(page.url()).not.toContain(email);
     expect(leadCount(email)).toBe(1);
     expect(mails(email)).toEqual({ to: 0, replyTo: 1, sales: 1 });
@@ -280,7 +280,7 @@ test.describe('Absenden ohne JavaScript', () => {
     expect(r.headers()['location']).toBeUndefined();
     await expect(page).toHaveURL(`${ORIGIN}/api/lead.php`);
     expect(page.url()).not.toContain('?');
-    await expect(page.locator('h1')).toHaveText(KONTAKT_DE.hero.h1);
+    await expect(page.locator('h1')).toHaveText(kontakt.hero.h1);
     const sum = page.locator('#form-summary');
     await expect(sum).toBeVisible();
     await expect(page.locator('#form-summary-title')).toHaveText(F.summaryMany.replace('{n}', '2'));

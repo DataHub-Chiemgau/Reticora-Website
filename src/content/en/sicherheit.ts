@@ -90,7 +90,7 @@ export const sicherheit: Translation<typeof De> = {
       { label: 'Subprocessors', href: '/subprozessoren/' },
       { label: 'Privacy policy', href: '/datenschutz/' },
     ] as LinkRef[],
-    placeholder: { key: 'Auftragsverarbeitung', text: '[Data processing agreement: details from the provider]' } as PlaceholderRef,
+    placeholder: { key: 'sicherheit-auftragsverarbeitung', text: '[Data processing agreement: details from the provider]' } as PlaceholderRef,
   },
   lieferkette: {
     id: 'lieferkette',
@@ -101,7 +101,7 @@ export const sicherheit: Translation<typeof De> = {
     id: 'luecke-melden',
     title: 'Report a vulnerability',
     before: 'If you have found a vulnerability, please write to us directly: “',
-    placeholder: { key: 'Meldeweg Sicherheitslücken', text: '[Reporting channel for vulnerabilities: address from the provider]' } as PlaceholderRef,
+    placeholder: { key: 'sicherheit-meldeweg', text: '[Reporting channel for vulnerabilities: address from the provider]' } as PlaceholderRef,
     after: '”.',
   },
   closing: {

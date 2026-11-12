@@ -161,8 +161,6 @@ textarea.rt-input { min-height: 120px; resize: vertical; }
 .rt-summary { padding: var(--space-4); border: var(--hairline) solid var(--danger); border-radius: var(--radius-md); font-size: 15px; line-height: 24px; }
 .rt-summary h3 { font-size: 15px; line-height: 24px; font-weight: 600; color: var(--danger); }
 .rt-summary a { color: var(--fg); }
-.rt-done { padding: var(--space-4); border: var(--hairline) solid var(--success); border-radius: var(--radius-md); font-size: 15px; line-height: 24px; }
-.rt-done b { color: var(--success); font-weight: 600; }
 
 /* Hinweisband */
 .rt-notice { padding: var(--space-4); background: var(--accent-soft); border: var(--hairline) solid var(--line); border-radius: var(--radius-md); font-size: 15px; line-height: 24px; color: var(--fg); }
@@ -305,8 +303,6 @@ textarea.rt-input { min-height: 120px; resize: vertical; }
 .contact-main { display: flex; flex-direction: column; gap: var(--space-6); max-width: 560px; }
 .contact-main .rt-form { max-width: none; }
 .contact-required { font-size: 15px; line-height: 24px; color: var(--fg-muted); }
-.contact-nojs { display: none; }
-.contact-nojs:target { display: block; }
 .contact-notice p + p { margin-top: var(--space-2); }
 .contact-send { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); }
 .contact-trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }

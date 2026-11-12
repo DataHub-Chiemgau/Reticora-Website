@@ -18,6 +18,3 @@ export const kontakt = {
     home: 'Zur Startseite',
   },
 } as const;
-
-/** Alter Name; contact.spec.ts (Fix-Welle A) importiert ihn noch. Entfällt, sobald der Test `kontakt` nutzt. */
-export const KONTAKT_DE = kontakt;
