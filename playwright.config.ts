@@ -11,6 +11,10 @@ if (process.env.CI) {
 export default defineConfig({
   testDir: 'tests/e2e',
   fullyParallel: true,
+  // In der CI hing das Laden einer Seite in Firefox vereinzelt (ein Test von 255,
+  // jedes Mal ein anderer). Ursache ungeklärt; ein Wiederholungsversuch, der
+  // Bericht weist solche Tests als „flaky“ aus.
+  retries: process.env.CI ? 1 : 0,
   reporter: 'list',
   use: { baseURL: 'http://127.0.0.1:8080' },
   projects,
