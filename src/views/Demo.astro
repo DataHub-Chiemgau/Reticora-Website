@@ -1,0 +1,71 @@
+---
+import Leitstand from '../layouts/Leitstand.astro';
+import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
+import PageClosing from '../components/PageClosing.astro';
+import Button from '../components/Button.astro';
+import Notice from '../components/Notice.astro';
+import Para from '../components/Para.astro';
+import ScreenshotSlot from '../components/ScreenshotSlot.astro';
+import { LINKS } from '../data/links';
+import type { Lang } from '../data/types';
+import { content } from '../content';
+import { nbsp } from '../content/rich';
+import { ui } from '../i18n';
+import { localize } from '../i18n/routes';
+
+/** Seite „Live-Demo“: Zugangsdaten ausschließlich aus LINKS, Kopierknopf je Wert (Insel `copy`). */
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const C = content(lang).demo;
+const UI = ui(lang);
+const L = C.zugang.labels;
+const rows = [
+  { key: 'address', label: L.address, value: LINKS.demo },
+  { key: 'user', label: L.user, value: LINKS.demoUser },
+  { key: 'password', label: L.password, value: LINKS.demoPassword },
+];
+---
+
+<Leitstand title={C.meta.title} description={C.meta.description} lang={lang} path={localize('/demo/', lang)}>
+  <PageHero title={C.hero.title} lead={C.hero.lead} />
+
+  <Section id={C.zugang.id} title={C.zugang.title}>
+    <div class="home-stack demo-access">
+      <dl class="rt-spec demo-spec">
+        {rows.map((r) => (
+          <div class="demo-row" data-field={r.key}>
+            <dt>{r.label}</dt>
+            <dd>
+              <code class="demo-value">{r.value}</code>
+              <button class="rt-btn rt-btn--secondary" type="button" data-copy data-copied={UI.copied} data-failed={UI.copyFailed} aria-label={UI.copyNamed.replace('{label}', r.label)} hidden>{UI.copy}</button>
+              <span class="rt-code-status" role="status"></span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <Notice variant="signal" lead={C.zugang.notice.lead}>{C.zugang.notice.text}</Notice>
+      <Button class="home-link" variant="primary" size="lg" href={LINKS.demo}>{C.zugang.open}</Button>
+    </div>
+  </Section>
+
+  <Section id={C.probieren.id} title={C.probieren.title}>
+    <div class="home-rows">
+      {C.probieren.items.map((i, n) => (
+        <div class:list={['home-split', 'home-split--figure', n % 2 === 1 && 'sol-flip']}>
+          <div class="home-block">
+            <h3>{i.title}</h3>
+            <Para text={i.text} lang={lang} />
+          </div>
+          <ScreenshotSlot id={i.shot.id} figure={n + 1} caption={nbsp(i.shot.caption)} lang={lang} />
+        </div>
+      ))}
+    </div>
+  </Section>
+
+  <PageClosing lang={lang} id={C.closing.id} title={C.closing.title} text={C.closing.text} actions={C.closing.actions} />
+</Leitstand>
+
+<script>
+  import '../islands/copy';
+</script>
