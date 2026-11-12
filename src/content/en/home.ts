@@ -94,7 +94,7 @@ export const home: Translation<typeof HomeDe> = {
   },
   api: {
     title: 'For people and for machines',
-    lead: 'The REST API is fully described in OpenAPI. Changes are additive only. Reticora announces any removal at least 12 months in advance.',
+    lead: 'The REST API is fully described in OpenAPI. Changes are additive only. Reticora announces any removal at least twelve months in advance.',
     leadClaim: 'C-11',
     codeTitle: 'GET /api/v1/cis',
     codeComment: '# All CIs whose name contains “core”',

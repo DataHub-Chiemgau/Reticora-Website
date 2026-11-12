@@ -95,7 +95,7 @@ export const home = {
   },
   api: {
     title: 'Für Menschen und für Maschinen',
-    lead: 'Die REST-API ist vollständig in OpenAPI beschrieben. Änderungen kommen nur hinzu. Was entfällt, wird mindestens 12 Monate vorher angekündigt.',
+    lead: 'Die REST-API ist vollständig in OpenAPI beschrieben. Änderungen kommen nur hinzu. Was entfällt, wird mindestens zwölf Monate vorher angekündigt.',
     leadClaim: 'C-11' as ClaimId,
     codeTitle: 'GET /api/v1/cis',
     codeComment: '# Alle CIs, deren Name „core“ enthält',

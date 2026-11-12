@@ -120,7 +120,7 @@ claim-register changes are documented in the German version only.
 
 - **Heading:** For people and for machines
 - **Lead:** The REST API is fully described in OpenAPI. Changes are additive only.
-  Reticora announces any removal at least 12 months in advance.
+  Reticora announces any removal at least twelve months in advance.
   [C-11]
 - **Code sample**, header `GET /api/v1/cis`:
 
