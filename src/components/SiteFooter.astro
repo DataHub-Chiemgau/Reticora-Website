@@ -25,7 +25,7 @@ const other = lang === 'de' ? { href: UI.lang.enHref, code: 'en' } : { href: UI.
   <div class="rt-footer-legal">
     <span>{SITE.company}</span>
     {f.legal.map((l) => <a href={l.href}>{l.label}</a>)}
-    <span>{UI.b2b.replace(/\.$/, '')}</span>
+    <span>{UI.b2bShort}</span>
     <a href={other.href} lang={other.code} hreflang={other.code}>{lang === 'de' ? f.english : 'Deutsch'}</a>
   </div>
 </footer>

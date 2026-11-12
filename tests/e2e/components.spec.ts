@@ -16,12 +16,21 @@ test('axe ohne Befunde, im Thema Leitstand und im Abschnitt data-theme="dokument
   await page.setViewportSize(NARROW);
   const narrow = await new AxeBuilder({ page }).analyze();
   expect(narrow.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
+  await page.locator('details.rt-menu > summary').click();
+  await expect(page.locator('.rt-menu-body')).toBeVisible();
+  const open = await new AxeBuilder({ page }).analyze();
+  expect(open.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
 });
 
 for (const [name, size] of [['breit', WIDE], ['schmal', NARROW]] as const)
   test(`jedes Bedienelement außer .rt-beleg > summary misst mindestens 44 × 44 px (${name})`, async ({ page }) => {
     await page.setViewportSize(size);
     await page.goto(PAGE);
+    if (size === NARROW) {
+      await page.locator('details.rt-menu > summary').click();
+      await expect(page.locator('.rt-menu-body')).toBeVisible();
+      expect(await page.locator('.rt-menu-body > a, .rt-menu-body .rt-btn, .rt-menu-body .rt-lang a').evaluateAll((els) => els.filter((e) => e.getBoundingClientRect().width > 0).length)).toBeGreaterThanOrEqual(9);
+    }
     const sel = 'a.rt-btn, button, summary:not(.rt-beleg > summary), .rt-nav a, .rt-lang a, .rt-menu-body > a, .rt-footer a';
     expect(await page.locator(sel).count()).toBeGreaterThan(8);
     const small = await page.locator(sel).evaluateAll((els) =>
@@ -74,6 +83,35 @@ test('Navigation steht ab 1120 px in der Kopfzeile, darunter im Menü', async ({
   await expect(page.locator('details.rt-menu')).toBeVisible();
 });
 
+test('Navigationsumbruch genau bei 1120 px', async ({ page }) => {
+  await page.goto(PAGE);
+  await page.setViewportSize({ width: 1119, height: 800 });
+  await expect(page.locator('.rt-header')).toBeHidden();
+  await expect(page.locator('details.rt-menu')).toBeVisible();
+  await page.setViewportSize({ width: 1120, height: 800 });
+  await expect(page.locator('.rt-header')).toBeVisible();
+  await expect(page.locator('details.rt-menu')).toBeHidden();
+});
+
+test('Menü beginnt mit dem Link zur Startseite', async ({ page }) => {
+  await page.setViewportSize(NARROW);
+  await page.goto(PAGE);
+  await page.locator('details.rt-menu > summary').click();
+  const first = page.locator('.rt-menu-body > a').first();
+  await expect(first).toHaveText('Startseite');
+  await expect(first).toHaveAttribute('href', '/');
+});
+
+test('Kopierknopf meldet „Kopieren nicht möglich“, wenn die Zwischenablage ablehnt', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: () => Promise.reject(new Error('no')) } });
+  });
+  await page.goto(PAGE);
+  const sample = page.locator('.rt-code');
+  await sample.getByRole('button', { name: 'Kopieren' }).click();
+  await expect(sample.getByRole('status')).toHaveText('Kopieren nicht möglich');
+});
+
 test('Kopierknopf kopiert den Code und meldet „Kopiert“', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto(PAGE);
@@ -103,8 +141,15 @@ test('erzwungene Farben: Knöpfe haben einen 1 px breiten Rand, der Fokus bleibt
   expect(widths.length).toBeGreaterThan(3);
   for (const w of widths) expect(w).toBe('1px');
   const primary = page.locator('.rt-btn--primary:visible').first();
-  const color = await primary.evaluate((e) => getComputedStyle(e).borderTopColor);
-  expect(color).not.toBe('rgba(0, 0, 0, 0)');
+  const { color, buttonText } = await primary.evaluate((e) => {
+    const probe = document.createElement('i');
+    probe.style.color = 'ButtonText';
+    document.body.append(probe);
+    const buttonText = getComputedStyle(probe).color;
+    probe.remove();
+    return { color: getComputedStyle(e).borderTopColor, buttonText };
+  });
+  expect(color).toBe(buttonText);
   await page.keyboard.press('Tab');
   await page.keyboard.press('Tab');
   const focus = await page.evaluate(() => {
@@ -184,10 +229,35 @@ test('Kopfzeile verlinkt die drei Handlungen, Fußzeile die Pflichtlinks', async
 
 test('Beleg zeigt Titel und Beleg, nie den internen Vermerk', async ({ page }) => {
   await page.goto(PAGE);
-  const beleg = page.locator('details.rt-beleg').first();
+  const beleg = page.locator('#beleg-absatz details.rt-beleg');
   await beleg.locator('summary').click();
-  await expect(beleg.locator('.rt-beleg-body b')).not.toBeEmpty();
-  await expect(beleg.locator('.rt-beleg-body')).toContainText('Stand:');
+  const body = beleg.locator('.rt-beleg-body');
+  await expect(body.locator('b')).toHaveText('Datenhaltung in der EU');
+  await expect(body).toContainText('Stand:');
+  const html = await page.content();
+  expect(html).not.toContain('vom Betreiber bestätigen');
+  expect(html).not.toContain('F-10');
+});
+
+test('Beleg steht in der Zeile am Ende seines Satzes; kein leerer Absatz entsteht', async ({ page }) => {
+  for (const size of [WIDE, NARROW]) {
+    await page.setViewportSize(size);
+    await page.goto(PAGE);
+    const para = page.locator('#beleg-absatz');
+    await expect(para).toHaveAttribute('role', 'paragraph');
+    const m = await para.evaluate((el) => {
+      const marker = el.querySelector('summary')!.getBoundingClientRect();
+      const text = el.firstChild!;
+      const range = document.createRange();
+      range.setStart(text, text.textContent!.length - 1);
+      range.setEnd(text, text.textContent!.length);
+      const last = range.getBoundingClientRect();
+      return { marker: marker.top, last: last.top, line: parseFloat(getComputedStyle(el).lineHeight) };
+    });
+    expect(Math.abs(m.marker - m.last)).toBeLessThan(m.line);
+    expect(await page.locator('main p:empty').count()).toBe(0);
+    expect(await page.locator('p details').count()).toBe(0);
+  }
 });
 
 test('Entwicklungsseite ist noindex', async ({ page }) => {

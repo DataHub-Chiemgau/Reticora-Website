@@ -84,6 +84,7 @@
 .rt-slot { position: relative; display: grid; place-items: center; aspect-ratio: 16 / 10; max-width: 100%; background: var(--panel); border: var(--hairline) solid var(--line); border-radius: var(--radius-lg); }
 .rt-slot::before, .rt-slot::after { content: ""; position: absolute; width: var(--space-5); height: var(--space-5); border: 1.5px solid var(--accent); }
 .rt-slot::before { left: var(--space-3); top: var(--space-3); border-right: 0; border-bottom: 0; }
+.rt-slot:has(img)::before, .rt-slot:has(img)::after { display: none; }
 .rt-slot::after { right: var(--space-3); bottom: var(--space-3); border-left: 0; border-top: 0; }
 .rt-slot-label { display: flex; flex-direction: column; gap: var(--space-1); padding: 0 var(--space-6); text-align: center; }
 .rt-slot-label b { font-family: var(--font-mono); font-size: 22px; line-height: 28px; font-weight: 500; color: var(--accent); }
@@ -190,6 +191,7 @@ textarea.rt-input { min-height: 120px; resize: vertical; }
 .rt-section-head .lead { color: var(--fg-muted); }
 .rt-code-head .rt-code-status { margin-left: auto; color: var(--fg); }
 .rt-code-head .rt-btn { font-family: inherit; }
+.rt-para { font-size: 17px; line-height: 28px; }
 .rt-theme-canvas { background: var(--canvas); color: var(--fg); }
 
 /* Kopfzeile: Navigation ab 1120 px (bp-nav), darunter das Menü */

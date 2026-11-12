@@ -30,6 +30,7 @@ const items = UI.nav.items.map((i) => ({ ...i, current: path.startsWith(i.match)
   <details class="rt-menu">
     <summary><span class="rt-brand"><BrandMark />Reticora</span><span class="rt-menu-toggle">{UI.menu}</span></summary>
     <nav class="rt-menu-body" aria-label={UI.nav.label}>
+      <a href={home}>{UI.home}</a>
       {items.map((i) => <a href={i.href} aria-current={i.current ? 'page' : undefined}>{i.label}</a>)}
       <a href={LINKS.login}>{UI.actions.login}</a>
       <div class="rt-row">

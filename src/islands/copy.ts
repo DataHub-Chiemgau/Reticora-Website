@@ -4,12 +4,13 @@ for (const b of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
   let timer = 0;
   b.hidden = false;
   b.addEventListener('click', async () => {
+    let ok = true;
     try {
       await navigator.clipboard.writeText(box?.querySelector('code')?.textContent ?? '');
     } catch {
-      return;
+      ok = false;
     }
-    if (status) status.textContent = b.dataset.copied ?? '';
+    if (status) status.textContent = (ok ? b.dataset.copied : b.dataset.failed) ?? '';
     clearTimeout(timer);
     timer = window.setTimeout(() => status && (status.textContent = ''), 2000);
   });
