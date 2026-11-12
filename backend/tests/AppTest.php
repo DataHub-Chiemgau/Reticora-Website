@@ -210,6 +210,29 @@ final class AppTest extends AppTestCase
         self::assertSame(200, $this->post($this->validFields(), self::JSON, '203.0.113.200')->status);
     }
 
+    public function testRateLimitMaxIsConfigurable(): void
+    {
+        $this->app = $this->makeApp($this->mail, $this->config(['rate_limit' => ['max' => 2]]));
+        $codes = [];
+        for ($i = 0; $i < 3; $i++) {
+            $codes[] = $this->post($this->validFields(), self::JSON)->status;
+        }
+        self::assertSame([200, 200, 429], $codes);
+    }
+
+    public function testRateLimitMaxFallsBackToFiveForInvalidValues(): void
+    {
+        foreach ([0, -3, 'x', null] as $bad) {
+            $this->pdo->exec('DELETE FROM rate_limit');
+            $this->app = $this->makeApp($this->mail, $this->config(['rate_limit' => ['max' => $bad]]));
+            $codes = [];
+            for ($i = 0; $i < 6; $i++) {
+                $codes[] = $this->post($this->validFields(), self::JSON)->status;
+            }
+            self::assertSame([200, 200, 200, 200, 200, 429], $codes);
+        }
+    }
+
     public function testRateLimitResetsInNextHourWindow(): void
     {
         for ($i = 0; $i < 6; $i++) {

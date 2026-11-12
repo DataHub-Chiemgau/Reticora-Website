@@ -29,7 +29,7 @@ describe('ui()', () => {
     expect(hrefs(EN)).toEqual(hrefs(DE));
   });
   test('kein englischer Text ist leer, keiner ist der deutsche Text (außer Eigennamen)', () => {
-    const same = new Set(['Discovery', 'Compliance', 'API', 'Collector']);
+    const same = new Set(['Discovery', 'Compliance', 'API', 'Collector', 'Enterprise']);
     const de = new Map(leaves(DE));
     for (const [k, v] of leaves(EN)) {
       expect(String(v).trim(), k).not.toBe('');

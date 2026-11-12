@@ -18,6 +18,9 @@ LoadModule deflate_module @MODS@/mod_deflate.so
 LoadModule setenvif_module @MODS@/mod_setenvif.so
 LoadModule filter_module @MODS@/mod_filter.so
 LoadModule alias_module @MODS@/mod_alias.so
+# nur im Test: /api/lead.php geht an den PHP-Entwicklungsserver (im Betrieb liegt lead.php im Webroot)
+LoadModule proxy_module @MODS@/mod_proxy.so
+LoadModule proxy_http_module @MODS@/mod_proxy_http.so
 @IDENTITY@
 TypesConfig /etc/mime.types
 AddType font/woff2 .woff2
@@ -36,4 +39,10 @@ DocumentRoot "@DOCROOT@"
   Options FollowSymLinks
   Require all granted
 </Directory>
+# Origin und Host des Browsers bleiben unverändert (Origin-Prüfung im Backend)
+ProxyPreserveHost On
+ProxyRequests Off
+ProxyPass "/api/lead.php" "http://127.0.0.1:8081/lead.php"
+# zweite Instanz mit Standard-Limit, nur für den Test des Rate-Limits
+ProxyPass "/api-limit/lead.php" "http://127.0.0.1:8082/lead.php"
 DirectoryIndex index.html

@@ -15,6 +15,9 @@ return [
     // Aufbewahrungsfrist der Anfragen in Tagen. Vorschlag 90; vom Auftraggeber festzulegen und zu bestätigen.
     'retention_days' => 90,
 
+    // Anfragen je Herkunft und Stunde (Spec §6.1). Standard 5; nur in Tests höher setzen.
+    // 'rate_limit' => ['max' => 5],
+
     'db' => [
         'dsn' => 'mysql:host=localhost;dbname=DBNAME;charset=utf8mb4',
         'user' => 'DBUSER',

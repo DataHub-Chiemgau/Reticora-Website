@@ -70,7 +70,10 @@ describe('screenshots', () => {
 
 describe('links, site, topology', () => {
   it('Links beginnen mit https://', () => {
-    for (const [k, v] of Object.entries(LINKS)) if (k !== 'demoUser' && k !== 'demoPassword') expect(v.startsWith('https://')).toBe(true);
+    for (const [k, v] of Object.entries(LINKS)) {
+      if (k === 'lead') expect(v).toBe('/api/lead.php');
+      else if (k !== 'demoUser' && k !== 'demoPassword') expect(v.startsWith('https://')).toBe(true);
+    }
   });
   it('Site', () => {
     expect(SITE.email).toBeNull(); expect(SITE.phone).toBeNull();

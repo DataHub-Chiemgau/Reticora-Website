@@ -306,3 +306,32 @@ textarea.rt-input { min-height: 120px; resize: vertical; }
 .product-caption { color: var(--fg-muted); max-width: var(--measure); }
 .product-schema { max-width: 52rem; }
 .home-block code, .rt-spec code, .rt-table code, .rt-notice code, .lead code { font-family: var(--font-mono); font-size: .9em; color: var(--fg); }
+
+/* Kontakt, Danke, Rechts- und Hinweisseiten (Task 7, 8) */
+.rt-placeholder { display: inline; padding: 0 var(--space-1); border: var(--hairline) dashed var(--signal); border-radius: var(--radius-sm); color: var(--fg); }
+.rt-placeholder--block { display: block; padding: var(--space-3) var(--space-4); }
+.rt-summary-title { font-size: 15px; line-height: 24px; font-weight: 600; color: var(--danger); }
+.rt-summary ul { margin: var(--space-2) 0 0; padding-left: var(--space-5); }
+.rt-summary li { margin-top: var(--space-1); }
+.contact { padding-bottom: var(--space-16); }
+.contact-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-12); align-items: start; }
+@media (min-width: 64rem) { .contact-grid { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--space-16); } }
+.contact-main { display: flex; flex-direction: column; gap: var(--space-6); max-width: 560px; }
+.contact-main .rt-form { max-width: none; }
+.contact-required { font-size: 15px; line-height: 24px; color: var(--fg-muted); }
+.contact-nojs { display: none; }
+.contact-nojs:target { display: block; }
+.contact-notice p + p { margin-top: var(--space-2); }
+.contact-send { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); }
+.contact-trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.contact-direct { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); }
+.contact-direct .home-defs { align-self: stretch; }
+.contact-direct a:not(.rt-btn), .contact-send a { color: var(--accent-strong); }
+.legal-meta { font-size: 15px; line-height: 24px; color: var(--fg-muted); }
+.legal { padding-bottom: var(--space-16); }
+.legal-stack { display: flex; flex-direction: column; gap: var(--space-8); max-width: var(--measure); }
+.legal .home-defs { max-width: var(--measure); }
+.legal-list { list-style: disc; margin: 0; padding-left: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); font-size: 17px; line-height: 28px; max-width: var(--measure); }
+.legal-text { font-size: 17px; line-height: 28px; max-width: var(--measure); }
+.notfound-links { display: flex; flex-direction: column; margin-top: var(--space-6); }
+.notfound-links a { display: flex; align-items: center; min-height: var(--target-min); color: var(--accent-strong); }

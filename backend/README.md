@@ -54,7 +54,7 @@ Prüfreihenfolge: Methode, Größe (höchstens 16384 Byte, sonst 413), Origin, C
 - **Tagesschlüssel des Rate-Limits** wird deterministisch aus `secret` und UTC-Datum abgeleitet (nicht zufällig). Bei Verlust von `secret` ließen sich alte Hashes durchprobieren; die 24-Stunden-Löschung begrenzt das. Bewusst so belassen.
 - **Token:** `GET /api/lead.php?token=1` liefert `{"ts":<int>,"sig":"<hex64>"}`, `Cache-Control: no-store`, kein Cookie, ohne Datenbankzugriff. Jeder andere GET ergibt 405.
 - **Zeitfalle:** Alter von `ts` 3 s bis 7200 s. Fehlen `ts` und `sig` ganz, entfällt die Zeitfalle. Nur eines vorhanden, Signatur falsch, zu früh oder zu alt: Antwort wie bei Erfolg, nichts wird gespeichert oder gesendet. Gleiches gilt für ein gefülltes `website`.
-- **Rate-Limit:** 5 Anfragen je Stunde (festes Stundenfenster) je HMAC(IP, Tagesschlüssel aus `secret` und UTC-Datum). Es zählt jede Anfrage, die die Prüfungen bis dahin besteht. Die IP stammt aus `REMOTE_ADDR` (kein `X-Forwarded-For`).
+- **Rate-Limit:** 5 Anfragen je Stunde (Standard; `rate_limit.max` in `config.php` ändert den Wert, nur für Tests gedacht, Werte unter 1 gelten als 5) (festes Stundenfenster) je HMAC(IP, Tagesschlüssel aus `secret` und UTC-Datum). Es zählt jede Anfrage, die die Prüfungen bis dahin besteht. Die IP stammt aus `REMOTE_ADDR` (kein `X-Forwarded-For`).
 - **Zustellstatus** in `lead.delivery`: `pending`, `delivered`, `not_delivered` (Mail an den Vertrieb fehlgeschlagen), `confirmation_failed` (nur Bestätigung fehlgeschlagen). Die Besucherin sieht in allen Fällen die Bestätigung.
 - **Antwort-Kopfzeilen:** `Content-Type` mit `charset=utf-8`, `X-Content-Type-Options: nosniff`, `Cache-Control: no-store`, `Referrer-Policy: no-referrer`.
 

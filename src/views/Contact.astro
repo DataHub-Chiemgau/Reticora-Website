@@ -1,0 +1,100 @@
+---
+import Leitstand from '../layouts/Leitstand.astro';
+import PageHero from '../components/PageHero.astro';
+import Field from '../components/Field.astro';
+import ErrorSummary from '../components/ErrorSummary.astro';
+import Placeholder from '../components/Placeholder.astro';
+import Button from '../components/Button.astro';
+import { content } from '../content';
+import { LINKS } from '../data/links';
+import { SITE } from '../data/site';
+import type { Lang } from '../data/types';
+import { ui } from '../i18n';
+import { localize } from '../i18n/routes';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const T = ui(lang);
+const F = T.form;
+const C = content(lang).kontakt;
+const path = localize('/kontakt/', lang);
+const errorId = lang === 'de' ? 'fehler' : 'error';
+const topics = (['demo', 'enterprise', 'security', 'other'] as const).map((v) => ({ value: v, text: F.fields.topic.options[v] }));
+const codes = Object.entries(F.errors).flatMap(([field, byCode]) => Object.keys(byCode).map((code) => [`${field}.${code}`, (byCode as Record<string, string>)[code]] as const));
+---
+
+<Leitstand title={C.meta.title} description={C.meta.description} lang={lang} path={path}>
+  <PageHero title={C.hero.h1} lead={C.hero.lead} />
+
+  <div class="rt-section contact">
+    <div class="rt-container contact-grid">
+      <div class="contact-main">
+        <p class="home-b2b">{T.b2b}</p>
+        <p class="contact-required">{F.required}</p>
+
+        <p class="rt-notice rt-notice--signal contact-nojs" id={errorId}><b>{F.generic}</b></p>
+
+        <ErrorSummary />
+        {(['429', '500'] as const).map((n) => (
+          <div class="rt-notice rt-notice--signal contact-notice" data-notice={n} role="alert" tabindex="-1" hidden>
+            <p>{n === '429' ? F.rate : F.server}</p>
+            <p>
+              {F.directContact}{' '}
+              {SITE.email ? <a href={`mailto:${SITE.email}`}>{SITE.email}</a> : <Placeholder id="kontakt-email">{T.placeholders.email}</Placeholder>}
+            </p>
+          </div>
+        ))}
+
+        <form class="rt-form contact-form" action={LINKS.lead} method="post" data-lead data-thanks={localize('/kontakt/danke/', lang)}>
+          <Field name="name" label={F.fields.name.label} required autocomplete="name" />
+          <Field name="email" type="email" label={F.fields.email.label} hint={F.fields.email.hint} required autocomplete="email" />
+          <Field name="company" label={F.fields.company.label} required autocomplete="organization" />
+          <Field name="topic" kind="select" label={F.fields.topic.label} required autocomplete="off" choose={F.fields.topic.choose} options={topics} />
+          <Field name="message" kind="textarea" label={F.fields.message.label} hint={F.fields.message.hint} autocomplete="off" />
+
+          <input type="hidden" name="lang" value={lang} />
+          <input type="hidden" name="ts" value="" />
+          <input type="hidden" name="sig" value="" />
+          <div class="contact-trap" aria-hidden="true">
+            <label for="f-website">{F.trap}</label>
+            <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="contact-send">
+            <Button variant="primary" size="lg" type="submit" data-sending={F.sending}>{F.submit}</Button>
+            <Placeholder id="kontakt-verarbeitung" block>
+              {F.processing}{' '}<a href={localize('/datenschutz/', lang)}>{F.privacy}</a>
+            </Placeholder>
+          </div>
+        </form>
+
+        <ul id="form-msgs" hidden>
+          <li data-code="one">{F.summaryOne}</li>
+          <li data-code="many">{F.summaryMany}</li>
+          {codes.map(([code, text]) => <li data-code={code}>{text}</li>)}
+        </ul>
+      </div>
+
+      <aside class="contact-direct" aria-labelledby="kontakt-anbieter">
+        <h2 class="heading-s" id="kontakt-anbieter">{C.direct.title}</h2>
+        <dl class="home-defs">
+          <div><dt>{T.legal.labels.company}</dt><dd>{SITE.company}</dd></div>
+          <div><dt>{T.legal.labels.address}</dt><dd>{SITE.street}<br />{SITE.city}</dd></div>
+          <div>
+            <dt>{T.legal.labels.email}</dt>
+            <dd>{SITE.email ? <a href={`mailto:${SITE.email}`}>{SITE.email}</a> : <Placeholder id="kontakt-email">{T.placeholders.email}</Placeholder>}</dd>
+          </div>
+          <div>
+            <dt>{T.legal.labels.phone}</dt>
+            <dd>{SITE.phone ? <a href={`tel:${SITE.phone.replace(/[^+\d]/g, '')}`}>{SITE.phone}</a> : <Placeholder id="kontakt-telefon">{T.placeholders.phone}</Placeholder>}</dd>
+          </div>
+        </dl>
+        <Button variant="secondary" href={localize('/impressum/', lang)}>{C.direct.imprint}</Button>
+      </aside>
+    </div>
+  </div>
+</Leitstand>
+
+<script>
+  import '../islands/form';
+</script>

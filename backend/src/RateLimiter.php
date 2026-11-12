@@ -17,7 +17,8 @@ final class RateLimiter
     public const LIMIT = 5;
     public const WINDOW = 3600;
 
-    public function __construct(private readonly PDO $pdo, private readonly string $secret)
+    /** @param int $limit Anfragen je Stunde; Werte unter 1 fallen auf LIMIT zurück (config: rate_limit.max). */
+    public function __construct(private readonly PDO $pdo, private readonly string $secret, private readonly int $limit = self::LIMIT)
     {
     }
 
@@ -57,6 +58,6 @@ final class RateLimiter
             throw new \RuntimeException('Zähler nicht lesbar'); // geschlossen scheitern, nie erlauben
         }
         $count = (int) $value;
-        return [$count <= self::LIMIT, max(1, $window + self::WINDOW - $now)];
+        return [$count <= ($this->limit >= 1 ? $this->limit : self::LIMIT), max(1, $window + self::WINDOW - $now)];
     }
 }

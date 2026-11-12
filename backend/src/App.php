@@ -68,7 +68,7 @@ final class App
         }
 
         $pdo = ($this->pdoFactory)();
-        [$allowed, $retryAfter] = (new RateLimiter($pdo, $this->config->string('secret')))->hit($request->ip, $now);
+        [$allowed, $retryAfter] = (new RateLimiter($pdo, $this->config->string('secret'), $this->config->int('rate_limit.max', RateLimiter::LIMIT)))->hit($request->ip, $now);
         $form = $request->form();
         $lang = $this->lang($form);
         if (!$allowed) {
