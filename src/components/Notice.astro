@@ -1,0 +1,6 @@
+---
+interface Props { variant?: 'info' | 'signal'; lead: string }
+const { variant = 'info', lead } = Astro.props;
+---
+
+<p class:list={['rt-notice', variant === 'signal' && 'rt-notice--signal']}><b>{lead}</b> <slot /></p>

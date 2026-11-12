@@ -1,0 +1,11 @@
+---
+import { claim } from '../data/claims';
+import type { ClaimId, Lang } from '../data/types';
+import { UI } from '../i18n/de';
+
+interface Props { claim: ClaimId; lang: Lang }
+const { claim: id, lang } = Astro.props;
+const c = claim(id);
+---
+
+<details class="rt-beleg"><summary>{UI.beleg}<span class="sr-only">: {c.title[lang]}</span></summary><div class="rt-beleg-body"><b>{c.title[lang]}</b><br />{c.evidence[lang]}</div></details>

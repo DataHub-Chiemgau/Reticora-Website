@@ -1,0 +1,17 @@
+---
+interface Props { title: string; copyLabel: string; copiedLabel: string }
+const { title, copyLabel, copiedLabel } = Astro.props;
+---
+
+<div class="rt-code">
+  <div class="rt-code-head">
+    <span>{title}</span>
+    <span class="rt-code-status" role="status"></span>
+    <button class="rt-btn rt-btn--quiet" type="button" data-copy data-copied={copiedLabel} hidden>{copyLabel}</button>
+  </div>
+  <pre tabindex="0"><code><slot /></code></pre>
+</div>
+
+<script>
+  import '../islands/copy';
+</script>

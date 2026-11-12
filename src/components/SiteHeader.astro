@@ -1,0 +1,45 @@
+---
+import BrandMark from './BrandMark.astro';
+import Button from './Button.astro';
+import { LINKS } from '../data/links';
+import type { Lang } from '../data/types';
+import { UI } from '../i18n/de';
+
+interface Props { lang: Lang; path: string }
+const { lang, path } = Astro.props;
+const home = lang === 'en' ? UI.lang.enHref : '/';
+const items = UI.nav.items.map((i) => ({ ...i, current: path.startsWith(i.match) }));
+---
+
+<header class="rt-site-header">
+  <div class="rt-header">
+    <a class="rt-brand" href={home}><BrandMark />Reticora</a>
+    <nav class="rt-nav" aria-label={UI.nav.label}>
+      {items.map((i) => <a href={i.href} aria-current={i.current ? 'page' : undefined}>{i.label}</a>)}
+    </nav>
+    <div class="rt-header-actions">
+      <div class="rt-lang" role="group" aria-label={UI.lang.label}>
+        {lang === 'de' ? <span aria-current="true">{UI.lang.de}</span> : <a href={UI.lang.deHref} lang="de" hreflang="de">{UI.lang.de}</a>}
+        {lang === 'en' ? <span aria-current="true">{UI.lang.en}</span> : <a href={UI.lang.enHref} lang="en" hreflang="en">{UI.lang.en}</a>}
+      </div>
+      <Button variant="quiet" href={LINKS.login}>{UI.actions.login}</Button>
+      <Button variant="secondary" href={UI.footer.demoHref}>{UI.actions.demo}</Button>
+      <Button variant="primary" href={LINKS.signup}>{UI.actions.trial}</Button>
+    </div>
+  </div>
+  <details class="rt-menu">
+    <summary><span class="rt-brand"><BrandMark />Reticora</span><span class="rt-menu-toggle">{UI.menu}</span></summary>
+    <nav class="rt-menu-body" aria-label={UI.nav.label}>
+      {items.map((i) => <a href={i.href} aria-current={i.current ? 'page' : undefined}>{i.label}</a>)}
+      <a href={LINKS.login}>{UI.actions.login}</a>
+      <div class="rt-row">
+        <Button variant="primary" href={LINKS.signup}>{UI.actions.trial}</Button>
+        <Button variant="secondary" href={UI.footer.demoHref}>{UI.actions.demo}</Button>
+      </div>
+      <div class="rt-lang" role="group" aria-label={UI.lang.label}>
+        {lang === 'de' ? <span aria-current="true">{UI.lang.de}</span> : <a href={UI.lang.deHref} lang="de" hreflang="de">{UI.lang.de}</a>}
+        {lang === 'en' ? <span aria-current="true">{UI.lang.en}</span> : <a href={UI.lang.enHref} lang="en" hreflang="en">{UI.lang.en}</a>}
+      </div>
+    </nav>
+  </details>
+</header>

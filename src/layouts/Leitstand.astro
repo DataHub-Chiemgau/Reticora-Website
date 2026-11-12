@@ -1,5 +1,8 @@
 ---
 import '../styles/global.css';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { UI } from '../i18n/de';
 import archivoUrl from '../assets/fonts/archivo-leitstand.woff2?url';
 
 interface Props {
@@ -25,7 +28,9 @@ const hideFromIndex = noindex || process.env.RETICORA_RELEASE !== '1';
     <link rel="preload" href={archivoUrl} as="font" type="font/woff2" crossorigin />
   </head>
   <body>
-    <a class="sr-skip" href="#inhalt">Zum Inhalt</a>
+    <a class="sr-skip" href="#inhalt">{UI.skip}</a>
+    <SiteHeader lang={lang} path={path} />
     <main id="inhalt"><slot /></main>
+    <SiteFooter lang={lang} />
   </body>
 </html>
