@@ -131,8 +131,10 @@ test.describe('Produktseiten', () => {
       }));
       expect(boxes.map((b) => b.text)).toEqual(['30 Tage testen', 'Live-Demo', 'Kontakt']);
       const quiet = boxes[2];
-      expect(quiet.x, path).toBe(boxes[0].x);
-      expect(quiet.y, path).toBeGreaterThan(boxes[1].y);
+      // Ob „Kontakt“ umbricht, hängt von der Schriftbreite ab (in der CI anders als lokal).
+      // Steht er in einer neuen Zeile, muss er bündig mit dem ersten Knopf beginnen.
+      if (quiet.y > boxes[1].y) expect(quiet.x, path).toBe(boxes[0].x);
+      else expect(quiet.x, path).toBeGreaterThan(boxes[1].x);
     }
   });
 });
