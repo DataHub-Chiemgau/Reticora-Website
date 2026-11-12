@@ -201,7 +201,7 @@ test('ScreenshotSlot zeigt ID, Motiv und Zielmaß und hat das Seitenverhältnis 
 test('aktive Navigation trägt aria-current="page"; die aktive Sprache ist kein Link', async ({ page }) => {
   await page.setViewportSize(WIDE);
   await page.goto(PAGE);
-  const nav = page.locator('.rt-header').getByRole('navigation', { name: 'Hauptnavigation' });
+  const nav = page.locator('.rt-header').getByRole('navigation', { name: 'Hauptnavigation', exact: true });
   await expect(nav.locator('a[aria-current="page"]')).toHaveCount(1);
   await expect(nav.locator('a[aria-current="page"]')).toHaveText('Produkt');
   const lang = page.locator('.rt-header .rt-lang');

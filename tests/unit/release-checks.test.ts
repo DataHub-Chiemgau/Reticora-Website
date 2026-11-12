@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { checkClaims, checkDevPages, checkRoutes, checkScreenshots, checkSite } from '../../scripts/lib/release-checks.mjs';
+import { checkClaims, checkDevPages, checkDistHtml, checkNotEmpty, checkRoutes, checkScreenshotFiles, checkScreenshots, checkSite } from '../../scripts/lib/release-checks.mjs';
 
 describe('Release-Prüfungen', () => {
   test('offener Claim wird mit ID gemeldet', () => {
@@ -21,11 +21,43 @@ describe('Release-Prüfungen', () => {
     ]);
   });
   test('fehlende E-Mail-Adresse und Telefonnummer des Anbieters werden gemeldet', () => {
-    expect(checkSite({ email: null, phone: null })).toEqual(['Anbieter: E-Mail-Adresse fehlt', 'Anbieter: Telefonnummer fehlt']);
-    expect(checkSite({ email: 'a@b.de', phone: '1' })).toEqual([]);
+    expect(checkSite({ email: null, phone: null, managingDirector: 'X', registerCourt: 'Y', registerNumber: 'Z', vatId: 'V' })).toEqual(['Anbieter: E-Mail-Adresse fehlt', 'Anbieter: Telefonnummer fehlt']);
   });
   test('Entwicklungsseiten im Build werden gemeldet', () => {
     expect(checkDevPages(['index.html', 'dev', 'dev/bausteine'])).toHaveLength(2);
     expect(checkDevPages(['index.html', 'device'])).toEqual([]);
+  });
+
+  const full = { email: 'a@b.de', phone: '1', managingDirector: 'X', registerCourt: 'Y', registerNumber: 'Z', vatId: 'DE1' };
+  test.each([
+    ['managingDirector', 'Anbieter: Geschäftsführung fehlt'],
+    ['registerCourt', 'Anbieter: Registergericht fehlt'],
+    ['registerNumber', 'Anbieter: Registernummer fehlt'],
+    ['vatId', 'Anbieter: USt-IdNr. fehlt'],
+    ['email', 'Anbieter: E-Mail-Adresse fehlt'],
+    ['phone', 'Anbieter: Telefonnummer fehlt'],
+  ])('Anbieterfeld %s fehlt', (key, msg) => {
+    expect(checkSite(full)).toEqual([]);
+    expect(checkSite({ ...full, [key]: null })).toEqual([msg]);
+    expect(checkSite({ ...full, [key]: '   ' })).toEqual([msg]);
+    expect(checkSite({ ...full, [key]: '' })).toEqual([msg]);
+  });
+  test('Platzhalter in gebauter Seite wird gemeldet', () => {
+    expect(checkDistHtml([{ path: 'dist/index.html', html: '<div class="rt-slot-label" data-placeholder="S-04">' }])).toEqual([
+      'dist/index.html: Platzhalter für S-04',
+    ]);
+  });
+  test('Seite ohne Platzhalter ist in Ordnung', () => {
+    expect(checkDistHtml([{ path: 'dist/index.html', html: '<img src="/screenshots/a.png">' }])).toEqual([]);
+  });
+  test('Bilddatei fehlt auf Platte', () => {
+    const exists = (p: string) => p === 'public/screenshots/ok.png';
+    expect(
+      checkScreenshotFiles([{ id: 'S-01', file: 'ok.png' }, { id: 'S-02', file: 'weg.png' }, { id: 'S-03', file: '/x/y.png' }, { id: 'S-04' }], exists),
+    ).toEqual(['S-02: Bilddatei fehlt auf Platte', 'S-03: Bilddatei fehlt auf Platte']);
+  });
+  test('leere Daten sperren den Release', () => {
+    expect(checkNotEmpty([], [], [])).toEqual(['Claim-Register ist leer', 'Screenshot-Liste ist leer', 'Routen-Liste ist leer']);
+    expect(checkNotEmpty([1], [1], [1])).toEqual([]);
   });
 });

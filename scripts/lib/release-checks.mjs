@@ -17,10 +17,47 @@ export function checkRoutes(routes) {
   return routes.filter((r) => r.status === 'geplant').map((r) => `${r.de}: Seite nur geplant, nicht gebaut`);
 }
 
+const blank = (v) => typeof v !== 'string' || v.trim() === '';
+
 export function checkSite(site) {
+  const fields = [
+    ['email', 'E-Mail-Adresse'],
+    ['phone', 'Telefonnummer'],
+    ['managingDirector', 'Geschäftsführung'],
+    ['registerCourt', 'Registergericht'],
+    ['registerNumber', 'Registernummer'],
+    ['vatId', 'USt-IdNr.'],
+  ];
+  return fields.filter(([k]) => blank(site[k])).map(([, label]) => `Anbieter: ${label} fehlt`);
+}
+
+/** Ort einer Bilddatei unter public/, wie ScreenshotSlot sie ausliefert. */
+export function screenshotPublicPath(file) {
+  return file.startsWith('/') ? `public${file}` : `public/screenshots/${file}`;
+}
+
+export function checkScreenshotFiles(list, exists) {
+  return list
+    .filter((s) => s.file && !exists(screenshotPublicPath(s.file)))
+    .map((s) => `${s.id}: Bilddatei fehlt auf Platte`);
+}
+
+/** Findet Platzhalter-Bilder in gebauten Seiten (Marker data-placeholder). */
+export function checkDistHtml(files) {
   const out = [];
-  if (!site.email) out.push('Anbieter: E-Mail-Adresse fehlt');
-  if (!site.phone) out.push('Anbieter: Telefonnummer fehlt');
+  for (const { path, html } of files) {
+    for (const m of html.matchAll(/\sdata-placeholder(?:="([^"]*)")?/g)) {
+      out.push(m[1] ? `${path}: Platzhalter für ${m[1]}` : `${path}: Platzhalter`);
+    }
+  }
+  return out;
+}
+
+export function checkNotEmpty(claims, screenshots, routes) {
+  const out = [];
+  if (!claims?.length) out.push('Claim-Register ist leer');
+  if (!screenshots?.length) out.push('Screenshot-Liste ist leer');
+  if (!routes?.length) out.push('Routen-Liste ist leer');
   return out;
 }
 

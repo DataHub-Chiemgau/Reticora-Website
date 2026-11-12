@@ -2,6 +2,11 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
+/** Relative Importe eines Chunks: statisch (from "./x.js", import "./x.js") und dynamisch (import("./x.js")). */
+export function chunkImports(code) {
+  return [...code.matchAll(/(?:from\s*|import\s*\(?\s*)["'](\.{1,2}\/[^"']+\.js)["']/g)].map((m) => m[1]);
+}
+
 const gz = (file) => gzipSync(readFileSync(file)).length;
 const local = (dist, url) => join(dist, url.split(/[?#]/)[0].replace(/^\//, ''));
 
@@ -16,8 +21,8 @@ export function homepageAssets(dist) {
     const f = local(dist, url);
     if (js.has(f) || !existsSync(f)) return;
     js.add(f);
-    for (const m of readFileSync(f, 'utf8').matchAll(/(?:from|import)\s*["'](\.{1,2}\/[^"']+\.js)["']/g))
-      addJs(new URL(m[1], 'http://x' + (url.startsWith('/') ? url : '/' + url)).pathname);
+    for (const imp of chunkImports(readFileSync(f, 'utf8')))
+      addJs(new URL(imp, 'http://x' + (url.startsWith('/') ? url : '/' + url)).pathname);
   };
   const addCss = (url) => {
     const f = local(dist, url);

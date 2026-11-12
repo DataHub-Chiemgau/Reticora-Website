@@ -13,7 +13,7 @@ const src = shot.file ? (shot.file.startsWith('/') ? shot.file : `/screenshots/$
 <figure class="rt-figure">
   <div class:list={['rt-slot', ratio === '4x5' && 'rt-slot--4x5']}>
     {src ? <img src={src} alt={motif} width={shot.width} height={shot.height} loading="lazy" decoding="async" /> : (
-      <div class="rt-slot-label">
+      <div class="rt-slot-label" data-placeholder={id}>
         <b>{id}</b>
         <span>{motif}</span>
         <small>{UI.placeholder} · {shot.width} × {shot.height} · {UI.darkTheme}</small>
