@@ -71,10 +71,10 @@ describe('Sprachpaare', () => {
     expect(dePath('/en/security/')).toBe('/sicherheit/');
     expect(dePath('/sicherheit/')).toBe('/sicherheit/');
   });
-  test('isBuilt: Startseite ja, englische Startseite noch nicht, unbekannt nein', () => {
+  test('isBuilt: Startseite ja, englische Seiten noch nicht, unbekannt nein', () => {
     expect(isBuilt('/')).toBe(true);
     expect(isBuilt('/en/')).toBe(false);
-    expect(isBuilt('/preise/')).toBe(false);
+    expect(isBuilt('/en/product/discovery/')).toBe(false);
     expect(isBuilt('/404/')).toBe(false);
     expect(isBuilt(null)).toBe(false);
   });

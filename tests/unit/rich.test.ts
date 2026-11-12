@@ -1,0 +1,40 @@
+import { describe, expect, it } from 'vitest';
+import { hasClaims, highlightShell, nbsp, parseRich, plainText } from '../../src/content/rich';
+
+describe('parseRich', () => {
+  it('trennt Belege vom Satz und setzt kein Leerzeichen davor', () => {
+    expect(parseRich('Ein Satz. [C-26] Und weiter.')).toEqual([
+      { t: 'text', v: 'Ein Satz.' },
+      { t: 'claim', id: 'C-26' },
+      { t: 'text', v: ' Und weiter.' },
+    ]);
+  });
+  it('liest mehrere Belege in einer Klammer', () => {
+    expect(parseRich('x [C-02, C-77]').filter((p) => p.t === 'claim')).toEqual([{ t: 'claim', id: 'C-02' }, { t: 'claim', id: 'C-77' }]);
+  });
+  it('erkennt Code und Fett', () => {
+    expect(parseRich('`audit-verify` und **fett**')).toEqual([{ t: 'code', v: 'audit-verify' }, { t: 'text', v: ' und ' }, { t: 'bold', v: 'fett' }]);
+  });
+  it('hasClaims und plainText', () => {
+    expect(hasClaims('a [C-01]')).toBe(true);
+    expect(hasClaims('a `[C-01]x`')).toBe(false);
+    expect(plainText('Schlüssel `X-API-Key` nutzen. [C-11]')).toBe('Schlüssel X-API-Key nutzen.');
+  });
+});
+
+describe('nbsp', () => {
+  it('bindet Einheiten an die Zahl', () => {
+    expect(nbsp('alle 24 h, 15 min, 90 Tage, 1.000 MiB, 60 %')).toBe('alle 24 h, 15 min, 90 Tage, 1.000 MiB, 60 %');
+  });
+  it('lässt Zahlen vor anderen Wörtern in Ruhe', () => {
+    expect(nbsp('Rang 92 und Port 443 sowie 2 Server, 5 Sekunden')).toBe('Rang 92 und Port 443 sowie 2 Server, 5 Sekunden');
+  });
+});
+
+describe('highlightShell', () => {
+  it('färbt Kommentar und Zeichenketten, maskiert HTML', () => {
+    expect(highlightShell('# a <b>\ncurl "x&y" \\\n  -H "k"')).toBe(
+      '<span class="c"># a &lt;b&gt;</span>\ncurl <span class="k">"x&amp;y"</span> \\\n  -H <span class="k">"k"</span>',
+    );
+  });
+});

@@ -1,11 +1,15 @@
 ---
+import Rich from './Rich.astro';
+import type { Lang } from '../data/types';
+
 interface Props {
   label: string;
   columns: { key: string; head: string; numeric?: boolean; sub?: string }[];
   rows: Record<string, string>[];
   rowHeader: string;
+  lang?: Lang;
 }
-const { label, columns, rows, rowHeader } = Astro.props;
+const { label, columns, rows, rowHeader, lang = 'de' } = Astro.props;
 ---
 
 <section class="rt-table-wrap" tabindex="0" aria-label={label}>
@@ -17,8 +21,8 @@ const { label, columns, rows, rowHeader } = Astro.props;
       {rows.map((r) => (
         <tr>
           {columns.map((c) => c.key === rowHeader
-            ? <th scope="row">{c.sub && r[c.sub] ? <span class="rt-tarif">{r[c.key]}<small>{r[c.sub]}</small></span> : r[c.key]}</th>
-            : <td class={c.numeric ? 'num' : undefined}>{r[c.key]}</td>)}
+            ? <th scope="row">{c.sub && r[c.sub] ? <span class="rt-tarif">{r[c.key]}<small>{r[c.sub]}</small></span> : <Rich text={r[c.key]} lang={lang} />}</th>
+            : <td class={c.numeric ? 'num' : undefined}><Rich text={r[c.key]} lang={lang} /></td>)}
         </tr>
       ))}
     </tbody>

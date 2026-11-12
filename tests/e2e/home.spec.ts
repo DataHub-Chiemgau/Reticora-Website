@@ -185,9 +185,9 @@ test('jeder interne Link zeigt auf eine Adresse aus ROUTES', async ({ page }) =>
   for (const h of hrefs) expect(h.endsWith('/')).toBe(true);
 });
 
-test('ROUTES: Startseite gebaut, alle anderen geplant, Adressen eindeutig', () => {
+test('ROUTES: Startseite gebaut, englische Seiten noch geplant (bis Task 9), Adressen eindeutig', () => {
   expect(ROUTES.find((r) => r.de === '/')?.status).toBe('gebaut');
-  expect(ROUTES.filter((r) => r.status === 'gebaut').length).toBe(1);
+  expect(ROUTES.every((r) => r.enStatus === 'geplant')).toBe(true);
   expect(new Set(ROUTES.map((r) => r.de)).size).toBe(ROUTES.length);
   for (const p of ['/demo/', '/preise/', '/geraete/', '/sicherheit/', '/kontakt/']) expect(ROUTES.some((r) => r.de === p)).toBe(true);
 });

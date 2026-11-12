@@ -1,0 +1,136 @@
+---
+import Leitstand from '../layouts/Leitstand.astro';
+import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
+import Cta from '../components/Cta.astro';
+import ActionRow from '../components/ActionRow.astro';
+import Button from '../components/Button.astro';
+import Rich from '../components/Rich.astro';
+import StatusStrip from '../components/StatusStrip.astro';
+import ScreenshotSlot from '../components/ScreenshotSlot.astro';
+import ProductLeaf from './ProductLeaf.astro';
+import Steps from '../components/Steps.astro';
+import Notice from '../components/Notice.astro';
+import TopologyStage from '../components/TopologyStage.astro';
+import ConnectionSchema from '../components/ConnectionSchema.astro';
+import type { Lang } from '../data/types';
+import type { Block } from '../content/types';
+import { content } from '../content';
+import { hasClaims, nbsp } from '../content/rich';
+import { ui } from '../i18n';
+import { localize } from '../i18n/routes';
+
+/** Seite aus Abschnitten (Inhaltsmodell in src/content/types.ts). Sprachneutral: Texte kommen aus `content(lang)`. */
+interface Props { lang: Lang; slug: keyof ReturnType<typeof content>['produkt'] }
+const { lang, slug } = Astro.props;
+const page = content(lang).produkt[slug];
+const dePathOfPage = `/produkt/${slug}/`;
+const path = localize(dePathOfPage, lang);
+const UI = ui(lang);
+const H = page.hero;
+// Teilnavigation der Produktseiten: nur Beschriftungen, die schon in der Fußzeile stehen (ui.footer.columns[0]).
+const SUB = UI.footer.columns[0];
+
+// Abbildungsnummern fortlaufend in Seitenreihenfolge; Schemazeichnung und Screenshots zählen gleich.
+let figureNo = 0;
+const numbered = page.sections.map((s) => ({
+  ...s,
+  blocks: s.blocks.map((b: Block) => {
+    const nums: number[] =
+      b.kind === 'figure' || b.kind === 'schema' ? [++figureNo]
+      : b.kind === 'shots' ? b.shots.map(() => ++figureNo)
+      : [];
+    return { b, nums };
+  }),
+}));
+---
+
+<Leitstand title={nbsp(page.meta.title)} description={nbsp(page.meta.description)} lang={lang} path={path}>
+  <PageHero title={nbsp(H.title)}>
+    <Fragment slot="lead"><Rich text={H.lead} lang={lang} /></Fragment>
+    <div class="product-actions"><ActionRow actions={H.actions} lang={lang} /></div>
+  </PageHero>
+  <nav class="rt-container product-nav" aria-label={SUB.title}>
+    <ul>
+      {SUB.links.map((l) => (
+        <li><a href={localize(l.href, lang)} aria-current={l.href === dePathOfPage ? 'page' : undefined}>{l.label}</a></li>
+      ))}
+    </ul>
+  </nav>
+  {H.topology && (
+    <div class="rt-container product-stage">
+      <TopologyStage lang={lang} />
+    </div>
+  )}
+  {H.strip && (
+    <div class="rt-container product-stage">
+      <StatusStrip items={H.strip.map((i) => ({ ...i, value: nbsp(i.value) }))} lang={lang} />
+    </div>
+  )}
+
+  {numbered.map((s) => (
+    <Section id={s.id} title={nbsp(s.title)}>
+      {s.lead && <Fragment slot="lead"><Rich text={s.lead} lang={lang} /></Fragment>}
+      <div class="home-stack">
+        {s.blocks.map(({ b, nums }) => (
+          <>
+            {b.kind === 'prose' && (
+              <div class="home-block">
+                {b.paras.map((t) => hasClaims(t)
+                  ? <div class="rt-para" role="paragraph"><Rich text={t} lang={lang} /></div>
+                  : <p class="rt-para"><Rich text={t} lang={lang} /></p>)}
+              </div>
+            )}
+            {b.kind === 'figure' && (
+              <div class="home-split home-split--figure">
+                <div class="home-block">
+                  {b.paras.map((t) => hasClaims(t)
+                    ? <div class="rt-para" role="paragraph"><Rich text={t} lang={lang} /></div>
+                    : <p class="rt-para"><Rich text={t} lang={lang} /></p>)}
+                </div>
+                <ScreenshotSlot id={b.shot.id} figure={nums[0]} caption={nbsp(b.shot.caption)} ratio={b.shot.ratio} lang={lang} />
+              </div>
+            )}
+            {b.kind === 'shots' && (
+              <div class="product-shots">
+                {b.shots.map((x, i) => <ScreenshotSlot id={x.id} figure={nums[i]} caption={nbsp(x.caption)} ratio={x.ratio} lang={lang} />)}
+              </div>
+            )}
+            {(b.kind === 'specs' || b.kind === 'table' || b.kind === 'code') && <ProductLeaf block={b} lang={lang} />}
+            {b.kind === 'steps' && <Steps steps={b.steps} lang={lang} />}
+            {b.kind === 'topology' && <TopologyStage lang={lang} />}
+            {b.kind === 'schema' && (
+              <figure class="rt-figure product-schema">
+                <ConnectionSchema lang={lang} />
+                <figcaption><b>{UI.figure} {nums[0]} ·</b>{' '}<Rich text={b.caption} lang={lang} /></figcaption>
+              </figure>
+            )}
+            {b.kind === 'notice' && <Notice lead={b.lead} variant={b.variant}><Rich text={b.text} lang={lang} /></Notice>}
+            {b.kind === 'link' && <Button class="home-link" variant="secondary" href={localize(b.link.href, lang)}>{b.link.label}</Button>}
+            {b.kind === 'split' && (
+              <div class="home-split">
+                <div class="home-block">
+                  {b.paras.map((t) => hasClaims(t)
+                    ? <div class="rt-para" role="paragraph"><Rich text={t} lang={lang} /></div>
+                    : <p class="rt-para"><Rich text={t} lang={lang} /></p>)}
+                </div>
+                <ProductLeaf block={b.side} lang={lang} />
+              </div>
+            )}
+          </>
+        ))}
+      </div>
+    </Section>
+  ))}
+
+  {page.closing
+    ? (
+      <Section id={page.closing.id} title={nbsp(page.closing.title)}>
+        <div class="home-stack">
+          <div class="home-block"><p class="rt-para"><Rich text={page.closing.text} lang={lang} /></p></div>
+          <ActionRow actions={page.closing.actions} lang={lang} />
+        </div>
+      </Section>
+    )
+    : <Cta lang={lang} />}
+</Leitstand>
