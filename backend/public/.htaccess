@@ -1,0 +1,15 @@
+# Nur lead.php ist erreichbar; Anfragekörper höchstens 16 KB (Spec §6.1).
+LimitRequestBody 16384
+Options -Indexes
+<IfModule mod_authz_core.c>
+    Require all denied
+    <Files "lead.php">
+        Require all granted
+    </Files>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Deny from all
+    <Files "lead.php">
+        Allow from all
+    </Files>
+</IfModule>

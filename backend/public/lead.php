@@ -17,15 +17,11 @@ ini_set('display_errors', '0');
 ini_set('html_errors', '0');
 ini_set('log_errors', '1');
 
-// Verzeichnis mit src/ und config.php: Betrieb ../../reticora (neben dem Webroot), Entwicklung ../ (backend/).
+// Verzeichnis mit src/ und config.php: RETICORA_HOME oder ../../reticora (neben dem Webroot).
+// Kein Rückgriff auf ../ : Im Betrieb wäre das das Webroot.
 $home = getenv('RETICORA_HOME') ?: null;
-if ($home === null) {
-    foreach ([__DIR__ . '/../../reticora', __DIR__ . '/..'] as $candidate) {
-        if (is_file($candidate . '/src/autoload.php')) {
-            $home = $candidate;
-            break;
-        }
-    }
+if ($home === null && is_file(__DIR__ . '/../../reticora/src/autoload.php')) {
+    $home = __DIR__ . '/../../reticora';
 }
 if ($home === null) {
     http_response_code(500);
@@ -65,6 +61,8 @@ $transport = match ($config->string('mail.transport', 'smtp')) {
         $config->string('mail.pass'),
         $config->string('mail.helo_name', 'localhost'),
         $config->int('mail.timeout', 10),
+        $config->int('mail.deadline', 15),
+        $config->get('mail.allow_insecure') === true, // nur für Tests
     ),
 };
 

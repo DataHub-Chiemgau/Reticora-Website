@@ -23,14 +23,38 @@ final class SmtpTransport implements MailTransport
         private readonly string $pass,
         private readonly string $heloName,
         private readonly int $timeout = 10,
+        private readonly int $deadline = 15,
+        bool $allowInsecure = false,
     ) {
         if (!in_array($encryption, ['ssl', 'starttls', 'none'], true)) {
             throw new \InvalidArgumentException('Unbekannte Verschlüsselung');
         }
+        if (!$allowInsecure && ($encryption === 'none' || $user === '')) {
+            throw new \InvalidArgumentException('Unverschlüsselter oder unauthentifizierter SMTP-Versand ist nicht erlaubt (nur mit allow_insecure, nur für Tests)');
+        }
+    }
+
+    private float $deadlineAt = 0.0;
+
+    /** Restzeit bis zur Gesamtfrist; wirft, wenn abgelaufen. */
+    private function remaining(): float
+    {
+        $left = $this->deadlineAt - microtime(true);
+        if ($left <= 0) {
+            throw new RuntimeException('SMTP-Gesamtfrist überschritten');
+        }
+        return $left;
+    }
+
+    private function applyTimeout(): void
+    {
+        $t = min((float) $this->timeout, $this->remaining());
+        stream_set_timeout($this->socket, (int) $t, (int) (($t - floor($t)) * 1_000_000));
     }
 
     public function send(MailMessage $m): void
     {
+        $this->deadlineAt = microtime(true) + $this->deadline;
         $this->connect();
         try {
             $this->expect(220);
@@ -126,12 +150,12 @@ final class SmtpTransport implements MailTransport
         $ctx = stream_context_create(['ssl' => ['verify_peer' => true, 'verify_peer_name' => true, 'peer_name' => $this->host]]);
         $errno = 0;
         $errstr = '';
-        $s = @stream_socket_client("$scheme://{$this->host}:{$this->port}", $errno, $errstr, $this->timeout, STREAM_CLIENT_CONNECT, $ctx);
+        $s = @stream_socket_client("$scheme://{$this->host}:{$this->port}", $errno, $errstr, min((float) $this->timeout, $this->remaining()), STREAM_CLIENT_CONNECT, $ctx);
         if ($s === false) {
             throw new RuntimeException('SMTP-Verbindung fehlgeschlagen');
         }
-        stream_set_timeout($s, $this->timeout);
         $this->socket = $s;
+        $this->applyTimeout();
     }
 
     private function close(): void
@@ -147,6 +171,7 @@ final class SmtpTransport implements MailTransport
         $len = strlen($data);
         $off = 0;
         while ($off < $len) {
+            $this->applyTimeout();
             $n = @fwrite($this->socket, substr($data, $off));
             if ($n === false || $n === 0) {
                 throw new RuntimeException('SMTP-Schreibfehler');
@@ -171,6 +196,7 @@ final class SmtpTransport implements MailTransport
         $codes = (array) $codes;
         $code = 0;
         for ($i = 0; $i < 100; $i++) {
+            $this->applyTimeout();
             $line = fgets($this->socket, 1024);
             if ($line === false) {
                 throw new RuntimeException('SMTP-Zeitüberschreitung oder Verbindungsabbruch');

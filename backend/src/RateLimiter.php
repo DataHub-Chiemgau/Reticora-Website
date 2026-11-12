@@ -39,14 +39,24 @@ final class RateLimiter
             try {
                 $ins = $this->pdo->prepare('INSERT INTO rate_limit (hash, window_start, counter) VALUES (:h, :w, 1)');
                 $ins->execute([':h' => $hash, ':w' => $window]);
-            } catch (PDOException) {
-                // Gleichzeitige Anfrage war schneller: Eintrag existiert nun, also hochzählen.
+            } catch (PDOException $e) {
+                // Nur ein Schlüsselkonflikt (gleichzeitige Anfrage war schneller) wird behandelt, alles andere bricht ab.
+                if ((string) $e->getCode() !== '23000') {
+                    throw $e;
+                }
                 $stmt->execute([':h' => $hash, ':w' => $window]);
+                if ($stmt->rowCount() === 0) {
+                    throw new \RuntimeException('Zähler nicht schreibbar');
+                }
             }
         }
         $sel = $this->pdo->prepare('SELECT counter FROM rate_limit WHERE hash = :h AND window_start = :w');
         $sel->execute([':h' => $hash, ':w' => $window]);
-        $count = (int) $sel->fetchColumn();
+        $value = $sel->fetchColumn();
+        if ($value === false) {
+            throw new \RuntimeException('Zähler nicht lesbar'); // geschlossen scheitern, nie erlauben
+        }
+        $count = (int) $value;
         return [$count <= self::LIMIT, max(1, $window + self::WINDOW - $now)];
     }
 }

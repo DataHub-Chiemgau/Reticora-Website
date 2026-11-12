@@ -22,8 +22,12 @@ final class Config
                 throw new InvalidArgumentException("Konfiguration: '$key' fehlt");
             }
         }
-        if (strlen($values['secret']) < 32) {
-            throw new InvalidArgumentException("Konfiguration: 'secret' muss mindestens 32 Zeichen haben");
+        $secret = $values['secret'];
+        if (strlen($secret) < 32
+            || stripos($secret, 'AENDERN') !== false
+            || strlen(count_chars($secret, 3)) < 10) {
+            // Schlägt geschlossen fehl: Platzhalter und schwache Schlüssel werden nie akzeptiert.
+            throw new InvalidArgumentException("Konfiguration: 'secret' ist zu schwach oder ein Platzhalter");
         }
         if (parse_url($values['site_url'], PHP_URL_HOST) === null || parse_url($values['site_url'], PHP_URL_HOST) === false) {
             throw new InvalidArgumentException("Konfiguration: 'site_url' ist keine gültige Adresse");

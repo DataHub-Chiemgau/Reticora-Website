@@ -18,7 +18,7 @@ final class MailerTest extends TestCase
     {
         return Config::fromArray([
             'site_url' => 'https://www.example.com', 'contact_email' => 'k@example.com',
-            'secret' => str_repeat('s', 40), 'db' => [], 'signature' => $sig,
+            'secret' => 'test-secret-test-secret-test-secret-123456', 'db' => [], 'signature' => $sig,
             'mail' => ['from_address' => 'versand@example.com', 'from_name' => 'Reticora Website', 'to_address' => 'vertrieb@example.com'],
         ]);
     }
@@ -59,7 +59,22 @@ final class MailerTest extends TestCase
         self::assertSame('erika@example.com', $m->to);
         self::assertNull($m->replyTo);
         self::assertStringNotContainsString('VERTRAULICHER-TEXT', $m->body);
-        self::assertStringContainsString('Guten Tag Erika Beispiel', $m->body);
+        self::assertStringContainsString('Guten Tag,', $m->body);
+    }
+
+    public function testConfirmationContainsNoUserInputAtAll(): void
+    {
+        foreach (['de', 'en'] as $lang) {
+            $t = new ArrayTransport();
+            (new Mailer($t, $this->cfg(), fn () => 1))->sendConfirmation($this->lead([
+                'lang' => $lang,
+                'name' => 'Cheap pills at https://spam.example/x NAME-X',
+                'company' => 'COMPANY-X',
+                'message' => 'MSG-X https://spam.example',
+            ]));
+            $all = $t->sent[0]->subject . $t->sent[0]->body . $t->sent[0]->fromName;
+            self::assertDoesNotMatchRegularExpression('/NAME-X|COMPANY-X|MSG-X|spam|https?:/i', $all);
+        }
     }
 
     public function testEnglishConfirmation(): void
@@ -67,7 +82,7 @@ final class MailerTest extends TestCase
         $t = new ArrayTransport();
         (new Mailer($t, $this->cfg(), fn () => 1))->sendConfirmation($this->lead(['lang' => 'en']));
         self::assertSame('Your enquiry to Reticora', $t->sent[0]->subject);
-        self::assertStringContainsString('Hello Erika Beispiel', $t->sent[0]->body);
+        self::assertStringContainsString('Hello,', $t->sent[0]->body);
     }
 
     public function testSignatureFromConfigOnlyWhenSet(): void

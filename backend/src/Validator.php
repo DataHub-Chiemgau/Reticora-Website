@@ -10,11 +10,12 @@ final class Validator
     public const TOPICS = ['demo', 'enterprise', 'security', 'other'];
     public const LANGS = ['de', 'en'];
     public const ERROR_CODES = [
-        'name.required', 'name.too_long',
+        'name.required', 'name.too_long', 'name.invalid',
         'email.required', 'email.invalid', 'email.too_long',
-        'company.required', 'company.too_long',
+        'company.required', 'company.too_long', 'company.invalid',
         'topic.invalid',
-        'message.too_long',
+        'message.too_long', 'message.invalid',
+        'lang.invalid',
     ];
 
     /**
@@ -28,7 +29,9 @@ final class Validator
         $email = $this->singleLine($input['email'] ?? '');
         $company = $this->singleLine($input['company'] ?? '');
 
-        if ($name === null || $name === '') {
+        if ($name === null) {
+            $errors['name'] = 'name.invalid';
+        } elseif ($name === '') {
             $errors['name'] = 'name.required';
         } elseif (mb_strlen($name, 'UTF-8') > 200) {
             $errors['name'] = 'name.too_long';
@@ -44,7 +47,9 @@ final class Validator
             $errors['email'] = 'email.invalid';
         }
 
-        if ($company === null || $company === '') {
+        if ($company === null) {
+            $errors['company'] = 'company.invalid';
+        } elseif ($company === '') {
             $errors['company'] = 'company.required';
         } elseif (mb_strlen($company, 'UTF-8') > 200) {
             $errors['company'] = 'company.too_long';
@@ -56,12 +61,17 @@ final class Validator
         }
 
         $message = $this->message($input['message'] ?? '');
-        if ($message === null || mb_strlen($message, 'UTF-8') > 4000) {
+        if ($message === null) {
+            $errors['message'] = 'message.invalid';
+        } elseif (mb_strlen($message, 'UTF-8') > 4000) {
             $errors['message'] = 'message.too_long';
         }
 
-        // Unbekannte Sprache fällt auf Deutsch zurück (es gibt dafür keinen Fehlercode).
-        $lang = in_array($input['lang'] ?? '', self::LANGS, true) ? $input['lang'] : 'de';
+        $lang = $input['lang'] ?? '';
+        if (!in_array($lang, self::LANGS, true)) {
+            $errors['lang'] = 'lang.invalid';
+            $lang = 'de';
+        }
 
         return [
             'valid' => $errors === [],
@@ -77,7 +87,10 @@ final class Validator
         ];
     }
 
-    /** Getrimmt; null bei ungültigem UTF-8, Steuerzeichen oder Zeilenumbruch (auch U+2028/2029). */
+    /**
+     * Getrimmt. '' wenn kein sichtbares Zeichen übrig bleibt (Leerraum, Cf, Steuerzeichen);
+     * null bei ungültigem UTF-8, Steuerzeichen, Zeilenumbruch (auch U+2028/2029) oder Cf (Bidi/Zero-Width).
+     */
     private function singleLine(string $value): ?string
     {
         if (!mb_check_encoding($value, 'UTF-8')) {
@@ -87,8 +100,11 @@ final class Validator
         if ($trimmed === null) {
             return null;
         }
-        if (preg_match('/[\p{Cc}\p{Zl}\p{Zp}]/u', $trimmed) === 1) {
-            return null;
+        if (preg_replace('/[\p{Cf}\p{Z}\p{C}]/u', '', $trimmed) === '') {
+            return '';
+        }
+        if (preg_match('/[\p{C}\p{Zl}\p{Zp}]/u', $trimmed) === 1) {
+            return null; // \p{C} umfasst Cc und Cf
         }
         return $trimmed;
     }
@@ -100,7 +116,7 @@ final class Validator
             return null;
         }
         $value = str_replace(["\r\n", "\r"], "\n", $value);
-        $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $value) ?? '';
+        $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F\x{0080}-\x{009F}]/u', '', $value) ?? '';
         return trim($value);
     }
 

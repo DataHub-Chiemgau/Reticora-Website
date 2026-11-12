@@ -29,6 +29,8 @@ jobs:
           coverage: none
       - run: composer install --no-interaction --prefer-dist
         working-directory: backend
+      - run: composer audit
+        working-directory: backend
       - run: vendor/bin/phpunit
         working-directory: backend
       - run: npm run validate

@@ -50,7 +50,7 @@ final class SmtpTransportTest extends TestCase
     public function testDeliversWithAuthLoginAndStrictCrlf(): void
     {
         $port = $this->startServer();
-        $t = new SmtpTransport('127.0.0.1', $port, 'none', 'user@example.com', 'pw', 'www.example.com', 5);
+        $t = new SmtpTransport('127.0.0.1', $port, 'none', 'user@example.com', 'pw', 'www.example.com', 5, 15, true);
         $t->send(new MailMessage('versand@example.com', 'Reticora', 'vertrieb@example.com', 'erika@example.com', 'Betreff', ".Punkt am Anfang\nZeile", 'id1@example.com', 1_800_000_000));
         $r = $this->serverResult();
         self::assertSame('EHLO www.example.com', $r['log'][0]);
@@ -65,7 +65,7 @@ final class SmtpTransportTest extends TestCase
     public function testAuthFailureThrows(): void
     {
         $port = $this->startServer('fail-auth');
-        $t = new SmtpTransport('127.0.0.1', $port, 'none', 'u', 'wrong', 'h.example.com', 5);
+        $t = new SmtpTransport('127.0.0.1', $port, 'none', 'u', 'wrong', 'h.example.com', 5, 15, true);
         $this->expectException(RuntimeException::class);
         $t->send(new MailMessage('v@example.com', 'N', 'a@example.com', null, 's', 'b', 'i@example.com', 1));
     }
@@ -75,7 +75,7 @@ final class SmtpTransportTest extends TestCase
         $sock = stream_socket_server('tcp://127.0.0.1:0');
         $port = (int) substr(strrchr((string) stream_socket_get_name($sock, false), ':'), 1);
         fclose($sock);
-        $t = new SmtpTransport('127.0.0.1', $port, 'none', '', '', 'h', 1);
+        $t = new SmtpTransport('127.0.0.1', $port, 'none', '', '', 'h', 1, 15, true);
         $this->expectException(RuntimeException::class);
         $t->send(new MailMessage('v@example.com', 'N', 'a@example.com', null, 's', 'b', 'i@example.com', 1));
     }
@@ -83,6 +83,33 @@ final class SmtpTransportTest extends TestCase
     public function testRejectsUnknownEncryption(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        new SmtpTransport('h', 25, 'plain', '', '', 'h');
+        new SmtpTransport('h', 25, 'plain', 'u', 'p', 'h');
+    }
+
+    public function testOverallDeadlineStopsTricklingServer(): void
+    {
+        $port = $this->startServer('trickle');
+        $t = new SmtpTransport('127.0.0.1', $port, 'none', 'u', 'p', 'h.example.com', 5, 1, true);
+        $start = microtime(true);
+        try {
+            $t->send(new MailMessage('v@example.com', 'N', 'a@example.com', null, 's', 'b', 'i@example.com', 1));
+            self::fail('keine Ausnahme');
+        } catch (RuntimeException) {
+            self::assertLessThan(3.0, microtime(true) - $start);
+        }
+    }
+
+    public function testInsecureConfigurationsRefusedUnlessExplicitlyAllowed(): void
+    {
+        foreach ([['none', 'u'], ['ssl', ''], ['starttls', '']] as [$enc, $user]) {
+            try {
+                new SmtpTransport('h.example.com', 465, $enc, $user, 'p', 'h');
+                self::fail("$enc/$user akzeptiert");
+            } catch (\InvalidArgumentException) {
+                self::assertTrue(true);
+            }
+        }
+        self::assertInstanceOf(SmtpTransport::class, new SmtpTransport('h.example.com', 465, 'ssl', 'u', 'p', 'h'));
+        self::assertInstanceOf(SmtpTransport::class, new SmtpTransport('h.example.com', 25, 'none', '', '', 'h', 10, 15, true));
     }
 }

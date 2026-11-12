@@ -48,15 +48,17 @@ final class Mailer
         ));
     }
 
-    /** Bestätigung ohne Wiedergabe der Nachricht. @param array<string,string> $lead */
+    /** Bestätigung ohne jede Eingabe der Person. @param array<string,string> $lead */
     public function sendConfirmation(array $lead): void
     {
         $now = ($this->clock)();
         $en = $lead['lang'] === 'en';
         $subject = $en ? 'Your enquiry to Reticora' : 'Ihre Anfrage an Reticora';
+        // Bewusst ohne jede Eingabe der Person (kein Name, keine Firma, keine Nachricht):
+        // Das Formular darf nicht dazu taugen, beliebigen Text an Dritte zu senden.
         $text = $en
-            ? "Hello {$lead['name']},\r\n\r\nthank you for your enquiry. We have received it and will reply to this address.\r\n"
-            : "Guten Tag {$lead['name']},\r\n\r\nvielen Dank für Ihre Anfrage. Sie ist bei uns eingegangen, wir antworten an diese Adresse.\r\n";
+            ? "Hello,\r\n\r\nthank you for your enquiry. We have received it and will reply to this address.\r\n"
+            : "Guten Tag,\r\n\r\nvielen Dank für Ihre Anfrage. Sie ist bei uns eingegangen, wir antworten an diese Adresse.\r\n";
         $signature = $this->config->string('signature.' . ($en ? 'en' : 'de'));
         if ($signature !== '') {
             $text .= "\r\n-- \r\n" . $signature . "\r\n";

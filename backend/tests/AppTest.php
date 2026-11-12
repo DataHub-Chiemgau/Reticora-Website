@@ -36,12 +36,20 @@ final class AppTest extends AppTestCase
         self::assertSame('/en/contact/thanks/', $r->headers['Location']);
     }
 
-    public function testUnknownLangStillRedirectsToFixedGermanTarget(): void
+    public function testUnknownOrMissingLangIsRejectedWithFixedGermanTarget(): void
     {
-        foreach (['fr', '//evil.example/', 'de%0d%0aLocation: x'] as $i => $lang) {
+        foreach (['fr', '//evil.example/', "de\r\nLocation: x", ''] as $i => $lang) {
             $r = $this->post($this->validFields(['lang' => $lang]), [], "203.0.113.$i");
-            self::assertSame('/kontakt/danke/', $r->headers['Location']);
+            self::assertSame(303, $r->status);
+            self::assertSame('/kontakt/?fehler=lang.invalid#fehler', $r->headers['Location']);
+            $j = $this->post($this->validFields(['lang' => $lang]), self::JSON, "203.0.114.$i");
+            self::assertSame(422, $j->status);
+            self::assertSame(['ok' => false, 'errors' => ['lang' => 'lang.invalid']], json_decode($j->body, true));
         }
+        $f = $this->validFields();
+        unset($f['lang']);
+        self::assertSame('/kontakt/?fehler=lang.invalid#fehler', $this->post($f, [], '203.0.115.1')->headers['Location']);
+        self::assertSame(0, $this->countLeads());
     }
 
     public function testSecurityHeadersOnEveryResponseKind(): void
@@ -258,9 +266,65 @@ final class AppTest extends AppTestCase
         self::assertSame(303, $send(['sec-fetch-site' => 'same-origin']));
     }
 
-    public function testOriginWithTrailingSlashAndCaseAccepted(): void
+    public function testOriginWithCaseAndTrailingSlashAccepted(): void
     {
         self::assertSame(303, $this->post($this->validFields(), ['Origin' => 'https://WWW.example.com'])->status);
+        self::assertSame(303, $this->post($this->validFields(), ['Origin' => 'https://www.example.com/'], '198.51.100.9')->status);
+        self::assertSame(403, $this->post($this->validFields(), ['Origin' => 'https://www.example.com/path'], '198.51.100.10')->status);
+    }
+
+    public function testMultipartIsRejectedWith415(): void
+    {
+        $body = "--b\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\nx\r\n--b--\r\n";
+        $r = $this->postRaw($body, ['Content-Type' => 'multipart/form-data; boundary=b']);
+        self::assertSame(415, $r->status);
+        self::assertSame(0, $this->countLeads());
+    }
+
+    public function testFutureTimestampIsATimeTrapHit(): void
+    {
+        $t = (new Signer(self::SECRET))->issue($this->now + 600);
+        $r = $this->post(['ts' => (string) $t['ts'], 'sig' => $t['sig']] + $this->validFields(), self::JSON);
+        self::assertSame(200, $r->status);
+        self::assertSame(0, $this->countLeads());
+    }
+
+    public function testDuplicateFieldsLastValueWinsAndNothingBreaks(): void
+    {
+        $body = http_build_query($this->validFields()) . '&name=Zweiter+Name&name=Dritter+Name';
+        $r = $this->postRaw($body, self::JSON);
+        self::assertSame(200, $r->status);
+        self::assertSame('Dritter Name', $this->pdo->query('SELECT name FROM lead')->fetchColumn());
+    }
+
+    public function testRateLimiterFailsClosedWhenCounterCannotBeWritten(): void
+    {
+        $this->pdo->exec('DROP TABLE rate_limit');
+        $r = $this->post($this->validFields(), self::JSON);
+        self::assertSame(500, $r->status);
+        self::assertSame('{"ok":false}', $r->body);
+        self::assertSame(0, $this->countLeads());
+        self::assertSame([], $this->mail->sent);
+    }
+
+    public function testNoticePageEscapesContactAddress(): void
+    {
+        $cfg = $this->config(['contact_email' => 'a"><script>alert(1)</script>@example.com']);
+        $app = $this->makeApp(new ArrayTransport(), $cfg, function (): PDO {
+            throw new \RuntimeException('db down');
+        });
+        $headers = ['origin' => 'https://www.example.com', 'content-type' => 'application/x-www-form-urlencoded'];
+        $r = $app->handle(new Request('POST', $headers, [], http_build_query($this->validFields()), '1.2.3.4'));
+        self::assertSame(500, $r->status);
+        self::assertStringNotContainsString('<script>', $r->body);
+        self::assertStringContainsString('&lt;script&gt;', $r->body);
+        self::assertStringContainsString("default-src 'none'", $r->headers['Content-Security-Policy']);
+    }
+
+    public function testControlCharactersGiveInvalidCodes(): void
+    {
+        $r = $this->post($this->validFields(['name' => "a\nb", 'company' => "c\0d", 'message' => "\xC3"]), self::JSON);
+        self::assertSame(['name' => 'name.invalid', 'company' => 'company.invalid', 'message' => 'message.invalid'], json_decode($r->body, true)['errors']);
     }
 
     public function testOnlyPostAndTokenGetAllowed(): void

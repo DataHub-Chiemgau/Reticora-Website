@@ -80,7 +80,41 @@ final class ValidatorTest extends TestCase
     public function testInvalidUtf8Rejected(): void
     {
         $r = (new Validator())->validate($this->ok(['name' => "Er\xC3ika"]));
+        self::assertSame('name.invalid', $r['errors']['name']);
+        $r = (new Validator())->validate($this->ok(['message' => "a\xC3"]));
+        self::assertSame('message.invalid', $r['errors']['message']);
+        $r = (new Validator())->validate($this->ok(['company' => "A\0B"]));
+        self::assertSame('company.invalid', $r['errors']['company']);
+    }
+
+    /** @return array<string,array{string}> */
+    public static function invisible(): array
+    {
+        return ['ZWSP' => ["\u{200B}"], 'BOM' => ["\u{FEFF}"], 'soft hyphen' => ["\u{00AD}"], 'ZWJ+space' => ["\u{200D} \u{2060}"], 'word joiner' => ["\u{2060}\u{2060}"]];
+    }
+
+    #[DataProvider('invisible')]
+    public function testNamesWithoutVisibleCharacterAreRequiredErrors(string $v): void
+    {
+        $r = (new Validator())->validate($this->ok(['name' => $v, 'company' => $v]));
         self::assertSame('name.required', $r['errors']['name']);
+        self::assertSame('company.required', $r['errors']['company']);
+    }
+
+    public function testBidiAndZeroWidthRejectedInsideSingleLineFields(): void
+    {
+        foreach (["Er\u{202E}ika", "Er\u{200B}ika", "Er\u{FEFF}ika"] as $v) {
+            $r = (new Validator())->validate($this->ok(['name' => $v, 'company' => $v, 'email' => "a{$v}@example.com"]));
+            self::assertSame('name.invalid', $r['errors']['name']);
+            self::assertSame('company.invalid', $r['errors']['company']);
+            self::assertSame('email.invalid', $r['errors']['email']);
+        }
+    }
+
+    public function testC1ControlsStrippedFromMessage(): void
+    {
+        $r = (new Validator())->validate($this->ok(['message' => "a\u{0085}b\u{009F}c äöü"]));
+        self::assertSame('abc äöü', $r['lead']['message']);
     }
 
     public function testHtmlInMessageIsKeptVerbatim(): void
@@ -97,19 +131,23 @@ final class ValidatorTest extends TestCase
         self::assertSame("ab\nc\td", $r['lead']['message']);
     }
 
-    public function testUnknownLangFallsBackToGerman(): void
+    public function testUnknownOrMissingLangIsRejected(): void
     {
-        self::assertSame('de', (new Validator())->validate($this->ok(['lang' => 'fr']))['lead']['lang']);
-        self::assertSame('de', (new Validator())->validate($this->ok(['lang' => '/evil']))['lead']['lang']);
-        self::assertSame('en', (new Validator())->validate($this->ok(['lang' => 'en']))['lead']['lang']);
+        foreach (['fr', '/evil', '', 'DE'] as $l) {
+            self::assertSame(['lang' => 'lang.invalid'], (new Validator())->validate($this->ok(['lang' => $l]))['errors'], $l);
+        }
+        $in = $this->ok();
+        unset($in['lang']);
+        self::assertSame(['lang' => 'lang.invalid'], (new Validator())->validate($in)['errors']);
+        self::assertSame([], (new Validator())->validate($this->ok(['lang' => 'en']))['errors']);
     }
 
     public function testErrorCodesAreFromTheFixedList(): void
     {
-        $r = (new Validator())->validate(['name' => '', 'email' => '', 'company' => '', 'topic' => 'x', 'message' => str_repeat('a', 5000)]);
+        $r = (new Validator())->validate(['name' => '', 'email' => '', 'company' => '', 'topic' => 'x', 'message' => str_repeat('a', 5000), 'lang' => 'x']);
         foreach ($r['errors'] as $code) {
             self::assertContains($code, Validator::ERROR_CODES);
         }
-        self::assertCount(5, $r['errors']);
+        self::assertCount(6, $r['errors']);
     }
 }

@@ -8,6 +8,14 @@ fwrite(STDOUT, "ready\n");
 $c = stream_socket_accept($srv, 10);
 $log = [];
 $send = function (string $l) use ($c): void { fwrite($c, $l . "\r\n"); };
+if (($argv[3] ?? '') === 'trickle') {
+    for ($i = 0; $i < 40; $i++) {
+        if (@fwrite($c, "220-trickle\r\n") === false) { break; }
+        usleep(250_000);
+    }
+    file_put_contents($out, json_encode(['log' => [], 'message' => '']));
+    exit;
+}
 $send('220 fake ESMTP');
 $data = false;
 $msg = '';

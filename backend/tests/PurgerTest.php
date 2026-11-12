@@ -44,7 +44,7 @@ final class PurgerTest extends TestCase
         $db = $dir . '/t.sqlite';
         $cfg = $dir . '/config.php';
         file_put_contents($cfg, "<?php return " . var_export([
-            'site_url' => 'https://www.example.com', 'contact_email' => 'k@example.com', 'secret' => str_repeat('s', 40),
+            'site_url' => 'https://www.example.com', 'contact_email' => 'k@example.com', 'secret' => 'test-secret-test-secret-test-secret-123456',
             'retention_days' => 30, 'db' => ['dsn' => 'sqlite:' . $db], 'mail' => [],
         ], true) . ";");
         $pdo = new PDO('sqlite:' . $db, null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
