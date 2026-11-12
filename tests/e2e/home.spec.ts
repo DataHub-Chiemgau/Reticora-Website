@@ -273,7 +273,7 @@ test('Betriebsleiste: der Trenner am Zeilenanfang liegt außerhalb des Bildes, b
 });
 
 test('Hinweis „Schema seitlich verschiebbar.“ steht genau dann da, wenn der Schemarahmen scrollt', async ({ page }) => {
-  for (const w of [320, 360, 569, 570, 768, 809, 810, 1023, 1024, 1154, 1155, 1280]) {
+  for (const w of [320, 360, 569, 570, 768, 809, 810, 1023, 1024, 1100, 1280]) {
     await page.setViewportSize({ width: w, height: 900 });
     await page.goto('/');
     for (const [frame, hint] of [['.rt-topo-frame', '.rt-topo > .rt-scroll-hint'], ['.rt-schema-frame', '.rt-schema > .rt-scroll-hint']]) {

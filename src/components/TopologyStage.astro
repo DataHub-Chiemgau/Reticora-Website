@@ -51,11 +51,11 @@ const edges = TOPO_EDGES.map((e) => {
 });
 
 const LABEL = {
-  top: { x: undefined, y: -24, cls: undefined },
+  top: { x: undefined, y: -26, cls: undefined },
   left: { x: -24, y: 4, cls: 'lbl-end' },
   right: { x: 24, y: 4, cls: 'lbl-start' },
   side: { x: 18, y: 24, cls: 'lbl-start' },
-  below: { x: undefined, y: 32, cls: undefined },
+  below: { x: undefined, y: 34, cls: undefined },
 } as const;
 ---
 
@@ -82,7 +82,7 @@ const LABEL = {
               transform={`translate(${n.x} ${n.y})`}
             >
               <circle class="hit" r="22" />
-              <g class="focus"><circle r="14" /><path d="M0-14v-6" /><path d="M0 14v6" /><path d="M-14 0h-6" /><path d="M14 0h6" /></g>
+              <g class="focus"><circle r="14" /><path d="M0-14v-4" /><path d="M0 14v4" /><path d="M-14 0h-4" /><path d="M14 0h4" /></g>
               <circle class="dot" r="8" />
               <text class={l.cls} x={l.x} y={l.y}>{n.id}</text>
             </g>

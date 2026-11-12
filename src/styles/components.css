@@ -280,4 +280,6 @@ textarea.rt-input { min-height: 120px; resize: vertical; }
 /* Hinweis „Schema seitlich verschiebbar“: nur, solange der Rahmen tatsächlich scrollt (Schemabreite 760 bzw. 520 px gegen die Rahmenbreite; Schwellen in px gemessen, Medienabfragen kennen keine Tokens; zwischen 1024 und 1154 px steht Abb. 1 in der schmalen Spalte). */
 .rt-scroll-hint { display: none; margin-top: var(--space-2); font-size: 13px; line-height: 20px; color: var(--fg-subtle); }
 @media (max-width: 809px) { .rt-topo > .rt-scroll-hint { display: block; margin-top: 0; } }
-@media (max-width: 569px), (min-width: 1024px) and (max-width: 1154px) { .rt-schema > .rt-scroll-hint { display: block; } }
+@media (max-width: 569px) { .rt-schema > .rt-scroll-hint { display: block; } }
+/* In der schmalen Spalte ab lg skaliert das Schema, statt zu scrollen. */
+@media (min-width: 1024px) { .rt-schema-frame svg { min-width: 0; } }

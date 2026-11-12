@@ -112,8 +112,18 @@ test('Kopierknopf meldet „Kopieren nicht möglich“, wenn die Zwischenablage 
   await expect(sample.getByRole('status')).toHaveText('Kopieren nicht möglich');
 });
 
-test('Kopierknopf kopiert den Code und meldet „Kopiert“', async ({ page, context }) => {
-  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+test('Kopierknopf kopiert den Code und meldet „Kopiert“', async ({ page, context, browserName }) => {
+  // Nur Chromium kennt die Zwischenablage-Rechte; Firefox und WebKit bekommen
+  // eine Zwischenablage im Speicher, damit der geschriebene Text prüfbar bleibt.
+  if (browserName === 'chromium') await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  else
+    await page.addInitScript(() => {
+      let held = '';
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: { writeText: async (t: string) => void (held = t), readText: async () => held },
+      });
+    });
   await page.goto(PAGE);
   const sample = page.locator('.rt-code');
   const button = sample.getByRole('button', { name: 'Kopieren' });
@@ -135,8 +145,8 @@ test('Kopierknopf ist ohne JavaScript ausgeblendet', async ({ browser }) => {
 
 test('erzwungene Farben: Knöpfe haben einen 1 px breiten Rand, der Fokus bleibt sichtbar', async ({ page }) => {
   await page.setViewportSize(WIDE);
-  await page.emulateMedia({ forcedColors: 'active' });
   await page.goto(PAGE);
+  await page.emulateMedia({ forcedColors: 'active' });
   const widths = await page.locator('.rt-btn:visible').evaluateAll((els) => els.map((e) => getComputedStyle(e).borderTopWidth));
   expect(widths.length).toBeGreaterThan(3);
   for (const w of widths) expect(w).toBe('1px');
