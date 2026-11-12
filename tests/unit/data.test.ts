@@ -49,6 +49,9 @@ describe('claims', () => {
         expect(t).not.toMatch(/Nur mit Nachweis|Freigabe|noch zu|Auftraggeber|Betreiber|Launch|F-\d\d|to be confirmed|approval/i);
     }
   });
+  it('C-16 erfindet keine Zusage', () => {
+    expect(claim('C-16').evidence.de).not.toMatch(/vorgesehen|durchgeführt/);
+  });
   it('claim() wirft bei unbekannter ID', () => {
     expect(claim('C-01').id).toBe('C-01');
     expect(() => claim('C-99')).toThrow();
