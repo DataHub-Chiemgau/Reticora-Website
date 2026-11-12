@@ -2,8 +2,8 @@
 import Para from './Para.astro';
 import type { ClaimId, Lang } from '../data/types';
 
-interface Props { steps: { title: string; text: string; claim?: ClaimId }[]; lang?: Lang }
-const { steps, lang = 'de' } = Astro.props;
+interface Props { steps: { title: string; text: string; claim?: ClaimId }[]; lang: Lang }
+const { steps, lang } = Astro.props;
 ---
 
 <ol class="rt-steps">

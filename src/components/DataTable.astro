@@ -7,9 +7,9 @@ interface Props {
   columns: { key: string; head: string; numeric?: boolean; sub?: string }[];
   rows: Record<string, string>[];
   rowHeader: string;
-  lang?: Lang;
+  lang: Lang;
 }
-const { label, columns, rows, rowHeader, lang = 'de' } = Astro.props;
+const { label, columns, rows, rowHeader, lang } = Astro.props;
 ---
 
 {/* Eine Tabellenform für alle breiten Tabellen: im Scrollrahmen (fokussierbar, benannt); unter 48rem stehen die Zeilen untereinander (Beschriftung je Zelle), so dass nichts abgeschnitten wird und kein Hinweis nötig ist. */}

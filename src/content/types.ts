@@ -85,3 +85,21 @@ export interface PageContent {
   sections: PageSection[];
   closing?: PageClosing;
 }
+
+/** Was in der Übersetzung gleich bleiben muss: Beleg- und Screenshot-Nummern, Knöpfe, Blockarten, Varianten, Formate. */
+type Fixed = `C-${string}` | `S-${string}` | Action | Block['kind'] | NoticeBlock['variant'] | ShotRef['ratio'];
+
+/**
+ * Typ einer Übersetzung: dieselbe Gestalt wie das deutsche Original, nur die Texte sind frei.
+ * - Zeichenketten werden zu `string`, außer Belegen (`C-…`), Screenshots (`S-…`) und festen Werten (`Fixed`), die gleich bleiben.
+ * - Zahlen und Wahrheitswerte bleiben, wie sie sind (bei `as const` also genau gleich).
+ * - Tupel (`as const`-Listen) behalten ihre Länge, Objekte ihre Schlüssel; Funktionen ihre Parameter.
+ * Englische Inhalte tippen sich als `Translation<typeof deutscherExport>`; so erzwingt die Typprüfung die Parität.
+ */
+export type Translation<T> =
+  T extends Fixed ? T
+  : T extends string ? string
+  : T extends (...args: infer A) => infer R ? (...args: A) => Translation<R>
+  : T extends readonly unknown[] ? { [K in keyof T]: Translation<T[K]> }
+  : T extends object ? { [K in keyof T]: Translation<T[K]> }
+  : T;

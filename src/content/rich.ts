@@ -8,7 +8,9 @@ export type RichPart =
 const TOKEN = /(\[C-\d+(?:,\s*C-\d+)*\]|`[^`]+`|\*\*[^*]+\*\*)/;
 
 /** Geschütztes Leerzeichen zwischen Zahl und Einheit. */
-const UNIT = '(?:h|min|ms|s|Tage|Tagen|Tag|Stunden|Minuten|Sekunden|Monate|Monaten|Jahre|Jahren|Anfragen|Einträge|Einträgen|IDs|Knoten|MiB|%|€)';
+const UNIT_DE = 'Tage|Tagen|Tag|Stunden|Minuten|Sekunden|Monate|Monaten|Jahre|Jahren|Anfragen|Einträge|Einträgen|Knoten';
+const UNIT_EN = 'days|day|hours|hour|minutes|minute|seconds|second|months|month|years|year|requests|entries|entry|nodes';
+const UNIT = `(?:h|min|ms|s|${UNIT_DE}|${UNIT_EN}|IDs|MiB|%|€)`;
 const NUM_UNIT = new RegExp(`(\\d) (?=${UNIT}(?![\\p{L}\\d]))`, 'gu');
 export const nbsp = (s: string): string => s.replace(NUM_UNIT, '$1 ');
 

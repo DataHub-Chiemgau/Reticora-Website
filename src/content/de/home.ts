@@ -98,6 +98,7 @@ export const home = {
     lead: 'Die REST-API ist vollständig in OpenAPI beschrieben. Änderungen kommen nur hinzu. Was entfällt, wird mindestens zwölf Monate vorher angekündigt.',
     leadClaim: 'C-11' as ClaimId,
     codeTitle: 'GET /api/v1/cis',
+    codeComment: '# Alle CIs, deren Name „core“ enthält',
     specs: [
       { term: 'Anmeldung', value: 'API-Schlüssel im Kopf X-API-Key', claim: 'C-11' },
       { term: 'Webhooks', value: 'signiert mit HMAC-SHA256', claim: 'C-11' },
@@ -135,6 +136,7 @@ export const home = {
     lead: 'Alle Pakete enthalten CMDB, Discovery, Topologie, Racks und API. Preise im Monat, zzgl. MwSt.',
     label: 'Preise und CI-Limits je Paket',
     heads: { plan: 'Paket', cis: 'CIs', price: 'im Monat' },
+    priceFrom: (price: string) => `ab ${price}`,
     betaLead: 'Beta-Rabatt:',
     beta: (first: number, next: number) => `${first} % in den ersten sechs Monaten, ${next} % in den folgenden sechs Monaten, danach der volle Preis.`,
     link: 'Alle Preise und Funktionen',

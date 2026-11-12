@@ -26,6 +26,10 @@ describe('nbsp', () => {
   it('bindet Einheiten an die Zahl', () => {
     expect(nbsp('alle 24 h, 15 min, 90 Tage, 1.000 MiB, 60 %')).toBe('alle 24 h, 15 min, 90 Tage, 1.000 MiB, 60 %');
   });
+  it('bindet englische Einheiten an die Zahl', () => {
+    expect(nbsp('every 24 h, 30 days, 12 months, 600 requests, 1 day')).toBe('every 24 h, 30 days, 12 months, 600 requests, 1 day');
+    expect(nbsp('5 dayshift, 2 servers')).toBe('5 dayshift, 2 servers');
+  });
   it('lässt Zahlen vor anderen Wörtern in Ruhe', () => {
     expect(nbsp('Rang 92 und Port 443 sowie 2 Server, 5 Sekunden')).toBe('Rang 92 und Port 443 sowie 2 Server, 5 Sekunden');
   });
