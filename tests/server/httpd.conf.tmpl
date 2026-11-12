@@ -6,6 +6,10 @@ Mutex file:@TMP@ default
 DefaultRuntimeDir "@TMP@"
 Listen 127.0.0.1:8080
 ServerTokens Prod
+# Firefox blieb in der CI bei etwa jedem hundertsten Seitenaufruf bis zum Zeitlimit
+# im Laden hängen. Ohne wiederverwendete Verbindungen entfällt das Rennen zwischen
+# dem Schließen einer Keep-Alive-Verbindung durch den Server und ihrer Wiederverwendung.
+KeepAlive Off
 
 LoadModule mpm_event_module @MODS@/mod_mpm_event.so
 LoadModule authz_core_module @MODS@/mod_authz_core.so
