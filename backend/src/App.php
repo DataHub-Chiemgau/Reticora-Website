@@ -207,7 +207,7 @@ final class App
         $mail = ContactPage::esc($this->config->string('contact_email'));
         if ($lang === 'en') {
             $title = $rateLimited ? 'Too many requests' : 'Something went wrong';
-            $text = $rateLimited ? 'Please try again later.' : 'Your enquiry could not be processed.';
+            $text = $rateLimited ? 'Please try again later.' : 'Your inquiry could not be processed.';
             $contact = 'Please write to us directly:';
         } else {
             $title = $rateLimited ? 'Zu viele Anfragen' : 'Es ist ein Fehler aufgetreten';

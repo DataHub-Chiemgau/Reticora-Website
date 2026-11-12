@@ -33,13 +33,19 @@ const PAGES: { path: string; get: (c: C) => unknown }[] = [
 ];
 
 /** Schlüssel, deren Werte keine Texte sind und in beiden Sprachen gleich bleiben. */
-const FIXED_KEYS = new Set(['id', 'kind', 'href', 'key', 'rowHeader', 'claim', 'claims', 'actions', 'ratio', 'variant', 'sub', 'topic', 'numeric', 'match']);
+const FIXED_KEYS = new Set(['id', 'kind', 'href', 'key', 'rowHeader', 'claim', 'claims', 'actions', 'ratio', 'variant', 'sub', 'topic', 'numeric', 'match', 'groupId']);
+/** Ein Wert, der nur eine Beleg- oder Screenshot-Nummer ist, bleibt gleich (etwa `rowClaims.storage`). Ein Text unter einem festen Schlüssel
+ *  (die Spaltenüberschrift `heads.claims`) ist dagegen ein Text. */
+const ID_ONLY = /^[CS]-\d+$/;
 
 /** Texte, die auf Englisch gleich lauten dürfen (Eigennamen, Protokolle, Produktnamen, Kennwörter der App). Ergänzen, wenn nötig. */
 const SAME_OK = new Set<string>([
   'Sweep', 'Poll', 'Hosting', 'EU', 'CIs', 'CI', 'API', 'REST', 'Webhooks', 'Export', 'Limit', 'Discovery', 'Compliance', 'Collector',
   'Monitoring', 'Tickets', 'Topology', 'Enterprise', 'Standard', 'Pro', 'Essentials', 'Storage', 'Review-Inbox', 'Scope', 'Scopes',
   'Redfish', 'SNMP', 'SSH', 'LLDP', 'WMI', 'NATS', 'HTTPS', 'OpenAPI', 'CSV', 'DATEV', 'GET /api/v1/cis', 'Synology · QNAP · TrueNAS',
+  // Preise, Sicherheit, Lösungen: Paketnamen, Ports und Richtungen, Fachwörter der App
+  'Enterprise Shared', 'Enterprise Local', 'Essentials, Standard, Pro', 'Cloud', 'Collectors', 'Add-on', 'Port', 'Updates', 'SLAs', 'Asset',
+  'Dashboard.', 'Collector → Reticora', '443/TCP, HTTPS', 'ICMP, ARP, 22, 80, 443, 161/UDP, 623, 5985, 8006',
 ]);
 
 /** Pfade (wie `fehler` sie nennt), deren Zahlen bewusst abweichen dürfen, etwa ein umgestelltes Datum. Mit Begründung ergänzen. */
@@ -49,7 +55,7 @@ const claimsOf = (s: string) => s.match(/\bC-\d+\b/g) ?? [];
 const shotsOf = (s: string) => s.match(/\bS-\d+\b/g) ?? [];
 /** Zahlen (ohne Beleg- und Screenshot-Nummern) ohne Tausendertrenner, Dezimalkomma als Punkt, sortiert (Reihenfolge darf sich im Satz ändern). */
 const numbersOf = (s: string) =>
-  (s.replace(/\b[CS]-\d+\b/g, '').replace(/\u00a0/g, ' ').replace(/(\d)[.,](?=\d{3}(?!\d))/g, '$1').replace(/(\d),(\d)/g, '$1.$2').match(/\d+(?:\.\d+)?/g) ?? []).sort();
+  (s.replace(/\b[CS]-\d+\b/g, '').replace(/(\d)\u00a0(?=\d{3}(?!\d))/g, '$1').replace(/\u00a0/g, ' ').replace(/(\d)[.,](?=\d{3}(?!\d))/g, '$1').replace(/(\d),(\d)/g, '$1.$2').match(/\d+(?:\.\d+)?/g) ?? []).sort();
 const lastKey = (path: string) => path.replace(/\[\d+\]$/, '').split('.').pop() ?? '';
 const SAMPLE_ARGS = [20, 10, 5, 3];
 
@@ -79,7 +85,8 @@ function fehler(de: unknown, en: unknown, path = ''): string[] {
   const e = en as string;
   const key = lastKey(path);
   const out: string[] = [];
-  if (FIXED_KEYS.has(key)) return d === e ? [] : [`${path}: fester Wert „${d}“ ≠ „${e}“`];
+  if (ID_ONLY.test(d) || (FIXED_KEYS.has(key) && !(key === 'claims' && /\s|[a-z]{3}/.test(d))))
+    return d === e ? [] : [`${path}: fester Wert „${d}“ ≠ „${e}“`];
   if (e.trim() === '') out.push(`${path}: leer`);
   if (claimsOf(d).join() !== claimsOf(e).join()) out.push(`${path}: Belege ${claimsOf(d).join()} ≠ ${claimsOf(e).join()}`);
   if (shotsOf(d).join() !== shotsOf(e).join()) out.push(`${path}: Screenshots ${shotsOf(d).join()} ≠ ${shotsOf(e).join()}`);

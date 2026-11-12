@@ -71,6 +71,10 @@ describe('Sprachpaare', () => {
     expect(dePath('/en/security/')).toBe('/sicherheit/');
     expect(dePath('/sicherheit/')).toBe('/sicherheit/');
   });
+  test('isBuilt: englische Seiten aus Teil B (Geräte bis Barrierefreiheit) sind gebaut', () => {
+    for (const p of ['/en/devices/', '/en/solutions/isp/', '/en/solutions/msp/', '/en/security/', '/en/pricing/', '/en/demo/', '/en/contact/', '/en/contact/thanks/', '/en/legal-notice/', '/en/privacy/', '/en/terms/', '/en/subprocessors/', '/en/accessibility/'])
+      expect(isBuilt(p), p).toBe(true);
+  });
   test('isBuilt: Startseite ja, englische Seiten noch nicht, unbekannt nein', () => {
     expect(isBuilt('/')).toBe(true);
     expect(isBuilt('/en/')).toBe(false);

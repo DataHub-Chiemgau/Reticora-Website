@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { SITE } from '../../src/data/site';
 import { barrierefreiheit as A } from '../../src/content/de/barrierefreiheit';
-import { ui } from '../../src/i18n';
+import { isBuilt, ui } from '../../src/i18n';
 
 const T = ui('de');
 const L = T.legal;
@@ -111,10 +111,14 @@ test.describe('404', () => {
       await expect(sw.locator('[aria-current="true"]')).toHaveCount(1);
       await expect(sw.locator('.is-off')).toHaveCount(0);
       await expect(page.locator('.rt-header, .rt-footer').getByText(T.lang.soon)).toHaveCount(0);
-      // Die englische Startseite gibt es noch nicht, die deutsche schon.
-      await expect(sw.locator('a')).toHaveCount(path.startsWith('/en/') ? 1 : 0);
+      // Ziel ist die Startseite der anderen Sprache, sobald sie gebaut ist (die deutsche ist es immer, die englische ab Task 9a).
+      await expect(sw.locator('a')).toHaveCount(path.startsWith('/en/') || isBuilt('/en/') ? 1 : 0);
     }
     await page.goto('/en/gibt-es-nicht/');
     await expect(page.locator('.rt-header .rt-lang a')).toHaveAttribute('href', '/');
+    if (isBuilt('/en/')) {
+      await page.goto('/gibt-es-nicht/');
+      await expect(page.locator('.rt-header .rt-lang a')).toHaveAttribute('href', '/en/');
+    }
   });
 });

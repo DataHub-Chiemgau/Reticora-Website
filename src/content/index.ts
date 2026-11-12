@@ -10,6 +10,14 @@ import { msp } from './de/msp';
 import { sicherheit } from './de/sicherheit';
 import { preise } from './de/preise';
 import { demo } from './de/demo';
+import { kontakt as kontaktEn } from './en/kontakt';
+import { barrierefreiheit as barrierefreiheitEn } from './en/barrierefreiheit';
+import { geraete as geraeteEn } from './en/geraete';
+import { isp as ispEn } from './en/isp';
+import { msp as mspEn } from './en/msp';
+import { sicherheit as sicherheitEn } from './en/sicherheit';
+import { preise as preiseEn } from './en/preise';
+import { demo as demoEn } from './en/demo';
 
 /** Inhalte je Sprache. Seiten und Ansichten laden nur hierüber, nie direkt aus `src/content/de/…` oder `src/content/en/…`.
  *  Jede Seite hat einen Export in camelCase, benannt nach ihrem Pfad (`produkt/topologie-impact` → `topologieImpact`). */
@@ -23,14 +31,14 @@ export type Content = typeof DE;
 const EN: Translation<Content> = {
   home: DE.home,
   produkt: DE.produkt,
-  kontakt: DE.kontakt,
-  barrierefreiheit: DE.barrierefreiheit,
-  geraete: DE.geraete,
-  isp: DE.isp,
-  msp: DE.msp,
-  sicherheit: DE.sicherheit,
-  preise: DE.preise,
-  demo: DE.demo,
+  kontakt: kontaktEn,
+  barrierefreiheit: barrierefreiheitEn,
+  geraete: geraeteEn,
+  isp: ispEn,
+  msp: mspEn,
+  sicherheit: sicherheitEn,
+  preise: preiseEn,
+  demo: demoEn,
 };
 
 /** Die Ansichten sehen den deutschen Typ; die englischen Werte haben dieselbe Gestalt (`Translation`), nur andere Texte. */

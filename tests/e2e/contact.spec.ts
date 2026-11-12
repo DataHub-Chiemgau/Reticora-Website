@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { SITE } from '../../src/data/site';
 import { ui } from '../../src/i18n';
 import { KONTAKT_DE } from '../../src/content/de/kontakt';
+import { content } from '../../src/content';
 import { E2E_DIR, leadCount, uniqueEmail } from './helpers/backend';
 
 const T = ui('de');
@@ -379,6 +380,86 @@ test.describe('Fehlerseite des Servers mit JavaScript', () => {
     expect(leadCount(email)).toBe(1);
     expect(dialogs).toEqual([]);
     expect(errors.filter((e) => !/422/.test(e))).toEqual([]);
+  });
+});
+
+test.describe('Englisch (/en/contact/)', () => {
+  const EN = ui('en').form;
+  const K = content('en').kontakt;
+  const submitEn = (page: Page) => page.getByRole('button', { name: EN.submit }).click();
+
+  test('Formular sendet lang=en und kennt die englische Dankeseite', async ({ page }) => {
+    await page.goto('/en/contact/');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(page.locator('h1')).toHaveText(K.hero.h1);
+    await expect(page.locator('input[name=lang]')).toHaveValue('en');
+    await expect(page.locator('form')).toHaveAttribute('data-thanks', '/en/contact/thanks/');
+    await expect(page.locator('#f-topic option')).toHaveText([EN.fields.topic.choose, ...Object.values(EN.fields.topic.options)]);
+    await expect(page.locator('.contact-direct').getByRole('link', { name: K.direct.imprint })).toHaveAttribute('href', '/en/legal-notice/');
+    await expect(page.locator('[data-placeholder="kontakt-verarbeitung"]').getByRole('link', { name: EN.privacy })).toHaveAttribute('href', '/en/privacy/');
+  });
+
+  test('mit JavaScript: Erfolg endet auf /en/contact/thanks/', async ({ page }) => {
+    const email = uniqueEmail('en-js');
+    await page.goto('/en/contact/');
+    await fill(page, email);
+    await submitEn(page);
+    await expect(page).toHaveURL(/\/en\/contact\/thanks\/$/);
+    await expect(page.locator('h1')).toHaveText(K.danke.h1);
+    expect(leadCount(email)).toBe(1);
+  });
+
+  test('mit JavaScript: Fehler am Feld und in der Zusammenfassung englisch', async ({ page }) => {
+    await page.goto('/en/contact/');
+    await submitEn(page);
+    await expect(page.locator('#form-summary-title')).toHaveText(EN.summaryMany.replace('{n}', '4'));
+    await expect(page.locator('#f-email-err')).toHaveText(EN.errors.email.required);
+  });
+
+  test.describe('ohne JavaScript', () => {
+    test.use({ javaScriptEnabled: false });
+
+    test('Erfolg endet auf /en/contact/thanks/', async ({ page }) => {
+      const email = uniqueEmail('en-nojs');
+      await page.goto('/en/contact/');
+      await fill(page, email);
+      await submitEn(page);
+      await expect(page).toHaveURL(/\/en\/contact\/thanks\/$/);
+      await expect(page.locator('h1')).toHaveText(K.danke.h1);
+      expect(leadCount(email)).toBe(1);
+    });
+
+    test('Eingabefehler: 422 mit der englischen Kontaktseite, englische Fehlertexte, Eingaben erhalten', async ({ page }) => {
+      const email = uniqueEmail('en-nojserr');
+      const message = 'Line 1\nLine 2 with <b>HTML</b> & "quote"';
+      await page.goto('/en/contact/');
+      await fill(page, email, { name: 'x'.repeat(201), company: 'Firma\u200bGmbH', topic: 'security', message });
+      const response = leadPost(page);
+      await submitEn(page);
+      const r = await response;
+      expect(r.status()).toBe(422);
+      await expect(page).toHaveURL(`${ORIGIN}/api/lead.php`);
+      await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+      await expect(page.locator('h1')).toHaveText(K.hero.h1);
+      await expect(page.locator('#form-summary')).toBeVisible();
+      await expect(page.locator('#form-summary-title')).toHaveText(EN.summaryMany.replace('{n}', '2'));
+      await expect(page.locator('#form-summary li')).toHaveText([EN.errors.name.too_long, EN.errors.company.invalid]);
+      await expect(page.locator('#f-name-err')).toHaveText(EN.errors.name.too_long);
+      await expect(page.locator('#f-company-err')).toHaveText(EN.errors.company.invalid);
+      await expect(page.locator('#f-name')).toHaveValue('x'.repeat(201));
+      await expect(page.locator('#f-email')).toHaveValue(email);
+      await expect(page.locator('#f-company')).toHaveValue('Firma\u200bGmbH');
+      await expect(page.locator('#f-topic')).toHaveValue('security');
+      await expect(page.locator('#f-message')).toHaveValue(message);
+      await expect(page.locator('input[name=lang]')).toHaveValue('en');
+      expect(leadCount(email)).toBe(0);
+      // Korrigieren und erneut absenden führt zur englischen Dankeseite.
+      await page.locator('#f-name').fill('Erika Beispiel');
+      await page.locator('#f-company').fill('Beispiel GmbH');
+      await submitEn(page);
+      await expect(page).toHaveURL(/\/en\/contact\/thanks\/$/);
+      expect(leadCount(email)).toBe(1);
+    });
   });
 });
 

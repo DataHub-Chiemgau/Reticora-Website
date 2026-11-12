@@ -94,7 +94,7 @@ export const UI: typeof DeUI = {
       email: { label: 'Business email address (required)', hint: 'We will reply to this address.' },
       company: { label: 'Company (required)' },
       topic: {
-        label: 'Enquiry (required)',
+        label: 'Topic (required)',
         choose: 'Please choose',
         options: { demo: 'Demo', enterprise: 'Enterprise', security: 'Security and privacy', other: 'Other' },
       },
@@ -128,8 +128,8 @@ export const UI: typeof DeUI = {
         invalid: 'Please do not use line breaks or control characters.',
       },
       topic: {
-        required: 'Please choose an enquiry.',
-        invalid: 'Please choose one of the four enquiries from the list.',
+        required: 'Please choose a topic.',
+        invalid: 'Please choose one of the four topics from the list.',
       },
       message: {
         too_long: 'The message is too long. At most 4,000 characters are allowed.',
@@ -171,7 +171,7 @@ export const UI: typeof DeUI = {
     description: 'This address does not exist on www.reticora.de. From here you can go to the home page, the product pages, pricing or contact.',
     eyebrow: 'Error 404',
     h1: 'This page does not exist.',
-    text: 'The address may be outdated or misspelt. From here you can continue:',
+    text: 'The address may be outdated or misspelled. From here you can continue:',
     navLabel: 'Further links',
     links: [
       { label: 'Home page', href: '/' },
