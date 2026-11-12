@@ -22,6 +22,15 @@ jobs:
       - run: npm run check
       - run: npm run build
       - run: npm test
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, mbstring
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+        working-directory: backend
+      - run: vendor/bin/phpunit
+        working-directory: backend
       - run: npm run validate
       - run: npx playwright install --with-deps
       - run: npm run test:e2e -- --trace off
