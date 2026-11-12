@@ -208,7 +208,7 @@ test('ScreenshotSlot zeigt ID, Motiv und Zielmaß und hat das Seitenverhältnis 
   }
 });
 
-test('aktive Navigation trägt aria-current="page"; die aktive Sprache ist kein Link, die nicht gebaute auch nicht', async ({ page }) => {
+test('aktive Navigation trägt aria-current="page"; die aktive Sprache ist kein Link, die andere führt zum Gegenstück', async ({ page }) => {
   await page.setViewportSize(WIDE);
   await page.goto(PAGE);
   const nav = page.locator('.rt-header').getByRole('navigation', { name: 'Hauptnavigation', exact: true });
@@ -217,10 +217,11 @@ test('aktive Navigation trägt aria-current="page"; die aktive Sprache ist kein 
   const lang = page.locator('.rt-header .rt-lang');
   await expect(lang.locator('span[aria-current="true"]')).toHaveText('DE');
   await expect(lang.getByRole('link', { name: 'DE' })).toHaveCount(0);
-  // Die englische Seite zu dieser Adresse ist noch nicht gebaut: kein Link, nur sichtbar inaktiver Text.
-  await expect(lang.getByRole('link')).toHaveCount(0);
-  await expect(lang.locator('.is-off')).toHaveText(/^EN/);
-  await expect(lang.locator('.is-off')).toHaveAttribute('title', 'Englische Fassung folgt');
+  // Alle Seiten haben ihr englisches Gegenstück; den Zweig „nicht gebaut“ (inaktiver Text) prüfen tests/unit/discover.test.ts und i18n.test.ts mit Ersatztabellen.
+  await expect(lang.getByRole('link')).toHaveCount(1);
+  await expect(lang.getByRole('link')).toHaveText('EN');
+  await expect(lang.getByRole('link')).toHaveAttribute('href', '/en/product/discovery/'); // die Seite gibt sich als /produkt/discovery/ aus
+  await expect(lang.locator('.is-off')).toHaveCount(0);
 });
 
 test('Kopfzeile verlinkt die drei Handlungen, Fußzeile die Pflichtlinks', async ({ page }) => {

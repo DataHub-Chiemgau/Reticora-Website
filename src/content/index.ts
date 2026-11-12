@@ -10,6 +10,8 @@ import { msp } from './de/msp';
 import { sicherheit } from './de/sicherheit';
 import { preise } from './de/preise';
 import { demo } from './de/demo';
+import { home as homeEn } from './en/home';
+import { produkt as produktEn } from './en/produkt';
 import { kontakt as kontaktEn } from './en/kontakt';
 import { barrierefreiheit as barrierefreiheitEn } from './en/barrierefreiheit';
 import { geraete as geraeteEn } from './en/geraete';
@@ -29,8 +31,8 @@ export type Content = typeof DE;
  *  Eine noch nicht übersetzte Seite zeigt hier auf `DE.<seite>`; ihre englische Route bleibt dann auf `enStatus: 'geplant'`
  *  (tests/unit/content-parity.test.ts prüft das). Je Seite eine Zeile, damit parallele Änderungen nicht kollidieren. */
 const EN: Translation<Content> = {
-  home: DE.home,
-  produkt: DE.produkt,
+  home: homeEn,
+  produkt: produktEn,
   kontakt: kontaktEn,
   barrierefreiheit: barrierefreiheitEn,
   geraete: geraeteEn,

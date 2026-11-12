@@ -75,10 +75,10 @@ describe('Sprachpaare', () => {
     for (const p of ['/en/devices/', '/en/solutions/isp/', '/en/solutions/msp/', '/en/security/', '/en/pricing/', '/en/demo/', '/en/contact/', '/en/contact/thanks/', '/en/legal-notice/', '/en/privacy/', '/en/terms/', '/en/subprocessors/', '/en/accessibility/'])
       expect(isBuilt(p), p).toBe(true);
   });
-  test('isBuilt: Startseite ja, englische Seiten noch nicht, unbekannt nein', () => {
+  test('isBuilt: Startseite und englische Gegenstücke ja, unbekannt nein', () => {
     expect(isBuilt('/')).toBe(true);
-    expect(isBuilt('/en/')).toBe(false);
-    expect(isBuilt('/en/product/discovery/')).toBe(false);
+    expect(isBuilt('/en/')).toBe(true);
+    expect(isBuilt('/en/product/discovery/')).toBe(true);
     expect(isBuilt('/404/')).toBe(false);
     expect(isBuilt(null)).toBe(false);
   });

@@ -84,7 +84,7 @@ export const UI: typeof DeUI = {
     group: 'Simulate outage',
     legendActive: 'CI, status “Active”',
     legendFailed: 'failed',
-    legendAffected: 'affected (shown in grey)',
+    legendAffected: 'affected (shown in gray)',
     legendNote: 'Schematic, not a screenshot',
   },
   form: {

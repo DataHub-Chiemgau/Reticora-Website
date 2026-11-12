@@ -10,14 +10,14 @@ export interface Route { de: string; en: string; status: Status; enStatus: Statu
 const r = (de: string, en: string, extra: Partial<Route> = {}): Route => ({ de, en, status: 'geplant', enStatus: 'geplant', ...extra });
 
 export const ROUTES: Route[] = [
-  { de: '/', en: '/en/', status: 'gebaut', enStatus: 'geplant' },
-  { de: '/produkt/discovery/', en: '/en/product/discovery/', status: 'gebaut', enStatus: 'geplant' },
-  { de: '/produkt/datenqualitaet/', en: '/en/product/data-quality/', status: 'gebaut', enStatus: 'geplant' },
-  { de: '/produkt/topologie-impact/', en: '/en/product/topology-impact/', status: 'gebaut', enStatus: 'geplant' },
-  { de: '/produkt/verwaltung/', en: '/en/product/administration/', status: 'gebaut', enStatus: 'geplant' },
-  { de: '/produkt/betrieb/', en: '/en/product/operations/', status: 'gebaut', enStatus: 'geplant' },
-  { de: '/produkt/compliance/', en: '/en/product/compliance/', status: 'gebaut', enStatus: 'geplant' },
-  { de: '/produkt/api/', en: '/en/product/api/', status: 'gebaut', enStatus: 'geplant' },
+  { de: '/', en: '/en/', status: 'gebaut', enStatus: 'gebaut' },
+  { de: '/produkt/discovery/', en: '/en/product/discovery/', status: 'gebaut', enStatus: 'gebaut' },
+  { de: '/produkt/datenqualitaet/', en: '/en/product/data-quality/', status: 'gebaut', enStatus: 'gebaut' },
+  { de: '/produkt/topologie-impact/', en: '/en/product/topology-impact/', status: 'gebaut', enStatus: 'gebaut' },
+  { de: '/produkt/verwaltung/', en: '/en/product/administration/', status: 'gebaut', enStatus: 'gebaut' },
+  { de: '/produkt/betrieb/', en: '/en/product/operations/', status: 'gebaut', enStatus: 'gebaut' },
+  { de: '/produkt/compliance/', en: '/en/product/compliance/', status: 'gebaut', enStatus: 'gebaut' },
+  { de: '/produkt/api/', en: '/en/product/api/', status: 'gebaut', enStatus: 'gebaut' },
   { de: '/geraete/', en: '/en/devices/', status: 'gebaut', enStatus: 'gebaut' },
   { de: '/loesungen/isp/', en: '/en/solutions/isp/', status: 'gebaut', enStatus: 'gebaut' },
   { de: '/loesungen/msp/', en: '/en/solutions/msp/', status: 'gebaut', enStatus: 'gebaut' },

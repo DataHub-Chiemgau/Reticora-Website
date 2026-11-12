@@ -15,7 +15,7 @@ export const PLANS: readonly Plan[] = [
     limits: { cis: 2500, collectors: 5, users: 25 },
     summary: {
       de: 'dazu Lager, Inventur, Etiketten, Unterschrift, SLAs, DATEV-Export',
-      en: 'plus stock, stocktaking, labels, signatures, SLAs, DATEV export',
+      en: 'plus stock, stocktakes, labels, signatures, SLAs, DATEV export',
     },
   },
   {
@@ -93,7 +93,7 @@ export const FEATURES: { id: string; label: Record<Lang, string>; plans: Record<
     plans: { essentials: false, standard: true, pro: true, 'enterprise-shared': true, 'enterprise-local': true },
   },
   {
-    id: 'stock', label: { de: 'Lagerbestand, Inventur, Etiketten und Unterschrift', en: 'Stock, stocktaking, labels and signatures' },
+    id: 'stock', label: { de: 'Lagerbestand, Inventur, Etiketten und Unterschrift', en: 'Stock, stocktakes, labels and signatures' },
     plans: { essentials: false, standard: true, pro: true, 'enterprise-shared': true, 'enterprise-local': true },
   },
   {

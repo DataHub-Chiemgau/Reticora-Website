@@ -46,6 +46,9 @@ const SAME_OK = new Set<string>([
   // Preise, Sicherheit, Lösungen: Paketnamen, Ports und Richtungen, Fachwörter der App
   'Enterprise Shared', 'Enterprise Local', 'Essentials, Standard, Pro', 'Cloud', 'Collectors', 'Add-on', 'Port', 'Updates', 'SLAs', 'Asset',
   'Dashboard.', 'Collector → Reticora', '443/TCP, HTTPS', 'ICMP, ARP, 22, 80, 443, 161/UDP, 623, 5985, 8006',
+  // Startseite und Produktseiten: Geräte- und Protokollnamen
+  'Racks', 'Ports 22, 80, 443, 623, 5985, 8006', 'WMI, IPMI', 'SSH, NAS',
+  'Dell iDRAC · HPE iLO · Lenovo XCC · Supermicro BMC · VMware ESXi · Proxmox VE · Windows Server · Linux',
 ]);
 
 /** Pfade (wie `fehler` sie nennt), deren Zahlen bewusst abweichen dürfen, etwa ein umgestelltes Datum. Mit Begründung ergänzen. */
@@ -85,14 +88,18 @@ function fehler(de: unknown, en: unknown, path = ''): string[] {
   const e = en as string;
   const key = lastKey(path);
   const out: string[] = [];
-  if (ID_ONLY.test(d) || (FIXED_KEYS.has(key) && !(key === 'claims' && /\s|[a-z]{3}/.test(d))))
+  // In Tabellenzeilen sind die Schlüssel Spaltennamen (etwa `key` für „Schlüssel“): dort ist ein Wert, der nicht wie eine Kennung aussieht, Text.
+  const inRow = /\.rows\[\d+\]\.[^.[]+$/.test(path) && !/^[a-z0-9_-]+$/.test(d);
+  if (ID_ONLY.test(d) || (FIXED_KEYS.has(key) && !inRow && !(key === 'claims' && /\s|[a-z]{3}/.test(d))))
     return d === e ? [] : [`${path}: fester Wert „${d}“ ≠ „${e}“`];
   if (e.trim() === '') out.push(`${path}: leer`);
   if (claimsOf(d).join() !== claimsOf(e).join()) out.push(`${path}: Belege ${claimsOf(d).join()} ≠ ${claimsOf(e).join()}`);
   if (shotsOf(d).join() !== shotsOf(e).join()) out.push(`${path}: Screenshots ${shotsOf(d).join()} ≠ ${shotsOf(e).join()}`);
   if (!NUMBERS_EXEMPT.has(path) && numbersOf(d).join() !== numbersOf(e).join()) out.push(`${path}: Zahlen ${numbersOf(d).join()} ≠ ${numbersOf(e).join()}`);
   const codeOnly = (key === 'code' || key === 'codeTitle') && !/^\s*#/m.test(d);
-  if (d === e && /\p{L}/u.test(d) && !SAME_OK.has(d) && !codeOnly) out.push(`${path}: nicht übersetzt „${d}“`);
+  // Was nach Code (`…`) und Belegen keine Buchstaben mehr hat, ist kein Text (etwa `pdu-a` oder ein bloßes [C-46]).
+  const letters = /\p{L}/u.test(d.replace(/`[^`]*`/g, '').replace(/\[C-\d+(?:,\s*C-\d+)*\]/g, ''));
+  if (d === e && letters && !SAME_OK.has(d) && !codeOnly) out.push(`${path}: nicht übersetzt „${d}“`);
   const german = key === 'code' || codeOnly ? [] : germanLeftovers(e);
   if (german.length) out.push(`${path}: deutsch im englischen Text: ${german.join('; ')}`);
   return out;

@@ -189,9 +189,9 @@ test.describe('erzwungene Farben', () => {
 test('lang="en": englischer Satz und Redundanzhinweis', async ({ page }) => {
   await page.goto(PAGE);
   const en = page.locator('[data-topo][data-lang="en"]');
-  await expect(en.locator('.rt-topo-result')).toHaveText('If "pdu-a" fails, 1 more CI is affected (shown in grey). Protected by redundancy: srv-01, srv-02.');
+  await expect(en.locator('.rt-topo-result')).toHaveText('If “pdu-a” fails, 1 more CI is affected (shown in gray). Protected by redundancy: srv-01, srv-02.');
   await en.locator('.rt-chip[data-ci="pdu-b"]').click();
-  await expect(en.locator('.rt-topo-result')).toHaveText('If 2 CIs (pdu-a, pdu-b) fail together, 6 more CIs are affected (shown in grey).');
+  await expect(en.locator('.rt-topo-result')).toHaveText('If 2 CIs (pdu-a, pdu-b) fail together, 6 more CIs are affected (shown in gray).');
 });
 
 test('Knoten-Knöpfe messen mindestens 44 × 44 px', async ({ page }) => {
