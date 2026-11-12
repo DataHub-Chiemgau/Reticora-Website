@@ -1,0 +1,31 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+@theme inline {
+  --color-*: initial;
+  --color-canvas: var(--canvas);
+  --color-panel: var(--panel);
+  --color-raised: var(--raised);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-control: var(--control);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-fg: var(--accent-fg);
+  --color-signal: var(--signal);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-graph-active: var(--graph-active);
+  --color-graph-failed: var(--graph-failed);
+
+  --breakpoint-*: initial;
+  --breakpoint-sm: 30rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-nav: 70rem;
+  --breakpoint-xl: 80rem;
+}
