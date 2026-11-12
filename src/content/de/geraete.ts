@@ -1,7 +1,7 @@
 import type { Action, LinkRef, Rich } from '../types';
 
 /** Texte der Seite „Geräte“, wörtlich aus docs/copy/geraete-de.md. Die Tabelle kommt aus src/data/devices.ts. */
-export const GERAETE = {
+export const geraete = {
   meta: {
     title: 'Unterstützte Geräte und Protokolle – Reticora',
     description:
@@ -17,6 +17,8 @@ export const GERAETE = {
     title: 'Gerätefamilien',
     tableLabel: 'Gerätefamilien mit Hersteller und Protokollen',
     categories: { network: 'Netzwerk', server: 'Server und Virtualisierung', storage: 'Storage', power: 'Strom' },
+    jump: 'Zu einer Kategorie springen',
+    groupId: 'kategorie',
     heads: { vendor: 'Hersteller', family: 'Familie', protocols: 'Protokolle' },
     note: 'Herstellernamen sind Marken ihrer Inhaber und stehen hier nur zur Beschreibung der Kompatibilität.',
     claim: 'C-08' as `C-${string}`,

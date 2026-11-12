@@ -1,7 +1,7 @@
 import type { SolutionContent } from '../solution';
 
 /** Texte der Seite „Lösungen für MSPs“, wörtlich aus docs/copy/loesungen-msp-de.md. */
-export const MSP: SolutionContent = {
+export const msp: SolutionContent = {
   meta: {
     title: 'Reticora für Managed-Service-Provider (MSP)',
     description:

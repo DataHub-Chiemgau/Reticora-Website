@@ -1,7 +1,7 @@
 import type { PageContent } from '../../types';
 
 /** Wörtlich aus docs/copy/produkt-discovery-de.md. */
-export const DISCOVERY: PageContent = {
+export const discovery: PageContent = {
   meta: {
     title: 'Discovery – so liest Reticora Ihr Netz aus',
     description:

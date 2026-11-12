@@ -1,6 +1,6 @@
 /** Texte der Seiten „Kontakt“ und „Danke“, wörtlich aus docs/copy/kontakt-de.md.
  *  Beschriftungen, Hilfetexte und Fehlertexte des Formulars stehen in `ui(lang).form`. */
-export const KONTAKT_DE = {
+export const kontakt = {
   meta: {
     title: 'Kontakt – Reticora',
     description: 'Vorführung, Enterprise, Sicherheit und Datenschutz oder eine andere Frage: Schreiben Sie uns über das Formular. Angebot nur für Unternehmen.',
@@ -18,3 +18,6 @@ export const KONTAKT_DE = {
     home: 'Zur Startseite',
   },
 } as const;
+
+/** Alter Name; contact.spec.ts (Fix-Welle A) importiert ihn noch. Entfällt, sobald der Test `kontakt` nutzt. */
+export const KONTAKT_DE = kontakt;

@@ -1,7 +1,7 @@
 import type { PageContent } from '../../types';
 
 /** Wörtlich aus docs/copy/produkt-compliance-de.md. C-19: Berichtsfunktion, keine Zertifizierung, keine Garantie der Konformität. */
-export const COMPLIANCE: PageContent = {
+export const compliance: PageContent = {
   meta: {
     title: 'Compliance und Audit – Reticora',
     description:

@@ -110,7 +110,7 @@ for (const p of PAGES) {
       await page.goto(p.path);
       expect(norm(await page.title())).toContain(p.title);
       await expect(page.locator('h1')).toHaveCount(1);
-      expect(norm((await page.locator('h1').textContent()) ?? '')).toBe(p.h1);
+      expect(norm(((await page.locator('h1').textContent()) ?? '').replace(/\u00AD/g, ''))).toBe(p.h1);
       const h2 = (await page.locator('main h2').allTextContents()).map(norm);
       expect(h2).toEqual(p.h2);
     });
@@ -169,7 +169,7 @@ test('Topologie: Beispieltabelle mit Kopfzellen und vier Ausfällen', async ({ p
 
 test('Datenqualität: Rangfolge der Quellen als Tabelle, Fünf Schlüssel als Tabelle', async ({ page }) => {
   await page.goto('/produkt/datenqualitaet/');
-  const rank = page.locator('table[class="rt-table"]').filter({ has: page.locator('th', { hasText: 'Rang' }) });
+  const rank = page.locator('table.rt-table').filter({ has: page.locator('th', { hasText: 'Rang' }) });
   await expect(rank.locator('thead th')).toHaveText(['Quelle', 'Rang']);
   const rows = await rank.locator('tbody tr').evaluateAll((trs) => trs.map((tr) => [...tr.children].map((c) => (c.textContent ?? '').trim())));
   expect(rows).toEqual([

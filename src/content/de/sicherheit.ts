@@ -1,9 +1,9 @@
 import type { Action, LinkRef, Rich, ShotRef } from '../types';
 
 /** Texte der Seite „Sicherheit“, wörtlich aus docs/copy/sicherheit-de.md. Nicht genannt werden C-16, C-17 und Zertifizierungen. */
-export interface Placeholder { key: string; text: string }
+export interface PlaceholderRef { key: string; text: string }
 
-export const SICHERHEIT = {
+export const sicherheit = {
   meta: {
     title: 'Sicherheit und Datenschutz – Reticora',
     description:
@@ -90,7 +90,7 @@ export const SICHERHEIT = {
       { label: 'Subprozessoren', href: '/subprozessoren/' },
       { label: 'Datenschutzerklärung', href: '/datenschutz/' },
     ] as LinkRef[],
-    placeholder: { key: 'Auftragsverarbeitung', text: '[Auftragsverarbeitung: Angabe vom Anbieter]' } as Placeholder,
+    placeholder: { key: 'Auftragsverarbeitung', text: '[Auftragsverarbeitung: Angabe vom Anbieter]' } as PlaceholderRef,
   },
   lieferkette: {
     id: 'lieferkette',
@@ -101,7 +101,7 @@ export const SICHERHEIT = {
     id: 'luecke-melden',
     title: 'Sicherheitslücke melden',
     before: 'Haben Sie eine Schwachstelle gefunden, schreiben Sie uns bitte direkt: „',
-    placeholder: { key: 'Meldeweg Sicherheitslücken', text: '[Meldeweg für Sicherheitslücken: Adresse vom Anbieter]' } as Placeholder,
+    placeholder: { key: 'Meldeweg Sicherheitslücken', text: '[Meldeweg für Sicherheitslücken: Adresse vom Anbieter]' } as PlaceholderRef,
     after: '“.',
   },
   closing: {

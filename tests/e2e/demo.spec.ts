@@ -119,3 +119,23 @@ test('bei 360 px ohne waagerechtes Scrollen, Kopierknöpfe mindestens 44 px', as
     expect(box!.x + box!.width).toBeLessThanOrEqual(360);
   }
 });
+
+test('/demo/ ist noindex im Routenverzeichnis und nicht in der Sitemap', async ({ request }) => {
+  const xml = await (await request.get('/sitemap.xml')).text();
+  expect(xml).not.toContain('/demo/');
+  expect(xml).not.toContain('/en/demo/');
+});
+
+test('Kopierknöpfe stehen in einer Spalte, gleich breit, in der Schrift der übrigen Knöpfe', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/demo/');
+  const buttons = page.locator('.demo-spec button');
+  await expect(buttons).toHaveCount(3);
+  for (const b of await buttons.all()) await b.evaluate((e) => e.removeAttribute('hidden'));
+  const boxes = await buttons.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { x: Math.round(r.left), w: Math.round(r.width) }; }));
+  expect(new Set(boxes.map((b) => b.x)).size).toBe(1);
+  expect(new Set(boxes.map((b) => b.w)).size).toBe(1);
+  const fonts = await buttons.evaluateAll((els) => els.map((e) => getComputedStyle(e).fontFamily));
+  const link = await page.getByRole('link', { name: 'Demo öffnen' }).evaluate((e) => getComputedStyle(e).fontFamily);
+  expect(new Set(fonts)).toEqual(new Set([link]));
+});

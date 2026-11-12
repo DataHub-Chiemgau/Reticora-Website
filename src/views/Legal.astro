@@ -29,31 +29,32 @@ const rows: { key: string; label: string; value: string | null; placeholder: str
 ---
 
 <Leitstand title={`${P.title} – Reticora`} description={P.description} lang={lang} path={path} theme="dokument">
-  <PageHero title={P.title} />
+  <PageHero title={P.title}>
+    <p class="legal-meta">{T.asOf}: <Placeholder id={`${page}-stand`}>{ph.date}</Placeholder></p>
+  </PageHero>
   <div class="rt-section legal">
-    <div class="rt-container legal-stack">
-      <p class="legal-meta">
-        {T.asOf}: <Placeholder id={`${page}-stand`}>{ph.date}</Placeholder>
-      </p>
-      {page === 'imprint' && (
-        <dl class="home-defs">
-          {rows.map((r) => (
-            <div>
-              <dt>{r.label}</dt>
-              <dd>
-                {r.value
-                  ? r.key === 'email'
-                    ? <a href={`mailto:${r.value}`}>{r.value}</a>
-                    : r.value.split('\n').map((line, i) => <>{i > 0 && <br />}{line}</>)
-                  : <Placeholder id={r.id}>{r.placeholder}</Placeholder>}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      )}
-      {page !== 'imprint' && (
-        <Placeholder id={page} block>{T.legal.pending}</Placeholder>
-      )}
+    <div class="rt-container">
+      <div class="legal-stack">
+        {page === 'imprint' && (
+          <dl class="home-defs">
+            {rows.map((r) => (
+              <div>
+                <dt>{r.label}</dt>
+                <dd>
+                  {r.value
+                    ? r.key === 'email'
+                      ? <a href={`mailto:${r.value}`}>{r.value}</a>
+                      : r.value.split('\n').map((line, i) => <>{i > 0 && <br />}{line}</>)
+                    : <Placeholder id={r.id}>{r.placeholder}</Placeholder>}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        {page !== 'imprint' && (
+          <Placeholder id={page} block>{T.legal.pending}</Placeholder>
+        )}
+      </div>
     </div>
   </div>
 </Leitstand>

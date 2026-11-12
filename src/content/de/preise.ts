@@ -13,7 +13,7 @@ const first = pct(BETA.firstSixMonths);
 const next = pct(BETA.nextSixMonths);
 const from = PLANS[0];
 
-export const PREISE = {
+export const preise = {
   meta: {
     title: 'Preise und Pakete – Reticora CMDB',
     description: `${from.name} ab ${eur(from.monthly)} im Monat, dazu Standard, Pro und Enterprise. Funktionen, Limits, Zusatzkosten und 30 Tage Test. Preise zzgl. MwSt., nur für Unternehmen.`,
@@ -29,9 +29,10 @@ export const PREISE = {
     vat: 'zzgl. MwSt.',
     heads: {
       plan: 'Paket', monthly: 'im Monat', yearly: 'im Jahr', beta: 'erstes Beta-Jahr',
-      cis: 'CIs', collectors: 'Collectors', users: 'Nutzer',
+      cis: 'CIs', collectors: 'Collectors', users: 'Nutzer', claims: 'Belege',
     },
-    claim: 'C-21' as `C-${string}`,
+    /** Knopf je Paket: Essentials, Standard und Pro „30 Tage testen“ (ui.actions.trial), Enterprise „Kontakt aufnehmen“ mit Anliegen „Enterprise“. */
+    contact: { label: 'Kontakt aufnehmen', topic: 'enterprise' },
     rows: PLANS.map((p) => ({
       id: p.id,
       name: p.name,
@@ -43,6 +44,8 @@ export const PREISE = {
       collectors: p.limits.collectors === null ? 'unbegrenzt' : grouped(p.limits.collectors),
       users: p.limits.users === null ? 'unbegrenzt' : grouped(p.limits.users),
       enterprise: p.from,
+      /** Belege der Zeile (preise-de.md, Tabelle „Werte zur Kontrolle“): Enterprise zusätzlich C-92. */
+      claims: (p.from ? ['C-21', 'C-92'] : ['C-21']) as `C-${string}`[],
     })),
     beta: {
       lead: 'Beta-Rabatt:',
@@ -55,7 +58,9 @@ export const PREISE = {
     label: 'Funktionen je Paket im Vergleich',
     feature: 'Funktion',
     legend: '✓ enthalten · – nicht enthalten · ∞ unbegrenzt · Add-on: zu jedem Paket zubuchbar, Preis auf Anfrage',
-    caption: 'Funktionen je Paket. Enterprise Shared und Enterprise Local haben denselben Umfang; sie unterscheiden sich im Betrieb.',
+    caption: 'Funktionen je Paket. Enterprise Shared und Enterprise Local unterscheiden sich im Betrieb. [C-21]' as Rich,
+    /** Zeilen mit Zahlen tragen ihren Beleg: Dokumentenspeicher je Paket. */
+    rowClaims: { storage: 'C-60' } as Record<string, `C-${string}`>,
     rows: FEATURES.map((f) => ({ id: f.id, label: f.label.de, plans: f.plans })),
   },
   zusatz: {
@@ -99,7 +104,7 @@ export const PREISE = {
       },
       {
         q: 'Was unterscheidet Enterprise Shared und Enterprise Local?',
-        a: 'Der Funktionsumfang ist gleich. Enterprise Shared läuft in der Cloud auf getrennter Infrastruktur. Enterprise Local wird bei Ihnen gehostet; der Preis enthält alle Arbeiten dafür. [C-92]',
+        a: 'Enterprise Shared läuft in der Cloud auf getrennter Infrastruktur. Enterprise Local wird bei Ihnen gehostet; der Preis enthält alle Arbeiten dafür. [C-92]',
       },
       { q: 'Was kosten IGA und der KI-Assistent?', a: 'Beide Add-ons sind zu jedem Paket zubuchbar. Den Preis nennen wir auf Anfrage.' },
       { q: 'Können Privatpersonen Reticora buchen?', a: 'Nein. Das Angebot richtet sich nur an Unternehmen. Alle Preise verstehen sich zuzüglich Mehrwertsteuer.' },

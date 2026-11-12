@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { ROUTES } from '../../src/i18n/routes';
+import { sitemapXml } from '../../src/lib/discover';
+import { ROUTES, homeSwitchTarget, type Route } from '../../src/i18n/routes';
 
 describe('ROUTES', () => {
   test('alle Adressen beginnen und enden mit Schrägstrich', () => {
@@ -33,8 +34,13 @@ describe('ROUTES', () => {
     expect(m.get('/subprozessoren/')).toBe('/en/subprocessors/');
     expect(m.get('/barrierefreiheit/')).toBe('/en/accessibility/');
   });
-  test('Dankeseiten sind noindex', () => {
-    expect(ROUTES.filter((r) => r.noindex).map((r) => r.de)).toEqual(['/kontakt/danke/']);
+  test('Dankeseite und Demo (gemeinsames Konto mit Zugangsdaten) sind noindex', () => {
+    expect(ROUTES.filter((r) => r.noindex).map((r) => r.de)).toEqual(['/demo/', '/kontakt/danke/']);
+  });
+  test('die echte Sitemap führt weder /demo/ noch die Dankeseite', () => {
+    const locs = [...sitemapXml(ROUTES, 'https://example.test').matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    expect(locs.length).toBeGreaterThan(5);
+    expect(locs.some((l) => l.includes('/demo/') || l.includes('/danke/'))).toBe(false);
   });
   test('von der Spezifikation genannte Paare', () => {
     const m = new Map(ROUTES.map((r) => [r.de, r.en]));
@@ -42,5 +48,17 @@ describe('ROUTES', () => {
     expect(m.get('/sicherheit/')).toBe('/en/security/');
     expect(m.get('/kontakt/danke/')).toBe('/en/contact/thanks/');
     expect(m.get('/')).toBe('/en/');
+  });
+});
+
+describe('homeSwitchTarget (Seiten ohne Gegenstück)', () => {
+  const R = (en: 'gebaut' | 'geplant'): Route[] => [{ de: '/', en: '/en/', status: 'gebaut', enStatus: en }];
+  test('Startseite der anderen Sprache, wenn sie gebaut ist', () => {
+    expect(homeSwitchTarget('de', R('gebaut'))).toBe('/en/');
+    expect(homeSwitchTarget('en', R('gebaut'))).toBe('/');
+  });
+  test('sonst nichts: kein „kommt bald“ ohne Gegenstück', () => {
+    expect(homeSwitchTarget('de', R('geplant'))).toBeNull();
+    expect(homeSwitchTarget('en', R('geplant'))).toBe('/');
   });
 });

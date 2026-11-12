@@ -1,7 +1,7 @@
 import type { PageContent } from '../../types';
 
 /** Wörtlich aus docs/copy/produkt-topologie-impact-de.md. */
-export const TOPOLOGIE_IMPACT: PageContent = {
+export const topologieImpact: PageContent = {
   meta: {
     title: 'Topologie und Ausfallsimulation – Reticora',
     description:

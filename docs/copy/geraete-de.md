@@ -32,6 +32,9 @@ Eintrag im Claim-Register (`content-plan.md` §7). Die Tabelle kommt aus
 - **Filter** (Gruppe von Umschaltknöpfen, Bezeichnung „Kategorie“):
   „Alle“, „Netzwerk“, „Server und Virtualisierung“, „Storage“, „Strom“.
   Ohne JavaScript steht die ganze Tabelle, nach Kategorie gegliedert.
+- **Sprungmarken ohne JavaScript** (Navigation über der Tabelle, Bezeichnung
+  „Zu einer Kategorie springen“): je Kategorie ein Anker mit „{Kategorie} ({n})“
+  auf die Gruppe in der Tabelle (Ä-17). Mit JavaScript ersetzt der Filter sie.
 - **Tabelle**, Spalten: „Hersteller“, „Familie“, „Kategorie“, „Protokolle“.
   Werte aus `DEVICES`; Kategorien: `network` = Netzwerk, `server` = Server
   und Virtualisierung, `storage` = Storage, `power` = Strom. [C-08]

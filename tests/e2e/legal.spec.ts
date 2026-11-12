@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { SITE } from '../../src/data/site';
-import { BARRIEREFREIHEIT_DE as A } from '../../src/content/de/barrierefreiheit';
+import { barrierefreiheit as A } from '../../src/content/de/barrierefreiheit';
 import { ui } from '../../src/i18n';
 
 const T = ui('de');
@@ -101,5 +101,20 @@ test.describe('404', () => {
     expect(await dir.text()).toContain(en.h1);
     // deutsche Pfade bleiben deutsch
     expect(await (await request.get('/nichts-hier/')).text()).toContain(T.notFound.h1);
+  });
+
+  test('Sprachumschalter der Fehlerseite: kein „kommt bald“ ohne Gegenstück, und kein Link auf eine ungebaute Startseite', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    for (const path of ['/gibt-es-nicht/', '/en/gibt-es-nicht/']) {
+      await page.goto(path);
+      const sw = page.locator('.rt-header .rt-lang');
+      await expect(sw.locator('[aria-current="true"]')).toHaveCount(1);
+      await expect(sw.locator('.is-off')).toHaveCount(0);
+      await expect(page.locator('.rt-header, .rt-footer').getByText(T.lang.soon)).toHaveCount(0);
+      // Die englische Startseite gibt es noch nicht, die deutsche schon.
+      await expect(sw.locator('a')).toHaveCount(path.startsWith('/en/') ? 1 : 0);
+    }
+    await page.goto('/en/gibt-es-nicht/');
+    await expect(page.locator('.rt-header .rt-lang a')).toHaveAttribute('href', '/');
   });
 });

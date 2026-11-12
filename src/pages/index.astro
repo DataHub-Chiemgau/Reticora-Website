@@ -12,7 +12,8 @@ import CodeSample from '../components/CodeSample.astro';
 import Notice from '../components/Notice.astro';
 import TopologyStage from '../components/TopologyStage.astro';
 import ConnectionSchema from '../components/ConnectionSchema.astro';
-import { HOME } from '../content/de/home';
+import Para from '../components/Para.astro';
+import { content } from '../content';
 import { LINKS } from '../data/links';
 import { PLANS, BETA } from '../data/pricing';
 import { ui } from '../i18n';
@@ -20,7 +21,7 @@ import { localize } from '../i18n/routes';
 
 const lang = 'de';
 const UI = ui(lang);
-const H = HOME;
+const H = content(lang).home;
 const grouped = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 const planRows = PLANS.map((p) => ({
   plan: p.name,
@@ -77,12 +78,12 @@ const planColumns = [
       </div>
       <div class="home-block">
         <h3>{H.vertrauen.manuell.title}</h3>
-        <div class="rt-para" role="paragraph">{H.vertrauen.manuell.text}{' '}<Beleg claim={H.vertrauen.manuell.claim} lang={lang} /></div>
+        <Para text={`${H.vertrauen.manuell.text} [${H.vertrauen.manuell.claim}]`} lang={lang} />
       </div>
       <div class="home-split home-split--figure">
         <div class="home-block">
           <h3>{H.vertrauen.review.title}</h3>
-          <div class="rt-para" role="paragraph">{H.vertrauen.review.text}{' '}<Beleg claim={H.vertrauen.review.claim} lang={lang} /></div>
+          <Para text={`${H.vertrauen.review.text} [${H.vertrauen.review.claim}]`} lang={lang} />
         </div>
         <ScreenshotSlot id="S-03" figure={3} caption={H.vertrauen.review.caption} lang={lang} />
       </div>
@@ -94,7 +95,7 @@ const planColumns = [
       <div class="home-stack">
         <div class="home-block">
           <h3>{H.zusammenhang.topologie.title}</h3>
-          <div class="rt-para" role="paragraph">{H.zusammenhang.topologie.text}{' '}<Beleg claim={H.zusammenhang.topologie.claim} lang={lang} /></div>
+          <Para text={`${H.zusammenhang.topologie.text} [${H.zusammenhang.topologie.claim}]`} lang={lang} />
         </div>
         <ScreenshotSlot id="S-04" figure={4} caption={H.zusammenhang.topologie.caption} lang={lang} />
       </div>
@@ -102,14 +103,14 @@ const planColumns = [
         <div class="home-stack">
           <div class="home-block">
             <h3>{H.zusammenhang.racks.title}</h3>
-            <div class="rt-para" role="paragraph">{H.zusammenhang.racks.text}{' '}<Beleg claim={H.zusammenhang.racks.claim} lang={lang} /></div>
+            <Para text={`${H.zusammenhang.racks.text} [${H.zusammenhang.racks.claim}]`} lang={lang} />
           </div>
           <ScreenshotSlot id="S-05" figure={5} caption={H.zusammenhang.racks.caption} ratio="4x5" lang={lang} />
         </div>
         <div class="home-stack">
           <div class="home-block">
             <h3>{H.zusammenhang.ausfall.title}</h3>
-            <div class="rt-para" role="paragraph">{H.zusammenhang.ausfall.text}{' '}<Beleg claim={H.zusammenhang.ausfall.claim} lang={lang} /></div>
+            <Para text={`${H.zusammenhang.ausfall.text} [${H.zusammenhang.ausfall.claim}]`} lang={lang} />
           </div>
           <ScreenshotSlot id="S-06" figure={6} caption={H.zusammenhang.ausfall.caption} lang={lang} />
         </div>
@@ -184,7 +185,7 @@ curl <span class="k">"https://www.reticora.cloud/api/v1/cis?q=core&amp;limit=50"
   <Section id="testen" title={H.abschluss.title}>
     <div class="home-stack">
       <div class="home-block">
-        <div class="rt-para" role="paragraph">{H.abschluss.text}{' '}<Beleg claim={H.abschluss.claim} lang={lang} /></div>
+        <Para text={`${H.abschluss.text} [${H.abschluss.claim}]`} lang={lang} />
       </div>
       <div class="home-actions">
         <div class="home-actions-row">

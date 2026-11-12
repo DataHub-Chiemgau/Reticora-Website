@@ -23,7 +23,7 @@ export const ROUTES: Route[] = [
   { de: '/loesungen/msp/', en: '/en/solutions/msp/', status: 'gebaut', enStatus: 'geplant' },
   { de: '/sicherheit/', en: '/en/security/', status: 'gebaut', enStatus: 'geplant' },
   { de: '/preise/', en: '/en/pricing/', status: 'gebaut', enStatus: 'geplant' },
-  { de: '/demo/', en: '/en/demo/', status: 'gebaut', enStatus: 'geplant' },
+  { de: '/demo/', en: '/en/demo/', status: 'gebaut', enStatus: 'geplant', noindex: true },
   { de: '/kontakt/', en: '/en/contact/', status: 'gebaut', enStatus: 'geplant' },
   { de: '/kontakt/danke/', en: '/en/contact/thanks/', status: 'gebaut', enStatus: 'geplant', noindex: true },
   { de: '/impressum/', en: '/en/legal-notice/', status: 'gebaut', enStatus: 'geplant' },
@@ -90,4 +90,13 @@ export function alternates(path: string, routes: Route[] = ROUTES): Alternates |
   const de = lang === 'de' ? stripSuffix(path) : other;
   const en = lang === 'en' ? stripSuffix(path) : other;
   return { de, en, xDefault: de };
+}
+
+/** Ziel des Sprachumschalters auf Seiten ohne Gegenstück (die Fehlerseite 404): die Startseite der anderen Sprache, wenn sie gebaut ist, sonst null.
+ *  Ein „kommt bald“ gibt es dort nicht, weil es kein Gegenstück gibt, das kommen könnte. */
+export function homeSwitchTarget(lang: Lang, routes: Route[] = ROUTES): string | null {
+  const home = routes.find((x) => x.de === '/');
+  if (!home) return null;
+  const target = lang === 'de' ? home.en : home.de;
+  return isBuilt(target, routes) ? target : null;
 }

@@ -1,5 +1,5 @@
 ---
-import Beleg from './Beleg.astro';
+import Para from './Para.astro';
 import type { ClaimId, Lang } from '../data/types';
 
 interface Props { steps: { title: string; text: string; claim?: ClaimId }[]; lang?: Lang }
@@ -11,9 +11,7 @@ const { steps, lang = 'de' } = Astro.props;
     <li>
       <div>
         <h3>{s.title}</h3>
-        {s.claim
-          ? <div class="rt-para" role="paragraph">{s.text}{' '}<Beleg claim={s.claim} lang={lang} /></div>
-          : <p>{s.text}</p>}
+        <Para text={s.claim ? `${s.text} [${s.claim}]` : s.text} lang={lang} />
       </div>
     </li>
   ))}

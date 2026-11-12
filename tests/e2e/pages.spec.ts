@@ -34,6 +34,15 @@ for (const path of PAGES) {
         expect(over).toBeLessThanOrEqual(0);
       });
 
+    // Die Ersatzschrift misst anders als Archivo (so auf GitHubs Chromium): die Seite muss auch ohne die Webfonts passen.
+    test('ohne Webfonts kein waagerechtes Scrollen bei 320 px', async ({ page }) => {
+      await page.route('**/*.woff2', (route) => route.abort());
+      await page.setViewportSize({ width: 320, height: 900 });
+      await page.goto(path);
+      const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(over).toBeLessThanOrEqual(0);
+    });
+
     test('kanonische Adresse ist die eigene; Open Graph ohne Bild', async ({ page }) => {
       await page.goto(path);
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', SITE.url + path);

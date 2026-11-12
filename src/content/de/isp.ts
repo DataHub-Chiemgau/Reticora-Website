@@ -5,7 +5,7 @@ import { grouped } from '../../lib/format';
 const ent = PLANS.find((p) => p.id === 'enterprise-shared')!;
 
 /** Texte der Seite „Lösungen für ISPs“, wörtlich aus docs/copy/loesungen-isp-de.md. Zahlen aus src/data/pricing.ts. */
-export const ISP: SolutionContent = {
+export const isp: SolutionContent = {
   meta: {
     title: 'Reticora für Netzbetreiber (ISP)',
     description:

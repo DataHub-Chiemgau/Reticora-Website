@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hasClaims, highlightShell, nbsp, parseRich, plainText } from '../../src/content/rich';
+import { hasClaims, highlightShell, hyphenate, nbsp, parseRich, plainText } from '../../src/content/rich';
 
 describe('parseRich', () => {
   it('trennt Belege vom Satz und setzt kein Leerzeichen davor', () => {
@@ -36,5 +36,17 @@ describe('highlightShell', () => {
     expect(highlightShell('# a <b>\ncurl "x&y" \\\n  -H "k"')).toBe(
       '<span class="c"># a &lt;b&gt;</span>\ncurl <span class="k">"x&amp;y"</span> \\\n  -H <span class="k">"k"</span>',
     );
+  });
+});
+
+describe('hyphenate', () => {
+  it('setzt weiche Trennstriche in lange Wörter, der sichtbare Text bleibt gleich', () => {
+    const out = hyphenate('Was Ihre Informationssicherheit wissen will.');
+    expect(out).toContain('Informations\u00ADsicherheit');
+    expect(out.replaceAll('\u00AD', '')).toBe('Was Ihre Informationssicherheit wissen will.');
+    expect(hyphenate('Barrierefreiheit dieser Website')).toBe('Barriere\u00ADfrei\u00ADheit dieser Website');
+  });
+  it('lässt andere Wörter unberührt', () => {
+    expect(hyphenate('Live-Demo')).toBe('Live-Demo');
   });
 });

@@ -12,6 +12,13 @@ const UNIT = '(?:h|min|ms|s|Tage|Tagen|Tag|Stunden|Minuten|Sekunden|Monate|Monat
 const NUM_UNIT = new RegExp(`(\\d) (?=${UNIT}(?![\\p{L}\\d]))`, 'gu');
 export const nbsp = (s: string): string => s.replace(NUM_UNIT, '$1 ');
 
+/** Trennstellen für lange Wörter in Überschriften (U+00AD, weicher Trennstrich): sichtbar nur, wo die Zeile sonst bräche.
+ *  Der Text bleibt gleich; `hyphens: auto` ist aus, damit Wörter nicht an beliebiger Stelle getrennt werden. */
+const SHY = '\u00AD';
+const HYPHEN_WORDS = ['Informations|sicherheit', 'Barriere|frei|heit', 'Sub|prozessoren', 'Kauf|männische', 'Netz|betreiber', 'Ab|hängig|keiten', 'Ausfall|folgen'];
+const HYPHENATED = new Map(HYPHEN_WORDS.map((w) => [w.replaceAll('|', ''), w.replaceAll('|', SHY)]));
+export const hyphenate = (s: string): string => s.replace(/\p{L}+/gu, (w) => HYPHENATED.get(w) ?? w);
+
 export function parseRich(input: string): RichPart[] {
   const parts: RichPart[] = [];
   for (const piece of input.split(TOKEN)) {

@@ -13,7 +13,7 @@ const STORAGE_ROWS = [
 ];
 
 /** Wörtlich aus docs/copy/produkt-verwaltung-de.md. */
-export const VERWALTUNG: PageContent = {
+export const verwaltung: PageContent = {
   meta: {
     title: 'Verwaltung – Assets, Lager, Inventur, Verträge',
     description:

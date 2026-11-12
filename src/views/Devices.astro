@@ -39,16 +39,19 @@ const count = (n: number) => (n === 1 ? UI.devices.one : UI.devices.many.replace
 
   <Section id={F.id} title={F.title}>
     <div class="home-stack">
-      <div class="dev-bar">
-        <div class="dev-filter-root" data-filter data-one={UI.devices.one} data-many={UI.devices.many}>
-          <div class="dev-filter" role="group" aria-label={UI.devices.filter} hidden>
-            <button type="button" class="rt-btn rt-btn--secondary dev-chip" data-set="all" aria-pressed="true">{UI.devices.all}</button>
-            {groups.map((g) => <button type="button" class="rt-btn rt-btn--secondary dev-chip" data-set={g.cat} aria-pressed="false">{g.label}</button>)}
-          </div>
-          <p class="dev-count" aria-live="polite">{count(DEVICES.length)}</p>
+      <div class="dev-filter-root" data-filter data-one={UI.devices.one} data-many={UI.devices.many}>
+        <div class="dev-filter" role="group" aria-label={UI.devices.filter} hidden>
+          <button type="button" class="rt-btn rt-btn--secondary dev-chip" data-set="all" aria-pressed="true">{UI.devices.all}</button>
+          {groups.map((g) => <button type="button" class="rt-btn rt-btn--secondary dev-chip" data-set={g.cat} aria-pressed="false">{g.label}</button>)}
         </div>
+        <p class="dev-count" aria-live="polite">{count(DEVICES.length)}</p>
         <Beleg claim={F.claim} lang={lang} />
       </div>
+      <nav class="dev-jump" aria-label={F.jump}>
+        <ul>
+          {groups.map((g) => <li><a href={`#${F.groupId}-${g.cat}`}>{g.label}<span class="dev-jump-n"> ({g.rows.length})</span></a></li>)}
+        </ul>
+      </nav>
       <div class="dev-table">
         <p class="rt-table-hint">{UI.tableHint}</p>
         <section class="rt-table-wrap" tabindex="0" aria-label={F.tableLabel}>
@@ -61,7 +64,7 @@ const count = (n: number) => (n === 1 ? UI.devices.one : UI.devices.many.replace
               </tr>
             </thead>
             {groups.map((g) => (
-              <tbody data-cat={g.cat} data-n={g.rows.length}>
+              <tbody data-cat={g.cat} data-n={g.rows.length} id={`${F.groupId}-${g.cat}`}>
                 <tr class="dev-group"><th scope="rowgroup" colspan="3">{g.label}</th></tr>
                 {g.rows.map((d) => (
                   <tr>

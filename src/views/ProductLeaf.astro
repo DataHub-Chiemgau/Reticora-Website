@@ -1,11 +1,11 @@
 ---
-import Rich from '../components/Rich.astro';
+import Para from '../components/Para.astro';
 import SpecList from '../components/SpecList.astro';
 import DataTable from '../components/DataTable.astro';
 import CodeSample from '../components/CodeSample.astro';
 import type { Lang } from '../data/types';
 import type { CodeBlock, SpecsBlock, TableBlock } from '../content/types';
-import { hasClaims, highlightShell } from '../content/rich';
+import { highlightShell } from '../content/rich';
 import { ui } from '../i18n';
 
 /** Die Blöcke, die allein stehen oder neben einem Text (`split`): Kennwerte, Tabelle, Codebeispiel. */
@@ -22,11 +22,9 @@ const UI = ui(lang);
 )}
 {b.kind === 'table' && (
   <div class="home-stack product-table">
-    {b.caption && (hasClaims(b.caption)
-      ? <div class="rt-para product-caption" role="paragraph"><Rich text={b.caption} lang={lang} /></div>
-      : <p class="rt-para product-caption"><Rich text={b.caption} lang={lang} /></p>)}
+    {b.caption && <Para class="product-caption" text={b.caption} lang={lang} />}
     <DataTable label={b.label} columns={b.columns} rows={b.rows} rowHeader={b.rowHeader} lang={lang} />
-    {b.after && <div class="rt-para product-caption" role="paragraph"><Rich text={b.after} lang={lang} /></div>}
+    {b.after && <Para class="product-caption" text={b.after} lang={lang} />}
   </div>
 )}
 {b.kind === 'code' && (

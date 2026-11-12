@@ -1,7 +1,7 @@
 import type { PageContent } from '../../types';
 
 /** Wörtlich aus docs/copy/produkt-datenqualitaet-de.md. */
-export const DATENQUALITAET: PageContent = {
+export const datenqualitaet: PageContent = {
   meta: {
     title: 'Datenqualität – jeder Wert mit Herkunft',
     description:

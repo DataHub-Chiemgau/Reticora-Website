@@ -1,18 +1,18 @@
-import { DISCOVERY } from './discovery';
-import { DATENQUALITAET } from './datenqualitaet';
-import { TOPOLOGIE_IMPACT } from './topologie-impact';
-import { VERWALTUNG } from './verwaltung';
-import { BETRIEB } from './betrieb';
-import { COMPLIANCE } from './compliance';
-import { API } from './api';
+import { discovery } from './discovery';
+import { datenqualitaet } from './datenqualitaet';
+import { topologieImpact } from './topologie-impact';
+import { verwaltung } from './verwaltung';
+import { betrieb } from './betrieb';
+import { compliance } from './compliance';
+import { api } from './api';
 
 /** Die sieben Produktseiten, in der Reihenfolge der Navigation; der Schlüssel ist das letzte Pfadstück der deutschen Adresse. */
-export const PRODUKT_DE = {
-  discovery: DISCOVERY,
-  datenqualitaet: DATENQUALITAET,
-  'topologie-impact': TOPOLOGIE_IMPACT,
-  verwaltung: VERWALTUNG,
-  betrieb: BETRIEB,
-  compliance: COMPLIANCE,
-  api: API,
+export const produkt = {
+  discovery,
+  datenqualitaet,
+  'topologie-impact': topologieImpact,
+  verwaltung,
+  betrieb,
+  compliance,
+  api,
 } as const;

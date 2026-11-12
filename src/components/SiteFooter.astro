@@ -3,14 +3,14 @@ import { LINKS } from '../data/links';
 import { SITE } from '../data/site';
 import type { Lang } from '../data/types';
 import { ui } from '../i18n';
-import { counterpart, localize, switchTarget } from '../i18n/routes';
+import { counterpart, homeSwitchTarget, localize, switchTarget } from '../i18n/routes';
 
 interface Props { lang: Lang; path: string }
 const { lang, path } = Astro.props;
 const T = ui(lang);
 const f = T.footer;
-const target = switchTarget(path);
 const pending = counterpart(path);
+const target = pending !== null ? switchTarget(path) : homeSwitchTarget(lang);
 const otherLang: Lang = lang === 'de' ? 'en' : 'de';
 const L = (href: string) => localize(href, lang);
 ---

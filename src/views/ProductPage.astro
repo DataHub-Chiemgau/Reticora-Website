@@ -6,6 +6,7 @@ import Cta from '../components/Cta.astro';
 import ActionRow from '../components/ActionRow.astro';
 import Button from '../components/Button.astro';
 import Rich from '../components/Rich.astro';
+import Para from '../components/Para.astro';
 import StatusStrip from '../components/StatusStrip.astro';
 import ScreenshotSlot from '../components/ScreenshotSlot.astro';
 import ProductLeaf from './ProductLeaf.astro';
@@ -16,7 +17,7 @@ import ConnectionSchema from '../components/ConnectionSchema.astro';
 import type { Lang } from '../data/types';
 import type { Block } from '../content/types';
 import { content } from '../content';
-import { hasClaims, nbsp } from '../content/rich';
+import { nbsp } from '../content/rich';
 import { ui } from '../i18n';
 import { localize } from '../i18n/routes';
 
@@ -76,17 +77,13 @@ const numbered = page.sections.map((s) => ({
           <>
             {b.kind === 'prose' && (
               <div class="home-block">
-                {b.paras.map((t) => hasClaims(t)
-                  ? <div class="rt-para" role="paragraph"><Rich text={t} lang={lang} /></div>
-                  : <p class="rt-para"><Rich text={t} lang={lang} /></p>)}
+                {b.paras.map((t) => <Para text={t} lang={lang} />)}
               </div>
             )}
             {b.kind === 'figure' && (
               <div class="home-split home-split--figure">
                 <div class="home-block">
-                  {b.paras.map((t) => hasClaims(t)
-                    ? <div class="rt-para" role="paragraph"><Rich text={t} lang={lang} /></div>
-                    : <p class="rt-para"><Rich text={t} lang={lang} /></p>)}
+                  {b.paras.map((t) => <Para text={t} lang={lang} />)}
                 </div>
                 <ScreenshotSlot id={b.shot.id} figure={nums[0]} caption={nbsp(b.shot.caption)} ratio={b.shot.ratio} lang={lang} />
               </div>
@@ -108,11 +105,9 @@ const numbered = page.sections.map((s) => ({
             {b.kind === 'notice' && <Notice lead={b.lead} variant={b.variant}><Rich text={b.text} lang={lang} /></Notice>}
             {b.kind === 'link' && <Button class="home-link" variant="secondary" href={localize(b.link.href, lang)}>{b.link.label}</Button>}
             {b.kind === 'split' && (
-              <div class="home-split">
+              <div class:list={[b.side.kind === 'table' ? 'home-stack' : 'home-split']}>
                 <div class="home-block">
-                  {b.paras.map((t) => hasClaims(t)
-                    ? <div class="rt-para" role="paragraph"><Rich text={t} lang={lang} /></div>
-                    : <p class="rt-para"><Rich text={t} lang={lang} /></p>)}
+                  {b.paras.map((t) => <Para text={t} lang={lang} />)}
                 </div>
                 <ProductLeaf block={b.side} lang={lang} />
               </div>
@@ -127,7 +122,7 @@ const numbered = page.sections.map((s) => ({
     ? (
       <Section id={page.closing.id} title={nbsp(page.closing.title)}>
         <div class="home-stack">
-          <div class="home-block"><p class="rt-para"><Rich text={page.closing.text} lang={lang} /></p></div>
+          <div class="home-block"><Para text={page.closing.text} lang={lang} /></div>
           <ActionRow actions={page.closing.actions} lang={lang} />
         </div>
       </Section>

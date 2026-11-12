@@ -1,7 +1,7 @@
 import type { PageContent } from '../../types';
 
 /** Wörtlich aus docs/copy/produkt-betrieb-de.md. */
-export const BETRIEB: PageContent = {
+export const betrieb: PageContent = {
   meta: {
     title: 'Betrieb – Tickets, SLAs, Monitoring, Workflows',
     description:

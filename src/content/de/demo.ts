@@ -1,7 +1,7 @@
 import type { Action, Rich, ShotRef } from '../types';
 
 /** Texte der Seite „Live-Demo“, wörtlich aus docs/copy/demo-de.md. Die Zugangsdaten kommen aus src/data/links.ts (LINKS). */
-export const DEMO = {
+export const demo = {
   meta: {
     title: 'Live-Demo – Reticora ausprobieren',
     description:

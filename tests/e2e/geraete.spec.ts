@@ -116,3 +116,63 @@ test('Verweise: Discovery und Kontakt', async ({ page }) => {
   await expect(page.locator('#profile').getByRole('link', { name: 'Kontakt' })).toHaveAttribute('href', '/kontakt/');
   await expect(page.locator('#abschluss').getByText('Angebot nur für Unternehmen.')).toBeVisible();
 });
+
+test('Sprungmarken je Kategorie über der Tabelle (Ä-17): Liste mit Ankern, jede Kategorie hat eine Kennung und eine Überschrift', async ({ browser }) => {
+  const ctx = await browser.newContext({ javaScriptEnabled: false });
+  const page = await ctx.newPage();
+  await page.goto('/geraete/');
+  const nav = page.getByRole('navigation', { name: 'Zu einer Kategorie springen' });
+  await expect(nav).toBeVisible();
+  const links = nav.getByRole('link');
+  expect((await links.allTextContents()).map(norm)).toEqual(CATEGORIES.map(([c, l]) => `${l} (${inCategory(c)})`));
+  const table = page.locator('main table');
+  const [nb, tb] = [await nav.boundingBox(), await table.boundingBox()];
+  expect(nb!.y + nb!.height).toBeLessThanOrEqual(tb!.y);
+  for (const [cat, label] of CATEGORIES) {
+    await expect(page.locator(`a[href="#kategorie-${cat}"]`)).toHaveCount(1);
+    const body = page.locator(`tbody#kategorie-${cat}`);
+    await expect(body).toHaveCount(1);
+    await expect(body.locator('th[scope="rowgroup"]')).toHaveText(label);
+  }
+  // Der Anker führt ohne JavaScript zur Gruppe.
+  await page.locator('a[href="#kategorie-power"]').click();
+  await expect(page).toHaveURL(/#kategorie-power$/);
+  await expect(page.locator('tbody#kategorie-power')).toBeInViewport();
+  await ctx.close();
+});
+
+test('mit JavaScript ersetzt der Filter die Sprungmarken', async ({ page }) => {
+  await page.goto('/geraete/');
+  await expect(page.getByRole('group', { name: 'Kategorie' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Zu einer Kategorie springen' })).toBeHidden();
+});
+
+test('Seite und Tabelle bleiben auch mit der Ersatzschrift ohne Webfonts bei 320 px im Rahmen', async ({ page }) => {
+  // Auf GitHubs Chromium sprengte der nicht umbrechbare Verweisknopf „Protokolle und Ablauf der Discovery“ die Seite.
+  await page.route('**/*.woff2', (route) => route.abort());
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto('/geraete/');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+  const btn = await page.getByRole('link', { name: 'Protokolle und Ablauf der Discovery' }).boundingBox();
+  expect(btn!.x + btn!.width).toBeLessThanOrEqual(320);
+  expect(btn!.height).toBeGreaterThan(44);
+  // Der Scrollrahmen hält die Tabelle, sein Hinweis steht darüber; lange Zellen dürfen umbrechen.
+  const frame = page.locator('.rt-table-wrap');
+  expect(await frame.evaluate((e) => e.getBoundingClientRect().right)).toBeLessThanOrEqual(320);
+  await expect(page.locator('.dev-table .rt-table-hint')).toBeVisible();
+  const wraps = await page.locator('main table td').evaluateAll((els) => els.map((e) => getComputedStyle(e).overflowWrap));
+  expect(new Set(wraps)).toEqual(new Set(['break-word']));
+});
+
+test('der Beleg der Gerätefamilien steht unter der Ergebniszeile, nicht am rechten Rand', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/geraete/');
+  const [count, beleg, root] = await Promise.all([
+    page.locator('.dev-count').boundingBox(),
+    page.locator('#familien > .rt-container [data-claim="C-08"]').boundingBox(),
+    page.locator('#familien .rt-container').boundingBox(),
+  ]);
+  expect(beleg!.y).toBeGreaterThan(count!.y);
+  expect(beleg!.x).toBe(count!.x);
+  expect(beleg!.x + beleg!.width).toBeLessThan(root!.x + root!.width / 2);
+});

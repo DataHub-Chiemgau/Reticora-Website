@@ -4,6 +4,8 @@ if (f) {
   const out = f.querySelector('[aria-live]')!;
   const bodies = [...document.querySelectorAll<HTMLElement>('tbody[data-cat]')];
   g.hidden = false;
+  // Mit dem Filter braucht es die Sprungmarken nicht mehr.
+  document.querySelector<HTMLElement>('.dev-jump')!.hidden = true;
   g.addEventListener('click', (e) => {
     const b = (e.target as Element).closest('button');
     if (!b) return;

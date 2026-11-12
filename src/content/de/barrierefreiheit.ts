@@ -1,6 +1,6 @@
 /** Texte der Seite „Barrierefreiheit“, wörtlich aus docs/copy/barrierefreiheit-de.md.
  *  Der Kontaktweg am Ende ist ein Platzhalter (`ui(lang).placeholders.a11yContact`). */
-export const BARRIEREFREIHEIT_DE = {
+export const barrierefreiheit = {
   meta: {
     title: 'Barrierefreiheit – Reticora',
     description: 'Wie wir diese Website auf Barrierefreiheit prüfen, welche Kontraste gelten, was bekannt eingeschränkt ist und wie Sie uns Hinweise geben.',

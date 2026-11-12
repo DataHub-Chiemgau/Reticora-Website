@@ -46,18 +46,28 @@ const plain = (v: string) => v.replace(/ /g, ' ');
                 <th scope="col" class="num">{H.cis}</th>
                 <th scope="col" class="num">{H.collectors}</th>
                 <th scope="col" class="num">{H.users}</th>
+                <th scope="col"><span class="sr-only">{H.claims}</span></th>
               </tr>
             </thead>
             <tbody>
               {C.pakete.rows.map((r) => (
                 <tr data-plan={r.id}>
-                  <th scope="row"><span class="rt-tarif">{r.name}<small>{r.summary}</small></span></th>
+                  <th scope="row">
+                    <span class="rt-tarif">{r.name}<small>{r.summary}</small></span>
+                    <div class="price-action">
+                      {r.enterprise
+                        ? <Button variant="secondary" href={localize('/kontakt/', lang) + `?topic=${C.pakete.contact.topic}`} aria-label={`${C.pakete.contact.label}: ${r.name}`}>{C.pakete.contact.label}</Button>
+                        : <Button variant="primary" href={LINKS.signup} aria-label={`${UI.actions.trial}: ${r.name}`}>{UI.actions.trial}</Button>}
+                    </div>
+                  </th>
                   <td class="num" data-label={H.monthly} data-col="monthly">{r.monthly}</td>
                   <td class="num" data-label={H.yearly} data-col="yearly">{r.yearly}</td>
                   <td class="num rt-beta" data-label={H.beta} data-col="beta">{r.beta}</td>
                   <td class="num" data-label={H.cis} data-col="cis">{r.cis}</td>
                   <td class="num" data-label={H.collectors} data-col="collectors">{r.collectors}</td>
                   <td class="num" data-label={H.users} data-col="users">{r.users}</td>
+                  {/* Belege der Zeile (Preise und Limits, bei Enterprise der Betrieb); in einer Zelle, ein details darf nicht in th stehen. */}
+                  <td class="price-claims" data-col="claims"><div>{r.claims.map((c) => <Beleg claim={c} lang={lang} />)}</div></td>
                 </tr>
               ))}
             </tbody>
@@ -67,7 +77,6 @@ const plain = (v: string) => v.replace(/ /g, ' ');
       <div class="rt-notice price-beta" data-beta>
         <div role="paragraph"><b>{C.pakete.beta.lead}</b>{' '}<Rich text={C.pakete.beta.text} lang={lang} /></div>
       </div>
-      <div class="price-claim"><Beleg claim={C.pakete.claim} lang={lang} /></div>
     </div>
   </Section>
 
@@ -87,14 +96,16 @@ const plain = (v: string) => v.replace(/ /g, ' ');
               {C.funktionen.rows.map((f) => (
                 <tr data-feature={f.id}>
                   <th scope="row">{f.label}</th>
-                  {PLANS.map((p) => {
+                  {PLANS.map((p, n) => {
                     const v = f.plans[p.id];
+                    const rowClaim = n === PLANS.length - 1 ? C.funktionen.rowClaims[f.id] : undefined;
                     return (
                       <td>
                         {v === true && <><span aria-hidden="true" class="rt-yes">✓</span><span class="sr-only">{UI.matrix.yes}</span></>}
                         {v === false && <><span aria-hidden="true" class="rt-no">–</span><span class="sr-only">{UI.matrix.no}</span></>}
                         {v === '∞' && <><span aria-hidden="true" class="rt-yes">∞</span><span class="sr-only">{UI.matrix.unlimited}</span></>}
                         {typeof v === 'string' && v !== '∞' && plain(v)}
+                        {rowClaim && <>{' '}<Beleg claim={rowClaim} lang={lang} /></>}
                       </td>
                     );
                   })}
@@ -106,7 +117,7 @@ const plain = (v: string) => v.replace(/ /g, ' ');
       </div>
       <div id="funktionen-beschreibung" class="price-legend">
         <p class="home-caption">{C.funktionen.legend}</p>
-        <p class="home-caption">{C.funktionen.caption}</p>
+        <Para class="home-caption" text={C.funktionen.caption} lang={lang} />
       </div>
     </div>
   </Section>
@@ -126,14 +137,14 @@ const plain = (v: string) => v.replace(/ /g, ' ');
   </Section>
 
   <Section id={C.fragen.id} title={C.fragen.title}>
-    <div class="price-faq">
+    <dl class="price-faq">
       {C.fragen.items.map((i) => (
-        <details>
-          <summary>{i.q}</summary>
-          <div class="price-answer"><Para text={i.a} lang={lang} /></div>
-        </details>
+        <div>
+          <dt>{i.q}</dt>
+          <dd class="price-answer"><Para text={i.a} lang={lang} /></dd>
+        </div>
       ))}
-    </div>
+    </dl>
   </Section>
 
   <Cta lang={lang} />

@@ -1,7 +1,7 @@
 import type { PageContent } from '../../types';
 
 /** Wörtlich aus docs/copy/produkt-api-de.md. Ein Verweis auf eine öffentliche API-Referenz folgt erst, wenn es sie gibt (F-15). */
-export const API: PageContent = {
+export const api: PageContent = {
   meta: {
     title: 'REST-API, Webhooks und Export – Reticora',
     description:

@@ -4,7 +4,7 @@ import type { ClaimId } from '../../data/types';
 export interface Row { term: string; value: string; claim: ClaimId }
 export interface Item { title: string; text: string; claim: ClaimId }
 
-export const HOME = {
+export const home = {
   meta: {
     title: 'Reticora – die CMDB, die Ihr Netz selbst ausliest',
     description:

@@ -67,8 +67,8 @@ die Seite liest sie von dort. Alle Preise netto, zuzüglich Mehrwertsteuer.
 - **Hinweis auf schmalen Bildschirmen:** „Die Tabelle lässt sich seitlich
   verschieben.“
 - **Bildunterschrift (`caption`):** Funktionen je Paket. Enterprise Shared
-  und Enterprise Local haben denselben Umfang; sie unterscheiden sich im
-  Betrieb.
+  und Enterprise Local unterscheiden sich im Betrieb. [C-21]
+- **Beleg je Zeile mit Zahlen:** Dokumentenspeicher [C-60].
 
 ## 3. Zusatzkosten
 
@@ -96,7 +96,7 @@ die Seite liest sie von dort. Alle Preise netto, zuzüglich Mehrwertsteuer.
 ## 5. Fragen
 
 - **Überschrift:** Fragen zu Preisen und Paketen
-- **Form:** Liste aus `details`-Elementen; Frage als `summary`.
+- **Form:** immer geöffnete Liste (Frage als Fettzeile, Antwort darunter), damit alle Antworten im Druck stehen.
 
 | Frage | Antwort | Claim |
 |---|---|---|
@@ -105,7 +105,7 @@ die Seite liest sie von dort. Alle Preise netto, zuzüglich Mehrwertsteuer.
 | Was passiert nach dem Test? | Ihre CMDB bleibt nach dem Ende des Tests 30 Tage erhalten. Wählen Sie in dieser Zeit ein Paket, arbeiten Sie mit allen Daten weiter; sonst wird sie gelöscht. | C-22 |
 | Was passiert, wenn ich in ein kleineres Paket wechsle? | Sie verlieren keine Daten. CIs über dem Limit des neuen Pakets werden als zusätzliche CIs berechnet. Funktionen, die das neue Paket nicht enthält, werden gesperrt; ihre Daten bleiben erhalten. | C-22, C-94 |
 | Wie funktioniert der Beta-Rabatt? | In den ersten sechs Monaten zahlen Sie 20 % weniger, in den folgenden sechs Monaten 10 % weniger, danach den vollen Preis. Zahlen Sie jährlich im Voraus, gilt im ersten Jahr der Preis der Spalte „erstes Beta-Jahr“. | C-21 |
-| Was unterscheidet Enterprise Shared und Enterprise Local? | Der Funktionsumfang ist gleich. Enterprise Shared läuft in der Cloud auf getrennter Infrastruktur. Enterprise Local wird bei Ihnen gehostet; der Preis enthält alle Arbeiten dafür. | C-92 |
+| Was unterscheidet Enterprise Shared und Enterprise Local? | Enterprise Shared läuft in der Cloud auf getrennter Infrastruktur. Enterprise Local wird bei Ihnen gehostet; der Preis enthält alle Arbeiten dafür. | C-92 |
 | Was kosten IGA und der KI-Assistent? | Beide Add-ons sind zu jedem Paket zubuchbar. Den Preis nennen wir auf Anfrage. | – |
 | Können Privatpersonen Reticora buchen? | Nein. Das Angebot richtet sich nur an Unternehmen. Alle Preise verstehen sich zuzüglich Mehrwertsteuer. | – |
 

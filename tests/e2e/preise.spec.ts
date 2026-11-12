@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test';
+import { ui } from '../../src/i18n';
+import { LINKS } from '../../src/data/links';
 import { BETA, EXTRAS, FEATURES, PLANS } from '../../src/data/pricing';
 
 const norm = (s: string) => s.replace(/ /g, ' ').replace(/\s+/g, ' ').trim();
@@ -22,8 +24,8 @@ test('Titel, Beschreibung, h1, h2 und Fragen wie im Textdokument', async ({ page
   );
   await expect(page.locator('h1')).toHaveText('Pakete und Preise');
   expect((await page.locator('main h2').allTextContents()).map(norm)).toEqual(H2);
-  await expect(page.locator('.price-faq > details')).toHaveCount(8);
-  expect((await page.locator('.price-faq > details > summary').allTextContents()).map(norm)).toEqual([
+  await expect(page.locator('.price-faq > div')).toHaveCount(8);
+  expect((await page.locator('.price-faq dt').allTextContents()).map(norm)).toEqual([
     'Was zählt als CI?',
     'Was passiert über dem Limit?',
     'Was passiert nach dem Test?',
@@ -39,7 +41,7 @@ test('Pakettabelle: jede Zahl stammt aus PLANS', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/preise/');
   const table = page.locator('table.price-plans');
-  expect((await table.locator('thead th').allTextContents()).map(norm)).toEqual(['Paket', 'im Monat', 'im Jahr', 'erstes Beta-Jahr', 'CIs', 'Collectors', 'Nutzer']);
+  expect((await table.locator('thead th').allTextContents()).map(norm)).toEqual(['Paket', 'im Monat', 'im Jahr', 'erstes Beta-Jahr', 'CIs', 'Collectors', 'Nutzer', 'Belege']);
   await expect(table.locator('tbody tr')).toHaveCount(PLANS.length);
   for (const p of PLANS) {
     const row = table.locator(`tr[data-plan="${p.id}"]`);
@@ -75,7 +77,7 @@ test('Paketmatrix: eine Zeile je FEATURES-Eintrag mit Zeilenkopf, Textwerte stat
   await expect(table.locator('tbody th[scope="row"]')).toHaveCount(FEATURES.length);
   for (const f of FEATURES) {
     const row = table.locator(`tr[data-feature="${f.id}"]`);
-    await expect(row.locator('th[scope="row"]')).toHaveText(f.label.de);
+    await expect(row.locator('th[scope="row"]')).toContainText(f.label.de);
     for (const [i, p] of PLANS.entries()) {
       const text = norm(await row.locator('td').nth(i).innerText());
       const v = f.plans[p.id];
@@ -87,7 +89,7 @@ test('Paketmatrix: eine Zeile je FEATURES-Eintrag mit Zeilenkopf, Textwerte stat
     }
   }
   await expect(page.getByText('✓ enthalten · – nicht enthalten · ∞ unbegrenzt · Add-on: zu jedem Paket zubuchbar, Preis auf Anfrage')).toBeVisible();
-  await expect(page.getByText('Funktionen je Paket. Enterprise Shared und Enterprise Local haben denselben Umfang; sie unterscheiden sich im Betrieb.')).toBeVisible();
+  await expect(page.getByText('Funktionen je Paket. Enterprise Shared und Enterprise Local unterscheiden sich im Betrieb.')).toBeVisible();
 });
 
 test('Zusatzkosten aus EXTRAS', async ({ page }) => {
@@ -98,18 +100,83 @@ test('Zusatzkosten aus EXTRAS', async ({ page }) => {
   expect(norm(await specs.nth(1).innerText())).toContain(`je Monitoring-Service ${eur(EXTRAS.perMonitoringServiceMonthly)} im Monat`);
   expect(norm(await specs.nth(2).innerText())).toContain('Add-ons IGA und KI-Assistent auf Anfrage');
   await expect(page.locator('#zusatzkosten').getByText('Alle Beträge zzgl. MwSt.')).toBeVisible();
-  const faq = norm(await page.locator('.price-faq > details').nth(1).textContent() ?? '');
+  const faq = norm(await page.locator('.price-faq > div').nth(1).textContent() ?? '');
   expect(faq).toContain(`Jedes CI über dem Limit Ihres Pakets kostet ${eur(EXTRAS.perCiMonthly)} im Monat.`);
 });
 
-test('Fragen: details öffnen die Antwort; Test-Abschnitt mit Knopf', async ({ page }) => {
+test('Fragen: eine immer geöffnete Liste, alle Antworten stehen im Text; Test-Abschnitt mit Knopf', async ({ page }) => {
   await page.goto('/preise/');
-  const first = page.locator('.price-faq > details').first();
-  await expect(first.locator('.price-answer')).toBeHidden();
-  await first.locator(':scope > summary').click();
-  await expect(first.locator('.price-answer')).toBeVisible();
-  await expect(first.locator('.price-answer')).toContainText('Ein CI ist ein Eintrag in der CMDB');
+  await expect(page.locator('.price-faq > details')).toHaveCount(0);
+  const answers = page.locator('.price-faq dd');
+  await expect(answers).toHaveCount(8);
+  for (const a of await answers.all()) await expect(a).toBeVisible();
+  await expect(answers.first()).toContainText('Ein CI ist ein Eintrag in der CMDB');
   await expect(page.locator('#test').getByRole('link', { name: '30 Tage testen' })).toBeVisible();
+});
+
+test('„denselben Umfang“ steht nirgends auf der Seite (C-92 trägt ihn nicht)', async ({ page }) => {
+  await page.goto('/preise/');
+  const text = norm(await page.locator('main').textContent() ?? '');
+  expect(text).not.toContain('denselben Umfang');
+  expect(text).not.toContain('Funktionsumfang ist gleich');
+  expect(text).toContain('Enterprise Shared läuft in der Cloud auf getrennter Infrastruktur.');
+});
+
+test('Belege: C-21 und bei Enterprise C-92 an den Paketzeilen, C-60 an der Speicherzeile, C-21 an der Matrix', async ({ page }) => {
+  await page.goto('/preise/');
+  for (const p of PLANS) {
+    const claims = await page.locator(`table.price-plans tr[data-plan="${p.id}"] td.price-claims [data-claim]`).evaluateAll((els) => els.map((e) => e.getAttribute('data-claim')));
+    expect(claims, p.id).toEqual(p.from ? ['C-21', 'C-92'] : ['C-21']);
+  }
+  await expect(page.locator('tr[data-feature="storage"] td:last-child [data-claim="C-60"]')).toHaveCount(1);
+  await expect(page.locator('.price-matrix-box [data-claim]')).toHaveCount(1);
+  await expect(page.locator('#funktionen-beschreibung [data-claim="C-21"]')).toHaveCount(1);
+  // kein Beleg allein unter dem Hinweisband
+  await expect(page.locator('.price-claim')).toHaveCount(0);
+  await expect(page.locator('#pakete [data-claim="C-21"]')).toHaveCount(PLANS.length + 1);
+});
+
+test('ein Knopf je Paket: „30 Tage testen“ für Essentials bis Pro, „Kontakt aufnehmen“ mit Anliegen Enterprise', async ({ page }) => {
+  await page.goto('/preise/');
+  for (const p of PLANS) {
+    const link = page.locator(`table.price-plans tr[data-plan="${p.id}"] th .price-action a`);
+    await expect(link).toHaveCount(1);
+    if (p.from) {
+      await expect(link).toHaveText('Kontakt aufnehmen');
+      await expect(link).toHaveAttribute('href', '/kontakt/?topic=enterprise');
+      await expect(link).toHaveAttribute('aria-label', `Kontakt aufnehmen: ${p.name}`);
+    } else {
+      await expect(link).toHaveText('30 Tage testen');
+      await expect(link).toHaveAttribute('href', LINKS.signup);
+      await expect(link).toHaveAttribute('aria-label', `${ui('de').actions.trial}: ${p.name}`);
+    }
+  }
+});
+
+test('die Pakettabelle passt ab 1024 px ohne seitliches Scrollen in ihren Rahmen, darunter steht je Paket ein Block; auch ohne Webfonts', async ({ page }) => {
+  await page.route('**/*.woff2', (route) => route.abort());
+  for (const width of [1024, 1100, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/preise/');
+    const fits = await page.locator('#pakete .rt-table-wrap').evaluate((e) => e.scrollWidth <= e.clientWidth);
+    expect(fits, `${width} px`).toBe(true);
+  }
+  for (const width of [768, 1000]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/preise/');
+    expect(await page.locator('table.price-plans tbody tr').first().evaluate((e) => getComputedStyle(e).display), `${width} px`).toBe('block');
+    expect(await page.locator('#pakete .rt-table-wrap').evaluate((e) => e.scrollWidth <= e.clientWidth), `${width} px`).toBe(true);
+  }
+});
+
+test('bei 360 px stehen die Knöpfe je Paket in der Karte, mindestens 44 px hoch und im Bild', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto('/preise/');
+  for (const a of await page.locator('table.price-plans th .price-action a').all()) {
+    const box = await a.boundingBox();
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(360);
+  }
 });
 
 test('bei 360 px sind alle Preise sichtbar, ohne waagerechtes Scrollen der Seite', async ({ page }) => {
@@ -147,4 +214,9 @@ test('Druckansicht: helles Thema, ohne Navigation und Abschlussband', async ({ p
   await expect(page.locator('table.price-matrix')).toBeVisible();
   const breaks = await page.locator('.price-matrix tr').evaluateAll((els) => els.every((e) => getComputedStyle(e).breakInside === 'avoid'));
   expect(breaks).toBe(true);
+  // Geschlossene Belege fallen im Druck weg, auch in der Pakettabelle.
+  for (const b of await page.locator('table.price-plans .rt-beleg').all()) await expect(b).toBeHidden();
+  // Alle Antworten der Fragenliste stehen im Druck.
+  for (const a of await page.locator('.price-faq dd').all()) await expect(a).toBeVisible();
+  await expect(page.locator('.price-faq dd').first()).toContainText('Ein CI ist ein Eintrag in der CMDB');
 });
