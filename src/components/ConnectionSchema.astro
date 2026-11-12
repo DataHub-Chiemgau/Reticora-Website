@@ -1,20 +1,11 @@
 ---
 import type { Lang } from '../data/types';
-import { HOME } from '../content/de/home';
+import { SCHEMA } from '../content/schema';
 
 interface Props { lang: Lang; id?: string }
 const { lang, id = `verbindung-${lang}` } = Astro.props;
 
-const T = lang === 'de'
-  ? HOME.schema.de
-  : {
-      net: 'Your network',
-      cloud: 'Reticora (EU)',
-      collector: 'Collector',
-      devices: 'Devices',
-      title: 'Connection direction of the collector',
-      desc: 'On the left the area “Your network” with four devices and the collector, on the right the area “Reticora (EU)”. Two lines run from the collector to the right: HTTPS 443 and NATS mTLS 4222. There is no line from right to left.',
-    };
+const T = SCHEMA[lang];
 const devices = [76, 116, 156, 196];
 ---
 

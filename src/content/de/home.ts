@@ -144,7 +144,4 @@ export const HOME = {
     text: 'Der Test umfasst den Standard-Umfang für bis zu 100 CIs. Sie legen ein Konto an, bestätigen Ihre E-Mail-Adresse und richten bei der ersten Anmeldung eine Authenticator-App ein. Nach dem Test bleibt Ihre CMDB 30 Tage erhalten.',
     claim: 'C-22' as ClaimId,
   },
-  schema: {
-    de: { net: 'Ihr Netz', cloud: 'Reticora (EU)', collector: 'Collector', devices: 'Geräte', title: 'Verbindungsrichtung des Collectors', desc: 'Links die Fläche „Ihr Netz“ mit vier Geräten und dem Collector, rechts die Fläche „Reticora (EU)“. Zwei Linien führen vom Collector nach rechts: HTTPS 443 und NATS mTLS 4222. Es gibt keine Linie von rechts nach links.' },
-  },
 } as const;

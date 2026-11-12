@@ -70,7 +70,7 @@ test('Platzhalter S-02, S-03, S-04, S-05, S-06, S-18 vorhanden; Abb. 1 bis 7 in 
   const ids = await page.locator('main .rt-slot-label b').allTextContents();
   expect(ids).toEqual(['S-02', 'S-03', 'S-04', 'S-05', 'S-06', 'S-18']);
   const figs = await page.locator('main figcaption b').allTextContents();
-  expect(figs).toEqual([1, 2, 3, 4, 5, 6, 7].map((n) => `Abb. ${n}`));
+  expect(figs).toEqual([1, 2, 3, 4, 5, 6, 7].map((n) => `Abb. ${n} ·`));
   await expect(page.locator('main figure').nth(0)).toContainText('Der Collector verbindet sich nach außen: HTTPS 443 und NATS mit mTLS 4222. Schemazeichnung.');
   await expect(page.locator('main figure').nth(4)).toContainText('Rack, Vorderseite.');
   await expect(page.locator('main figure .rt-slot--4x5')).toHaveCount(1);
@@ -173,4 +173,48 @@ test('ROUTES: Startseite gebaut, alle anderen geplant, Adressen eindeutig', () =
   expect(ROUTES.filter((r) => r.status === 'gebaut').length).toBe(1);
   expect(new Set(ROUTES.map((r) => r.de)).size).toBe(ROUTES.length);
   for (const p of ['/demo/', '/preise/', '/geraete/', '/sicherheit/', '/kontakt/']) expect(ROUTES.some((r) => r.de === p)).toBe(true);
+});
+
+test('Fußzeile fluchtet mit dem Inhalt; Zeile mit Pflichtangaben auf einer Mittellinie', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/');
+  const h1 = await page.locator('h1').evaluate((e) => e.getBoundingClientRect().left);
+  const cols = await page.locator('.rt-footer-cols').evaluate((e) => e.getBoundingClientRect().left);
+  expect(Math.abs(h1 - cols)).toBeLessThanOrEqual(0.5);
+  expect(h1).toBeGreaterThan(40);
+  const centres = await page.locator('.rt-footer-legal > *').evaluateAll((els) =>
+    els.map((e) => { const r = e.getBoundingClientRect(); return r.top + r.height / 2; }),
+  );
+  expect(centres.length).toBeGreaterThan(4);
+  // nur Elemente der ersten Zeile vergleichen
+  const first = centres.filter((c) => Math.abs(c - centres[0]) < 30);
+  for (const c of first) expect(Math.abs(c - first[0])).toBeLessThanOrEqual(1);
+});
+
+test('Bildunterschriften trennen Nummer und Text mit „·“', async ({ page }) => {
+  await page.goto('/');
+  const caps = await page.locator('main figcaption').allTextContents();
+  expect(caps).toHaveLength(7);
+  for (const c of caps) expect(c).toMatch(/^Abb\. \d ·\s*\S/);
+  expect(caps[0]).toBe('Abb. 1 ·Der Collector verbindet sich nach außen: HTTPS 443 und NATS mit mTLS 4222. Schemazeichnung.');
+});
+
+test('Startseite: keine fremden Anfragen, keine Cookies', async ({ page, context }) => {
+  const hosts = new Set<string>();
+  page.on('request', (r) => { const u = new URL(r.url()); if (u.protocol.startsWith('http')) hosts.add(u.host); });
+  await page.goto('/', { waitUntil: 'networkidle' });
+  await page.evaluate(() => document.fonts.ready);
+  expect([...hosts]).toEqual(['127.0.0.1:8080']);
+  expect(await context.cookies()).toEqual([]);
+});
+
+test('Belege hängen an der richtigen Aussage: Puffer an C-27, Limit an C-38', async ({ page }) => {
+  await page.goto('/');
+  const puffer = page.locator('main dl.rt-strip > div', { has: page.locator('dt', { hasText: 'Puffer' }) });
+  await puffer.locator('summary').click();
+  await expect(puffer.locator('.rt-beleg-body')).toContainText('Ohne Verbindung puffert der Collector bis zu 24 Stunden');
+  const limit = page.locator('#schnittstellen dl.rt-spec > div', { has: page.locator('dt', { hasText: 'Limit' }) });
+  await expect(limit.locator('dd')).toContainText('600 Anfragen je Minute und Schlüssel');
+  await limit.locator('summary').click();
+  await expect(limit.locator('.rt-beleg-body')).toContainText('Die API erlaubt 600 Anfragen je Minute und Schlüssel.');
 });

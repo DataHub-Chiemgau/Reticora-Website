@@ -11,6 +11,7 @@ const other = lang === 'de' ? { href: UI.lang.enHref, code: 'en' } : { href: UI.
 ---
 
 <footer class="rt-footer">
+  <div class="rt-container rt-footer-inner">
   <div class="rt-footer-cols">
     {f.columns.map((c) => (
       <div><h2>{c.title}</h2>{c.links.map((l) => <a href={l.href}>{l.label}</a>)}</div>
@@ -27,5 +28,6 @@ const other = lang === 'de' ? { href: UI.lang.enHref, code: 'en' } : { href: UI.
     {f.legal.map((l) => <a href={l.href}>{l.label}</a>)}
     <span>{UI.b2bShort}</span>
     <a href={other.href} lang={other.code} hreflang={other.code}>{lang === 'de' ? f.english : 'Deutsch'}</a>
+  </div>
   </div>
 </footer>
