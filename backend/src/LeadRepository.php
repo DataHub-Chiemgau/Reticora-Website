@@ -12,6 +12,7 @@ final class LeadRepository
     public const PENDING = 'pending';
     public const DELIVERED = 'delivered';
     public const NOT_DELIVERED = 'not_delivered';
+    public const HELD = 'held';
 
     public function __construct(private readonly PDO $pdo)
     {
@@ -50,5 +51,18 @@ final class LeadRepository
         $stmt->execute([':id' => $id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row === false ? null : $row;
+    }
+
+    /**
+     * Noch nicht zugestellte Anfragen (held, not_delivered), älteste zuerst.
+     * @return list<array<string,mixed>>
+     */
+    public function undelivered(int $limit): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM lead WHERE delivery IN (:a, :b) ORDER BY id ASC LIMIT ' . max(1, $limit)
+        );
+        $stmt->execute([':a' => self::HELD, ':b' => self::NOT_DELIVERED]);
+        return array_values($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 }

@@ -81,14 +81,25 @@ final class ContactPageTest extends TestCase
         self::assertSame('en', $x->query('//html')->item(0)->getAttribute('lang'));
     }
 
-    public function testCodeWithoutFieldUsesTheGenericLineWithoutLink(): void
+    public function testCodeWithoutFieldIsNotListedAsSomethingToFix(): void
     {
         $html = (new ContactPage(self::DIR))->render('de', ['lang' => 'lang.invalid'], $this->input(['lang' => 'fr']));
-        $x = $this->dom((string) $html);
-        $items = $x->query('//div[@id="form-summary"]//li');
-        self::assertSame(1, $items->length);
-        self::assertSame('Das Formular wurde nicht gesendet. Bitte prüfen Sie Ihre Angaben.', $items->item(0)->textContent);
-        self::assertSame(0, $x->query('//div[@id="form-summary"]//a')->length);
+        $x = $this->dom($html);
+        self::assertSame(0, $x->query('//div[@id="form-summary"]//li')->length);
+        self::assertSame('Das Formular wurde nicht gesendet. Bitte prüfen Sie Ihre Angaben.', $x->query('//p[@id="form-summary-title"]')->item(0)->textContent);
+        // zusammen mit einem Feldfehler: nur der Feldfehler wird gezählt und aufgelistet
+        $html = (new ContactPage(self::DIR))->render('de', ['name' => 'name.required', 'lang' => 'lang.invalid'], $this->input(['name' => '', 'lang' => 'fr']));
+        $x = $this->dom($html);
+        self::assertSame('Bitte korrigieren Sie 1 Angabe.', $x->query('//p[@id="form-summary-title"]')->item(0)->textContent);
+        self::assertSame(1, $x->query('//div[@id="form-summary"]//li')->length);
+    }
+
+    public function testPageTitleGetsAnErrorPrefixInBothLanguages(): void
+    {
+        $de = $this->dom((string) (new ContactPage(self::DIR))->render('de', ['name' => 'name.required'], $this->input()));
+        self::assertSame('Fehler: Fixture', $de->query('//title')->item(0)->textContent);
+        $en = $this->dom((string) (new ContactPage(self::DIR))->render('en', ['name' => 'name.required'], $this->input(['lang' => 'en'])));
+        self::assertSame('Error: Fixture', $en->query('//title')->item(0)->textContent);
     }
 
     public function testInputsAreReinsertedVerbatim(): void

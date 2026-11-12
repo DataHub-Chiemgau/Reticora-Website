@@ -8,12 +8,11 @@ use Reticora\Lead\App;
 use Reticora\Lead\Config;
 use Reticora\Lead\ContactPage;
 use Reticora\Lead\Database;
-use Reticora\Lead\FileTransport;
 use Reticora\Lead\MailTransport;
-use Reticora\Lead\PhpMailerTransport;
 use Reticora\Lead\Request;
 use Reticora\Lead\Responder;
 use Reticora\Lead\Response;
+use Reticora\Lead\TransportFactory;
 
 ini_set('display_errors', '0');
 ini_set('html_errors', '0');
@@ -54,16 +53,7 @@ $log = static function (string $line) use ($logPath): void {
 };
 
 // Erst in App::handle() aufgerufen: eine Fehlkonfiguration ergibt dort das allgemeine 500 (nie einen nackten PHP-Fehler).
-$transportFactory = static function () use ($config): MailTransport {
-    if ($config->string('mail.transport', 'smtp') === 'file') {
-        // Nur lokale Tests: schreibt Personendaten in eine Datei.
-        if ($config->get('mail.allow_insecure') !== true) {
-            throw new InvalidArgumentException("mail.transport 'file' nur mit mail.allow_insecure");
-        }
-        return new FileTransport($config->string('mail.file_path'));
-    }
-    return PhpMailerTransport::fromConfig($config);
-};
+$transportFactory = static fn (): MailTransport => TransportFactory::fromConfig($config);
 $pdoFactory = static fn (): \PDO => Database::connect($config);
 $templates = new ContactPage($config->string('templates_dir') ?: $home . '/templates');
 

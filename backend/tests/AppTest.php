@@ -131,6 +131,8 @@ final class AppTest extends AppTestCase
         self::assertStringNotContainsString('<script', $r->body);
         self::assertStringNotContainsString('NICHT-ZURUECK', $r->body);
         self::assertContains('template_missing de', $this->logLines);
+        self::assertStringContainsString('<title>Fehler: ', $r->body);
+        self::assertStringNotContainsString('<h1>Fehler: ', $r->body);
     }
 
     public function testEmptyOrInvalidFormNeverEndsOnTheThankYouPage(): void
@@ -244,9 +246,9 @@ final class AppTest extends AppTestCase
     {
         $this->app = $this->makeApp(config: $this->config(['rate_limit' => ['max' => $configured, 'global_max' => 1000]]));
         for ($i = 0; $i < $effective; $i++) {
-            self::assertSame(422, $this->post(['lang' => 'de'], self::JSON)->status, "Anfrage $i");
+            self::assertSame(200, $this->post($this->validFields(), self::JSON)->status, "Anfrage $i");
         }
-        self::assertSame(429, $this->post(['lang' => 'de'], self::JSON)->status);
+        self::assertSame(429, $this->post($this->validFields(), self::JSON)->status);
     }
 
     public function testRateLimitResetsInNextHourWindow(): void
@@ -258,13 +260,63 @@ final class AppTest extends AppTestCase
         self::assertSame(200, $this->post($this->validFields(), self::JSON)->status);
     }
 
-    public function testRateLimitCountsInvalidAndHoneypotRequestsToo(): void
+    public function testInvalidSubmissionsDoNotCountTowardsThePerOriginLimit(): void
+    {
+        for ($i = 0; $i < 12; $i++) {
+            self::assertSame(422, $this->post($this->validFields(['name' => '']), self::JSON)->status, "Anfrage $i");
+            self::assertSame(422, $this->post($this->validFields(['email' => 'kaputt']))->status);
+        }
+        for ($i = 0; $i < 5; $i++) {
+            self::assertSame(200, $this->post($this->validFields(), self::JSON)->status, "gültig $i");
+        }
+        self::assertSame(429, $this->post($this->validFields(), self::JSON)->status);
+    }
+
+    public function testAnOriginOverTheLimitIsRejectedEvenForInvalidSubmissions(): void
+    {
+        for ($i = 0; $i < 5; $i++) {
+            $this->post($this->validFields(), self::JSON);
+        }
+        self::assertSame(429, $this->post($this->validFields(['name' => '']), self::JSON)->status);
+        self::assertSame(429, $this->post(['lang' => 'de'])->status);
+    }
+
+    public function testHoneypotRequestsCountTowardsThePerOriginLimit(): void
     {
         for ($i = 0; $i < 4; $i++) {
-            $this->post($this->validFields(['name' => '']), self::JSON);
+            $this->post($this->validFields(), self::JSON);
         }
         $this->post($this->validFields(['website' => 'x']), self::JSON);
         self::assertSame(429, $this->post($this->validFields(), self::JSON)->status);
+    }
+
+    public function testPrefix48TierLimitsAnAttackerSpreadOverMany64Networks(): void
+    {
+        // max 5 je /64, also höchstens 15 je /48. 15 verschiedene /64 im selben /48 (je 1 Anfrage) sind noch in Ordnung.
+        for ($i = 1; $i <= 15; $i++) {
+            self::assertSame(200, $this->post($this->validFields(), self::JSON, sprintf('2001:db8:aa:%x::1', $i))->status, "Netz $i");
+        }
+        $r = $this->post($this->validFields(), self::JSON, '2001:db8:aa:ff::1');
+        self::assertSame(429, $r->status);
+        self::assertArrayHasKey('Retry-After', $r->headers);
+        // auch ungültige Absendungen aus diesem /48 werden abgewiesen
+        self::assertSame(429, $this->post(['lang' => 'de'], self::JSON, '2001:db8:aa:100::1')->status);
+        // anderes /48 und IPv4 bleiben frei
+        self::assertSame(200, $this->post($this->validFields(), self::JSON, '2001:db8:bb:1::1')->status);
+        self::assertSame(200, $this->post($this->validFields(), self::JSON, '203.0.113.9')->status);
+    }
+
+    public function testPrefix48IsHashedLikeTheOtherKeys(): void
+    {
+        $this->post($this->validFields(), self::JSON, '2001:db8:abcd:12::77');
+        $hashes = $this->pdo->query("SELECT hash FROM rate_limit WHERE hash <> 'global'")->fetchAll(PDO::FETCH_COLUMN);
+        self::assertCount(2, $hashes); // /64 und /48
+        foreach ($hashes as $h) {
+            self::assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $h);
+        }
+        self::assertSame('2001:db8:abcd::/48', \Reticora\Lead\RateLimiter::prefix48('2001:db8:abcd:12::77'));
+        self::assertNull(\Reticora\Lead\RateLimiter::prefix48('203.0.113.7'));
+        self::assertNull(\Reticora\Lead\RateLimiter::prefix48('::ffff:203.0.113.7'));
     }
 
     public function testIpv6AddressesAreGroupedByTheir64Prefix(): void
@@ -314,12 +366,10 @@ final class AppTest extends AppTestCase
     {
         $this->pdo->exec("INSERT INTO rate_limit (hash, window_start, counter) VALUES ('alt', " . ($this->now - 3600) . ", 3)");
         $this->pdo->exec("INSERT INTO rate_limit (hash, window_start, counter) VALUES ('uralt', " . ($this->now - 90000) . ", 3)");
-        // Auch eine ungültige Anfrage räumt auf.
+        // Auch eine ungültige Anfrage räumt auf (und legt selbst keinen Zähler an).
         $this->post(['lang' => 'de'], self::JSON);
         $left = $this->pdo->query('SELECT hash FROM rate_limit ORDER BY hash')->fetchAll(PDO::FETCH_COLUMN);
-        self::assertNotContains('alt', $left);
-        self::assertNotContains('uralt', $left);
-        self::assertCount(1, $left);
+        self::assertSame([], $left);
     }
 
     public function testRateLimitKeyIsRandomAndOverwrittenDaily(): void
@@ -344,20 +394,13 @@ final class AppTest extends AppTestCase
 
     // ---- Obergrenze für alle Anfragen ----------------------------------------------------------------------
 
-    public function testGlobalCapDefaultsTo60AcceptedRequestsPerHour(): void
+    private function seedGlobal(int $count): void
     {
-        for ($i = 0; $i < 60; $i++) {
-            self::assertSame(200, $this->post($this->validFields(), self::JSON, '10.0.' . intdiv($i, 250) . '.' . ($i % 250))->status, "Anfrage $i");
-        }
-        $r = $this->post($this->validFields(), self::JSON, '10.9.9.9');
-        self::assertSame(429, $r->status);
-        self::assertArrayHasKey('Retry-After', $r->headers);
-        self::assertSame(60, $this->countLeads());
-        $this->now += 3600;
-        self::assertSame(200, $this->post($this->validFields(), self::JSON, '10.9.9.9')->status);
+        $window = intdiv($this->now, 3600) * 3600;
+        $this->pdo->exec("INSERT INTO rate_limit (hash, window_start, counter) VALUES ('global', $window, $count)");
     }
 
-    public function testGlobalCapCountsOnlyAcceptedRequestsAndAnswersLikeThePerOriginLimit(): void
+    public function testLeadsOverTheSoftCapAreHeldWithoutMailAndTheVisitorSeesSuccess(): void
     {
         $this->app = $this->makeApp(config: $this->config(['rate_limit' => ['global_max' => 2]]));
         // ungültig und Köderfeld zählen nicht zur Obergrenze
@@ -365,17 +408,62 @@ final class AppTest extends AppTestCase
         $this->post($this->validFields(['website' => 'x']), self::JSON, '10.1.0.2');
         self::assertSame(200, $this->post($this->validFields(), self::JSON, '10.1.0.3')->status);
         self::assertSame(200, $this->post($this->validFields(), self::JSON, '10.1.0.4')->status);
-        $json = $this->post($this->validFields(), self::JSON, '10.1.0.5');
-        self::assertSame(429, $json->status);
-        self::assertSame('{"ok":false}', $json->body);
-        $html = $this->post($this->validFields(), [], '10.1.0.6');
+        self::assertCount(2, $this->mail->sent);
+
+        $json = $this->post($this->validFields(['name' => 'Gehalten Eins']), self::JSON, '10.1.0.5');
+        self::assertSame(200, $json->status);
+        self::assertSame('{"ok":true}', $json->body);
+        $html = $this->post($this->validFields(['name' => 'Gehalten Zwei']), [], '10.1.0.6');
+        self::assertSame(303, $html->status);
+        self::assertSame('/kontakt/danke/', $html->headers['Location']);
+        $en = $this->post($this->validFields(['lang' => 'en']), [], '10.1.0.8');
+        self::assertSame('/en/contact/thanks/', $en->headers['Location']);
+
+        self::assertSame(5, $this->countLeads());
+        self::assertCount(2, $this->mail->sent, 'über der Obergrenze geht keine Mail hinaus');
+        self::assertSame(['delivered', 'delivered', 'held', 'held', 'held'], $this->pdo->query('SELECT delivery FROM lead ORDER BY id')->fetchAll(PDO::FETCH_COLUMN));
+        self::assertContains('lead_held id=3', $this->logLines);
+        // Eingabefehler werden weiterhin angezeigt.
+        self::assertSame(422, $this->post($this->validFields(['name' => '']), self::JSON, '10.1.0.7')->status);
+    }
+
+    public function testOnlyTheHardCeilingOf10TimesTheSoftCapAnswers429(): void
+    {
+        $this->app = $this->makeApp(config: $this->config(['rate_limit' => ['global_max' => 3]]));
+        $this->seedGlobal(29); // 30 = 10 × 3 sind noch erlaubt (gehalten), die 31. nicht
+        $r = $this->post($this->validFields(), self::JSON, '10.2.0.1');
+        self::assertSame(200, $r->status);
+        self::assertSame('held', $this->pdo->query('SELECT delivery FROM lead')->fetchColumn());
+        $r = $this->post($this->validFields(), self::JSON, '10.2.0.2');
+        self::assertSame(429, $r->status);
+        self::assertArrayHasKey('Retry-After', $r->headers);
+        self::assertSame('{"ok":false}', $r->body);
+        $html = $this->post($this->validFields(), [], '10.2.0.3');
         self::assertSame(429, $html->status);
         self::assertStringContainsString('kontakt@example.com', $html->body);
-        self::assertSame(2, $this->countLeads());
-        self::assertCount(2, $this->mail->sent);
-        self::assertContains('global_limit', $this->logLines);
-        // Eingabefehler werden auch über der Obergrenze noch angezeigt.
-        self::assertSame(422, $this->post($this->validFields(['name' => '']), self::JSON, '10.1.0.7')->status);
+        self::assertSame(1, $this->countLeads());
+        self::assertContains('global_ceiling', $this->logLines);
+        $this->now += 3600;
+        self::assertSame(200, $this->post($this->validFields(), self::JSON, '10.2.0.2')->status);
+    }
+
+    public function testOneAttackerSpreadOver16Networks64CannotLockOutARealVisitor(): void
+    {
+        // Frühere Lücke: 16 /64-Netze aus einem /56 füllten alle Plätze, der echte Besucher bekam 429.
+        $this->app = $this->makeApp(config: $this->config(['rate_limit' => ['global_max' => 10]]));
+        for ($n = 0; $n < 16; $n++) {
+            for ($i = 0; $i < 5; $i++) {
+                $this->post($this->validFields(), self::JSON, sprintf('2001:db8:77:%x::1', $n));
+            }
+        }
+        $real = $this->post($this->validFields(['name' => 'Echte Besucherin']), self::JSON, '198.51.100.20');
+        self::assertSame(200, $real->status);
+        self::assertSame(
+            'held',
+            $this->pdo->query("SELECT delivery FROM lead WHERE name = 'Echte Besucherin'")->fetchColumn(),
+        );
+        // Der Angreifer selbst ist am /48 hängengeblieben: höchstens 15 Anfragen aus dem /48 wurden gespeichert.
+        self::assertLessThanOrEqual(15, (int) $this->pdo->query("SELECT COUNT(*) FROM lead WHERE name <> 'Echte Besucherin'")->fetchColumn());
     }
 
     /** @return array<string,array{mixed,int}> */
@@ -389,10 +477,27 @@ final class AppTest extends AppTestCase
     {
         $this->app = $this->makeApp(config: $this->config(['rate_limit' => ['global_max' => $configured]]));
         // Zähler direkt vorbelegen statt tausend Anfragen
-        $window = intdiv($this->now, 3600) * 3600;
-        $this->pdo->exec("INSERT INTO rate_limit (hash, window_start, counter) VALUES ('global', $window, " . ($effective - 1) . ')');
+        $this->seedGlobal($effective - 1);
         self::assertSame(200, $this->post($this->validFields(), self::JSON, '10.2.0.1')->status);
-        self::assertSame(429, $this->post($this->validFields(), self::JSON, '10.2.0.2')->status);
+        self::assertCount(1, $this->mail->sent); // letzter Platz unter der weichen Grenze
+        self::assertSame(200, $this->post($this->validFields(), self::JSON, '10.2.0.2')->status);
+        self::assertCount(1, $this->mail->sent); // darüber: gehalten
+        self::assertSame('held', $this->pdo->query('SELECT delivery FROM lead ORDER BY id DESC LIMIT 1')->fetchColumn());
+    }
+
+    public function testRateLimitedNoticeIsNeutralInBothLanguages(): void
+    {
+        $this->seedGlobal(600);
+        $app = $this->makeApp(config: $this->config(['rate_limit' => ['global_max' => 60]]));
+        $this->app = $app;
+        $de = $this->post($this->validFields(), []);
+        self::assertSame(429, $de->status);
+        self::assertStringContainsString('Im Moment gehen sehr viele Anfragen ein. Bitte versuchen Sie es später noch einmal oder schreiben Sie uns direkt.', $de->body);
+        self::assertStringNotContainsString('Zu viele', $de->body);
+        $en = $this->post($this->validFields(['lang' => 'en']), []);
+        self::assertSame(429, $en->status);
+        self::assertStringContainsString('We are receiving a lot of inquiries right now. Please try again later or write to us directly.', $en->body);
+        self::assertStringNotContainsString('Too many', $en->body);
     }
 
     // ---- Anfrage-Prüfung -----------------------------------------------------------------------------------

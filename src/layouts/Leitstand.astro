@@ -16,8 +16,10 @@ interface Props {
   noindex?: boolean;
   /** Farbthema: Leitstand (dunkel, Standard) oder Dokument (hell, für Rechts- und Hinweisseiten). */
   theme?: 'leitstand' | 'dokument';
+  /** Nur Kontaktseite: Marke, an der das Lead-Backend bei Eingabefehlern „Fehler: “ vor den Titel setzt. */
+  titleMarker?: boolean;
 }
-const { title, description, lang, path, noindex = false, theme = 'leitstand' } = Astro.props;
+const { title, description, lang, path, noindex = false, theme = 'leitstand', titleMarker = false } = Astro.props;
 const T = ui(lang);
 const hideFromIndex = noindex || routeOf(path)?.noindex === true || process.env.RETICORA_RELEASE !== '1';
 ---
@@ -26,7 +28,7 @@ const hideFromIndex = noindex || routeOf(path)?.noindex === true || process.env.
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
+    {titleMarker ? <title data-rt="title">{title}</title> : <title>{title}</title>}
     <meta name="description" content={description} />
     <Seo title={title} description={description} lang={lang} path={path} noindex={hideFromIndex} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

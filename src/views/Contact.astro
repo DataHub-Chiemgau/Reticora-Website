@@ -22,7 +22,7 @@ const topics = (['demo', 'enterprise', 'security', 'other'] as const).map((v) =>
 const codes = Object.entries(F.errors).flatMap(([field, byCode]) => Object.keys(byCode).map((code) => [`${field}.${code}`, (byCode as Record<string, string>)[code]] as const));
 ---
 
-<Leitstand title={C.meta.title} description={C.meta.description} lang={lang} path={path}>
+<Leitstand title={C.meta.title} description={C.meta.description} lang={lang} path={path} titleMarker>
   <PageHero title={C.hero.h1} lead={C.hero.lead} />
 
   <div class="rt-section contact">

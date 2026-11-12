@@ -1,10 +1,22 @@
 <?php
 
-// Minimaler SMTP-Server für SmtpTransportTest. Aufruf: php fake_smtp_server.php <port> <ausgabedatei> [auth-fehler]
+// Minimaler SMTP-Server für PhpMailerTransportTest. Aufruf: php fake_smtp_server.php <port|0> <ausgabedatei> [fail-auth|trickle]
+// Port 0: das Betriebssystem vergibt den Port (kein Wettlauf zwischen Prüfen und Binden). Gemeldet wird "ready <port>"
+// erst, wenn der Server wirklich lauscht; scheitert das Binden, steht der Fehler auf STDERR und der Exit-Code ist 2.
 [, $port, $out] = $argv;
 $failAuth = ($argv[3] ?? '') === 'fail-auth';
-$srv = stream_socket_server("tcp://127.0.0.1:$port", $e, $s);
-fwrite(STDOUT, "ready\n");
+$srv = @stream_socket_server("tcp://127.0.0.1:$port", $e, $s);
+if ($srv === false) {
+    fwrite(STDERR, "bind fehlgeschlagen: $s ($e)\n");
+    exit(2);
+}
+$bound = (int) substr(strrchr((string) stream_socket_get_name($srv, false), ':'), 1);
+fwrite(STDOUT, "ready $bound\n");
+// Ergebnis erst in eine Hilfsdatei, dann umbenennen: der Leser sieht nie eine halbe Datei.
+$write = static function (string $json) use ($out): void {
+    file_put_contents($out . '.tmp', $json);
+    rename($out . '.tmp', $out);
+};
 $c = stream_socket_accept($srv, 10);
 $log = [];
 $send = function (string $l) use ($c): void { fwrite($c, $l . "\r\n"); };
@@ -13,7 +25,7 @@ if (($argv[3] ?? '') === 'trickle') {
         if (@fwrite($c, "220-trickle\r\n") === false) { break; }
         usleep(250_000);
     }
-    file_put_contents($out, json_encode(['log' => [], 'message' => '']));
+    $write(json_encode(['log' => [], 'message' => '']));
     exit;
 }
 $send('220 fake ESMTP');
@@ -36,4 +48,4 @@ while (($line = fgets($c)) !== false) {
     elseif ($cmd === 'QUIT') { $send('221 bye'); break; }
     else { $send('500 what'); }
 }
-file_put_contents($out, json_encode(['log' => $log, 'message' => $msg]));
+$write(json_encode(['log' => $log, 'message' => $msg]));

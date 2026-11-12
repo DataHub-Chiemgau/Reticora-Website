@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS lead (
     company     VARCHAR(200) NOT NULL,
     topic       VARCHAR(16) NOT NULL,
     message     TEXT NOT NULL,
-    delivery    VARCHAR(24) NOT NULL DEFAULT 'pending',   -- pending | delivered | not_delivered
+    delivery    VARCHAR(24) NOT NULL DEFAULT 'pending',   -- pending | delivered | not_delivered | held
     KEY idx_lead_created (created_at),
     KEY idx_lead_delivery (delivery)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

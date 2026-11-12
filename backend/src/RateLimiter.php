@@ -9,11 +9,13 @@ use PDOException;
 use RuntimeException;
 
 /**
- * Zwei Grenzen je festem Stundenfenster (Spec §6.2, Ä-07, Ä-10):
- * - je Herkunft höchstens `limit` Anfragen. Herkunft ist die IPv4-Adresse oder das /64-Präfix einer IPv6-Adresse.
+ * Drei Grenzen je festem Stundenfenster (Spec §6.2, Ä-07, Ä-10):
+ * - je Herkunft höchstens `limit` gültige Anfragen. Herkunft ist die IPv4-Adresse oder das /64-Präfix einer IPv6-Adresse.
+ * - je IPv6-/48-Präfix höchstens 3 × `limit` (Heimanschlüsse bekommen oft ein /56 oder /48 und damit viele /64-Netze).
  *   Gespeichert wird nur HMAC(Herkunft, zufälliger Tagesschlüssel aus RateLimitKey), nie die Adresse selbst.
- * - insgesamt höchstens `globalLimit` angenommene Anfragen (Zeile mit dem festen Schlüssel 'global').
- * Abgelaufene Fenster löscht purgeExpired() bei jedem Aufruf des Endpunkts und purge.php.
+ * - insgesamt `globalLimit` gültige Anfragen werden normal zugestellt; darüber werden sie nur gespeichert (held), und erst
+ *   bei 10 × `globalLimit` ist Schluss (Zeile mit dem festen Schlüssel 'global').
+ * Ungültige Eingaben zählen nicht. Abgelaufene Fenster löscht purgeExpired() bei jedem Aufruf des Endpunkts und purge.php.
  */
 final class RateLimiter
 {
@@ -21,6 +23,11 @@ final class RateLimiter
     public const GLOBAL_LIMIT = 60;
     public const WINDOW = 3600;
     public const GLOBAL_KEY = 'global';
+    public const PREFIX_FACTOR = 3;
+    public const HARD_FACTOR = 10;
+    public const OK = 'ok';
+    public const HELD = 'held';
+    public const REJECTED = 'rejected';
 
     public function __construct(
         private readonly PDO $pdo,
@@ -61,16 +68,61 @@ final class RateLimiter
         return $stmt->rowCount();
     }
 
-    /** Zählt die Anfrage dieser Herkunft. @return array{bool,int} [erlaubt, Sekunden bis zum Fensterende] */
-    public function hit(string $ip, int $now): array
+    /**
+     * IPv6-/48-Präfix (z. B. "2001:db8:1::/48"); null für IPv4, IPv4-gemappte und unlesbare Adressen.
+     */
+    public static function prefix48(string $ip): ?string
     {
-        return $this->count($this->hash($ip, $now), $now, $this->limit);
+        $bin = @inet_pton(trim($ip));
+        if ($bin === false || strlen($bin) !== 16 || str_starts_with($bin, str_repeat("\0", 10) . "\xff\xff")) {
+            return null;
+        }
+        return inet_ntop(substr($bin, 0, 6) . str_repeat("\0", 10)) . '/48';
     }
 
-    /** Zählt eine angenommene Anfrage gegen die Obergrenze für alle. @return array{bool,int} */
+    /** Ist diese Herkunft schon über ihrer Grenze? Nur lesend; zählt nichts. @return array{bool,int} [gesperrt, Sekunden bis zum Fensterende] */
+    public function blocked(string $ip, int $now): array
+    {
+        $blocked = $this->peek($this->hash($ip, $now), $now) >= max(1, $this->limit);
+        $p = self::prefix48($ip);
+        if ($p !== null && $this->peek($this->hashOf($p, $now), $now) >= max(1, $this->limit) * self::PREFIX_FACTOR) {
+            $blocked = true;
+        }
+        return [$blocked, $this->retryAfter($now)];
+    }
+
+    /** Zählt eine gültige Anfrage dieser Herkunft (/64 bzw. IPv4 und /48). @return array{bool,int} [erlaubt, Sekunden bis zum Fensterende] */
+    public function hit(string $ip, int $now): array
+    {
+        $ok = $this->count($this->hash($ip, $now), $now) <= max(1, $this->limit);
+        $p = self::prefix48($ip);
+        if ($p !== null && $this->count($this->hashOf($p, $now), $now) > max(1, $this->limit) * self::PREFIX_FACTOR) {
+            $ok = false;
+        }
+        return [$ok, $this->retryAfter($now)];
+    }
+
+    /**
+     * Zählt eine gültige Anfrage gegen die Obergrenze für alle.
+     * OK bis `globalLimit`, HELD bis 10 × `globalLimit` (speichern, nicht mailen), darüber REJECTED.
+     * @return array{string,int} [Zustand, Sekunden bis zum Fensterende]
+     */
     public function hitGlobal(int $now): array
     {
-        return $this->count(self::GLOBAL_KEY, $now, $this->globalLimit);
+        $n = $this->count(self::GLOBAL_KEY, $now);
+        $soft = max(1, $this->globalLimit);
+        $state = $n <= $soft ? self::OK : ($n <= $soft * self::HARD_FACTOR ? self::HELD : self::REJECTED);
+        return [$state, $this->retryAfter($now)];
+    }
+
+    private function hashOf(string $origin, int $now): string
+    {
+        return hash_hmac('sha256', $origin, (new RateLimitKey($this->pdo))->current($now));
+    }
+
+    private function retryAfter(int $now): int
+    {
+        return max(1, self::windowStart($now) + self::WINDOW - $now);
     }
 
     public static function windowStart(int $now): int
@@ -78,8 +130,15 @@ final class RateLimiter
         return intdiv($now, self::WINDOW) * self::WINDOW;
     }
 
-    /** @return array{bool,int} */
-    private function count(string $key, int $now, int $limit): array
+    private function peek(string $key, int $now): int
+    {
+        $sel = $this->pdo->prepare('SELECT counter FROM rate_limit WHERE hash = :h AND window_start = :w');
+        $sel->execute([':h' => $key, ':w' => self::windowStart($now)]);
+        $value = $sel->fetchColumn();
+        return $value === false ? 0 : (int) $value;
+    }
+
+    private function count(string $key, int $now): int
     {
         $window = self::windowStart($now);
         $stmt = $this->pdo->prepare('UPDATE rate_limit SET counter = counter + 1 WHERE hash = :h AND window_start = :w');
@@ -104,6 +163,6 @@ final class RateLimiter
         if ($value === false) {
             throw new RuntimeException('Zähler nicht lesbar'); // geschlossen scheitern, nie erlauben
         }
-        return [(int) $value <= max(1, $limit), max(1, $window + self::WINDOW - $now)];
+        return (int) $value;
     }
 }

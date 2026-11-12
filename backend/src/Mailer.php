@@ -26,8 +26,11 @@ final class Mailer
     ) {
     }
 
-    /** @param array<string,string> $lead validierte Felder; wirft bei Transportfehlern */
-    public function sendToSales(array $lead): void
+    /**
+     * @param array<string,string> $lead validierte Felder; wirft bei Transportfehlern
+     * @param int|null $receivedAt Eingangszeit (UTC-Sekunden); null = jetzt. bin/retry.php gibt hier die Zeit des Eingangs an.
+     */
+    public function sendToSales(array $lead, ?int $receivedAt = null): void
     {
         $now = ($this->clock)();
         $label = self::TOPIC_LABELS['de'][$lead['topic']];
@@ -37,7 +40,7 @@ final class Mailer
             . "Unternehmen: {$lead['company']}\r\n"
             . "Anliegen: $label\r\n"
             . "Sprache: {$lead['lang']}\r\n"
-            . 'Eingang: ' . gmdate('Y-m-d H:i:s', $now) . " UTC\r\n\r\n"
+            . 'Eingang: ' . gmdate('Y-m-d H:i:s', $receivedAt ?? $now) . " UTC\r\n\r\n"
             . "Nachricht:\r\n" . ($lead['message'] === '' ? '(keine)' : $lead['message']) . "\r\n";
         $this->transport->send($this->message(
             $this->config->string('mail.to_address'),

@@ -23,6 +23,7 @@ final class ContactPage
     private const TEXTAREA = ' data-rt-field="message"></textarea>';
     private const OPTION = ' data-rt-option="%s">';
     private const ERROR = ' data-rt-error="%s" hidden></p>';
+    private const TITLE = ' data-rt="title">';
     private const SUMMARY = ' data-rt="summary" hidden>';
     private const SUMMARY_TITLE = ' data-rt="summary-title"></p>';
     private const SUMMARY_ITEMS = ' data-rt="summary-items"></ul>';
@@ -48,12 +49,12 @@ final class ContactPage
         foreach (self::FIELDS as $n) {
             $m[] = sprintf(self::ERROR, $n);
         }
-        return [...$m, self::SUMMARY, self::SUMMARY_TITLE, self::SUMMARY_ITEMS];
+        return [...$m, self::TITLE, self::SUMMARY, self::SUMMARY_TITLE, self::SUMMARY_ITEMS];
     }
 
     /**
-     * Texte einer Sprache: summaryOne, summaryMany, generic, errors (Code → Text). null, wenn die Datei fehlt oder kaputt ist.
-     * @return array{summaryOne:string, summaryMany:string, generic:string, errors:array<string,string>}|null
+     * Texte einer Sprache: titlePrefix, summaryOne, summaryMany, generic, errors (Code → Text). null, wenn die Datei fehlt oder kaputt ist.
+     * @return array{titlePrefix:string, summaryOne:string, summaryMany:string, generic:string, errors:array<string,string>}|null
      */
     public function texts(string $lang): ?array
     {
@@ -66,7 +67,7 @@ final class ContactPage
         if (!is_array($t) || !is_array($t['errors'] ?? null)) {
             return null;
         }
-        foreach (['summaryOne', 'summaryMany', 'generic'] as $k) {
+        foreach (['titlePrefix', 'summaryOne', 'summaryMany', 'generic'] as $k) {
             if (!is_string($t[$k] ?? null)) {
                 return null;
             }
@@ -110,18 +111,20 @@ final class ContactPage
         // Zeilenumbruch nach <textarea>: der Parser entfernt genau einen führenden Umbruch, der Inhalt bleibt also unverändert.
         $map[self::TEXTAREA] = ' data-rt-field="message"' . $invalid('message') . ">\n" . self::esc($input['message'] ?? '') . '</textarea>';
 
+        // Nur Fehler an echten Feldern stehen in der Liste: Besucher können sonst nichts „korrigieren“ (z. B. lang.invalid).
         $items = '';
+        $n = 0;
         foreach ($errors as $field => $code) {
-            $text = self::esc($texts['errors'][$code] ?? $texts['generic']);
-            if (in_array($field, self::FIELDS, true)) {
-                $map[sprintf(self::ERROR, $field)] = ' data-rt-error="' . $field . '">' . $text . '</p>';
-                $items .= '<li><a href="#f-' . $field . '">' . $text . '</a></li>';
-            } else {
-                $items .= '<li>' . $text . '</li>';
+            if (!in_array($field, self::FIELDS, true)) {
+                continue;
             }
+            $text = self::esc($texts['errors'][$code] ?? $texts['generic']);
+            $map[sprintf(self::ERROR, $field)] = ' data-rt-error="' . $field . '">' . $text . '</p>';
+            $items .= '<li><a href="#f-' . $field . '">' . $text . '</a></li>';
+            $n++;
         }
-        $n = count($errors);
-        $title = $n === 1 ? $texts['summaryOne'] : str_replace('{n}', (string) $n, $texts['summaryMany']);
+        $title = $n === 0 ? $texts['generic'] : ($n === 1 ? $texts['summaryOne'] : str_replace('{n}', (string) $n, $texts['summaryMany']));
+        $map[self::TITLE] = ' data-rt="title">' . self::esc($texts['titlePrefix']);
         $map[self::SUMMARY] = ' data-rt="summary" autofocus>';
         $map[self::SUMMARY_TITLE] = ' data-rt="summary-title">' . self::esc($title) . '</p>';
         $map[self::SUMMARY_ITEMS] = ' data-rt="summary-items">' . $items . '</ul>';

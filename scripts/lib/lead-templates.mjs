@@ -19,6 +19,7 @@ export function markers() {
     ' data-rt-field="message"></textarea>',
     ...TOPICS.map((t) => ` data-rt-option="${t}">`),
     ...FIELDS.map((n) => ` data-rt-error="${n}" hidden></p>`),
+    ' data-rt="title">',
     ' data-rt="summary" hidden>',
     ' data-rt="summary-title"></p>',
     ' data-rt="summary-items"></ul>',
@@ -40,8 +41,8 @@ export function markerProblems(html) {
 
 /**
  * Fehlertexte einer Sprache aus `ui(lang).form` für PHP: Code (`feld.code`) → Text, dazu Überschriften der Zusammenfassung.
- * @param {{ summaryOne: string, summaryMany: string, generic: string, errors: Record<string, Record<string, string>> }} form
- * @returns {{ summaryOne: string, summaryMany: string, generic: string, errors: Record<string, string> }}
+ * @param {{ titlePrefix: string, summaryOne: string, summaryMany: string, generic: string, errors: Record<string, Record<string, string>> }} form
+ * @returns {{ titlePrefix: string, summaryOne: string, summaryMany: string, generic: string, errors: Record<string, string> }}
  */
 export function formTexts(form) {
   /** @type {Record<string, string>} */
@@ -49,5 +50,5 @@ export function formTexts(form) {
   for (const [field, byCode] of Object.entries(form.errors)) {
     for (const [code, text] of Object.entries(byCode)) errors[`${field}.${code}`] = text;
   }
-  return { summaryOne: form.summaryOne, summaryMany: form.summaryMany, generic: form.generic, errors };
+  return { titlePrefix: form.titlePrefix, summaryOne: form.summaryOne, summaryMany: form.summaryMany, generic: form.generic, errors };
 }

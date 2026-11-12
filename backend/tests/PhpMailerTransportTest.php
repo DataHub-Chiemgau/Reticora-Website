@@ -30,14 +30,29 @@ final class PhpMailerTransportTest extends TestCase
 
     private function startServer(string $mode = ''): int
     {
-        $sock = stream_socket_server('tcp://127.0.0.1:0', $e, $s);
-        $port = (int) substr(strrchr((string) stream_socket_get_name($sock, false), ':'), 1);
-        fclose($sock);
         $this->out = sys_get_temp_dir() . '/reticora-smtp-' . bin2hex(random_bytes(4)) . '.json';
-        $cmd = [PHP_BINARY, __DIR__ . '/fake_smtp_server.php', (string) $port, $this->out, $mode];
+        // Port 0: der Hilfsserver bindet selbst und meldet den Port (kein Wettlauf zwischen Prüfen und Binden).
+        $cmd = [PHP_BINARY, __DIR__ . '/fake_smtp_server.php', '0', $this->out, $mode];
         $this->proc = proc_open($cmd, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
-        fgets($pipes[1]); // "ready"
-        return $port;
+        $line = (string) fgets($pipes[1]);
+        if (preg_match('/^ready (\d+)$/', trim($line), $m) !== 1) {
+            self::fail('Der SMTP-Hilfsserver ist nicht bereit: ' . trim($line . ' ' . (string) stream_get_contents($pipes[2])));
+        }
+        return (int) $m[1];
+    }
+
+    public function testHelperServerFailsLoudlyWhenThePortIsTaken(): void
+    {
+        $taken = stream_socket_server('tcp://127.0.0.1:0');
+        $port = (int) substr(strrchr((string) stream_socket_get_name($taken, false), ':'), 1);
+        $proc = proc_open([PHP_BINARY, __DIR__ . '/fake_smtp_server.php', (string) $port, sys_get_temp_dir() . '/unused.json'], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+        $stdout = (string) stream_get_contents($pipes[1]);
+        $stderr = (string) stream_get_contents($pipes[2]);
+        $code = proc_close($proc);
+        fclose($taken);
+        self::assertNotSame(0, $code);
+        self::assertStringNotContainsString('ready', $stdout);
+        self::assertStringContainsString('bind fehlgeschlagen', $stderr);
     }
 
     /** @return array{log: list<string>, message: string} */

@@ -65,10 +65,14 @@ fehlende Angaben stehen als Platzhalter mit `data-placeholder`.
   frühere Zeile unter `#fehler` und die Fehlercodes in der Adresse entfallen.
 - **Allgemeine Zeile** (Schlüssel `form.generic`): „Das Formular wurde
   nicht gesendet. Bitte prüfen Sie Ihre Angaben.“ Steht jetzt nur noch in der
-  Zusammenfassung für einen Fehler ohne Feld (ungültige Sprache) und als
-  Überschrift der Ersatzseite, wenn dem Server die Vorlage der Kontaktseite
+  Überschrift der Zusammenfassung, wenn nur ein Fehler ohne Feld vorliegt
+  (ungültige Sprache; dieser Fehler wird nie als Eintrag aufgelistet oder
+  mitgezählt) und als Überschrift der Ersatzseite, wenn dem Server die Vorlage der Kontaktseite
   fehlt. Darunter auf der Ersatzseite der Link „Zurück zum Formular“
   (*eigene Formulierung der Umsetzung, nicht abgestimmt*).
+- **Titel der Seite im Browser** bei Eingabefehlern: Präfix „Fehler: “ vor
+  „Kontakt – Reticora“ (Schlüssel `form.titlePrefix`; *eigene Formulierung der
+  Umsetzung, nicht abgestimmt*).
 
 | Code | Feld | Text am Feld |
 |---|---|---|
@@ -86,11 +90,17 @@ fehlende Angaben stehen als Platzhalter mit `data-placeholder`.
 
 | Fehler der Anfrage | Text (über dem Formular) |
 |---|---|
-| Rate-Limit (`429`) | Sie haben in kurzer Zeit mehrere Nachrichten gesendet. Bitte versuchen Sie es in einer Stunde erneut. |
+| Zu viele Anfragen (`429`) | Im Moment gehen sehr viele Anfragen ein. Bitte versuchen Sie es später noch einmal oder schreiben Sie uns direkt. (*eigene Formulierung der Umsetzung, nicht abgestimmt*) |
 | Fehler des Servers (`5xx`) oder keine Verbindung | Ihre Nachricht konnte gerade nicht gesendet werden. Bitte versuchen Sie es in einigen Minuten erneut. |
 
-Die Frist „in einer Stunde“ folgt dem Rate-Limit der Spezifikation
-(höchstens 5 Anfragen je Herkunft und Stunde).
+Der Text ist bewusst neutral: Er behauptet nicht, dass die Besucherin zu viel
+gesendet hat. Eine 429-Antwort entsteht bei mehr als 5 gültigen Anfragen je
+Herkunft und Stunde (IPv6: auch bei mehr als 15 je /48-Präfix) und erst bei
+der harten Obergrenze für alle (10 × `rate_limit.global_max` je Stunde).
+Zwischen `global_max` und der harten Obergrenze werden Anfragen gespeichert
+(Status `held`) und die Besucherin sieht die normale Dankeseite. Dieselbe
+Zeile steht als Hinweisseite des Servers (Titel „Gerade sehr viele Anfragen“,
+*eigene Formulierung der Umsetzung, nicht abgestimmt*).
 
 ## Direkter Kontakt (neben dem Formular)
 

@@ -69,10 +69,12 @@ final class App
         $pdo = ($this->pdoFactory)();
         $limiter = new RateLimiter($pdo, $this->config->rateLimitMax(), $this->config->globalMax());
         $limiter->purgeExpired($now); // Ä-10: abgelaufene Zähler bei jedem Aufruf löschen
-        [$allowed, $retryAfter] = $limiter->hit($request->ip, $now);
         $form = $request->form();
         $lang = $this->lang($form);
-        if (!$allowed) {
+        // Nur lesend: wer schon über der Grenze ist, wird abgewiesen. Gezählt wird erst nach der Prüfung der Eingaben,
+        // ungültige Absendungen verbrauchen also kein Kontingent (wer ohne JavaScript Fehler korrigiert, sperrt sich nicht aus).
+        [$blocked, $retryAfter] = $limiter->blocked($request->ip, $now);
+        if ($blocked) {
             ($this->log)('rate_limited');
             return $this->tooManyRequests($request, $lang, $retryAfter);
         }
@@ -82,21 +84,32 @@ final class App
         if (!$result['valid']) {
             return $this->validationError($request, $lang, $result['errors'], $form);
         }
+        [$allowed, $retryAfter] = $limiter->hit($request->ip, $now);
+        if (!$allowed) {
+            ($this->log)('rate_limited');
+            return $this->tooManyRequests($request, $lang, $retryAfter);
+        }
         if (($form['website'] ?? '') !== '') {
             ($this->log)('honeypot');
             return $this->accepted($request, $lang);
         }
 
         $transport = ($this->transportFactory)(); // Fehlkonfiguration: 500, bevor etwas gespeichert ist
-        [$allowed, $retryAfter] = $limiter->hitGlobal($now);
-        if (!$allowed) {
-            ($this->log)('global_limit');
+        [$state, $retryAfter] = $limiter->hitGlobal($now);
+        if ($state === RateLimiter::REJECTED) {
+            ($this->log)('global_ceiling');
             return $this->tooManyRequests($request, $lang, $retryAfter);
         }
 
         $leads = new LeadRepository($pdo);
         $lead = $result['lead'];
         $id = $leads->insert($lead, $now);
+        if ($state === RateLimiter::HELD) {
+            // Über der Obergrenze für alle: gespeichert, keine Mail; bin/retry.php stellt später zu. Die Besucherin sieht den Normalfall.
+            $leads->setDelivery($id, LeadRepository::HELD);
+            ($this->log)('lead_held id=' . $id);
+            return $this->accepted($request, $lead['lang']);
+        }
         $status = LeadRepository::DELIVERED;
         try {
             // Ä-09: nur an das Vertriebspostfach; an die eingegebene Adresse geht nie eine Mail.
@@ -191,38 +204,43 @@ final class App
         $en = $lang === 'en';
         $title = $texts['generic'] ?? ($en ? 'The form was not sent. Please check your entries.' : 'Das Formular wurde nicht gesendet. Bitte prüfen Sie Ihre Angaben.');
         $items = '';
-        foreach ($errors as $code) {
+        foreach ($errors as $field => $code) {
+            if (!in_array($field, ContactPage::FIELDS, true)) {
+                continue;
+            }
             $text = $texts['errors'][$code] ?? null;
             if (is_string($text)) {
                 $items .= '<li>' . ContactPage::esc($text) . '</li>';
             }
         }
         $back = $en ? 'Back to the form' : 'Zurück zum Formular';
+        $prefix = $texts['titlePrefix'] ?? ($en ? 'Error: ' : 'Fehler: ');
         return $this->shell($lang, $title, ($items !== '' ? '<ul>' . $items . '</ul>' : '')
-            . '<p><a href="' . self::TARGETS[$lang]['form'] . '">' . $back . '</a></p>');
+            . '<p><a href="' . self::TARGETS[$lang]['form'] . '">' . $back . '</a></p>', $prefix);
     }
 
     private function noticePage(string $lang, bool $rateLimited): string
     {
         $mail = ContactPage::esc($this->config->string('contact_email'));
         if ($lang === 'en') {
-            $title = $rateLimited ? 'Too many requests' : 'Something went wrong';
-            $text = $rateLimited ? 'Please try again later.' : 'Your inquiry could not be processed.';
+            $title = $rateLimited ? 'Very busy right now' : 'Something went wrong';
+            $text = $rateLimited ? 'We are receiving a lot of inquiries right now. Please try again later or write to us directly.' : 'Your inquiry could not be processed.';
             $contact = 'Please write to us directly:';
         } else {
-            $title = $rateLimited ? 'Zu viele Anfragen' : 'Es ist ein Fehler aufgetreten';
-            $text = $rateLimited ? 'Bitte versuchen Sie es später erneut.' : 'Ihre Anfrage konnte nicht verarbeitet werden.';
+            $title = $rateLimited ? 'Gerade sehr viele Anfragen' : 'Es ist ein Fehler aufgetreten';
+            $text = $rateLimited ? 'Im Moment gehen sehr viele Anfragen ein. Bitte versuchen Sie es später noch einmal oder schreiben Sie uns direkt.' : 'Ihre Anfrage konnte nicht verarbeitet werden.';
             $contact = 'Schreiben Sie uns bitte direkt:';
         }
         return $this->shell($lang, $title, '<p>' . $text . '</p><p>' . $contact . ' <a href="mailto:' . $mail . '">' . $mail . '</a></p>');
     }
 
-    private function shell(string $lang, string $title, string $body): string
+    private function shell(string $lang, string $title, string $body, string $titlePrefix = ''): string
     {
+        $headTitle = ContactPage::esc($titlePrefix . $title);
         $title = ContactPage::esc($title);
         return '<!doctype html><html lang="' . $lang . '"><head><meta charset="utf-8">'
             . '<meta name="viewport" content="width=device-width, initial-scale=1">'
-            . '<meta name="robots" content="noindex"><title>' . $title . '</title></head><body>'
+            . '<meta name="robots" content="noindex"><title>' . $headTitle . '</title></head><body>'
             . '<h1>' . $title . '</h1>' . $body . "</body></html>\n";
     }
 }

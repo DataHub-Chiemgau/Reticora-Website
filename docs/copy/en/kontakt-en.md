@@ -65,9 +65,13 @@ renders errors in the English template built from `/en/contact/`.
   at the field and in the summary when input is invalid (status 422,
   entries kept).
 - **General line** (key `form.generic`): “The form was not sent. Please
-  check your entries.” Only in the summary for an error without a field and
+  check your entries.” Used as the summary heading when the only error has no field (invalid
+  language; such an error is never listed or counted as an entry) and
   as the heading of the fallback page if the server lacks the contact page
   template; below it on the fallback page the link “Back to the form”.
+- **Browser title** on input errors: prefix “Error: ” before “Contact –
+  Reticora” (key `form.titlePrefix`; *own wording of the implementation, not
+  agreed*).
 
 | Code | Field | Message at the field |
 |---|---|---|
@@ -86,12 +90,18 @@ renders errors in the English template built from `/en/contact/`.
 
 | Request error | Text (above the form) |
 |---|---|
-| Rate limit (`429`) | You have sent several messages in a short time. Please try again in an hour. |
+| Too many requests (`429`) | We are receiving a lot of inquiries right now. Please try again later or write to us directly. (*own wording of the implementation, not agreed*) |
 | Server error (`5xx`) or no connection | Your message could not be sent right now. Please try again in a few minutes. |
 
 Below each of these: “Direct contact:” followed by the email address from
-`SITE` or its placeholder. The period “in an hour” follows the rate limit of
-the specification (at most 5 requests per origin and hour).
+`SITE` or its placeholder. The text is neutral on purpose: it does not claim
+that the visitor sent too much. A 429 response occurs at more than 5 valid
+requests per origin and hour (IPv6: also at more than 15 per /48 prefix) and
+only at the hard ceiling for everyone (10 × `rate_limit.global_max` per hour).
+Between `global_max` and the hard ceiling requests are stored (status `held`)
+and the visitor sees the normal thank-you page. The same line appears on the
+server's notice page (title “Very busy right now”, *own wording of the
+implementation, not agreed*).
 
 ## Direct contact (next to the form)
 

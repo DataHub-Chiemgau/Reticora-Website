@@ -105,10 +105,11 @@ export const UI: typeof DeUI = {
     sending: 'Sending …',
     processing: '[Notice on data processing: text from the provider]',
     privacy: 'Privacy policy',
+    titlePrefix: 'Error: ',
     summaryOne: 'Please correct 1 entry.',
     summaryMany: 'Please correct {n} entries.',
     generic: 'The form was not sent. Please check your entries.',
-    rate: 'You have sent several messages in a short time. Please try again in an hour.',
+    rate: 'We are receiving a lot of inquiries right now. Please try again later or write to us directly.',
     server: 'Your message could not be sent right now. Please try again in a few minutes.',
     directContact: 'Direct contact:',
     errors: {

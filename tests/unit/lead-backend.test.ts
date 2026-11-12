@@ -12,6 +12,8 @@ describe('Vorlage der Kontaktseite (Ä-08)', () => {
     for (const lang of ['de', 'en'] as const) {
       const F = ui(lang).form;
       const t = formTexts(F);
+      expect(t.titlePrefix).toBe(F.titlePrefix);
+      expect(t.titlePrefix.length).toBeGreaterThan(3);
       expect(t.summaryOne).toBe(F.summaryOne);
       expect(t.summaryMany).toBe(F.summaryMany);
       expect(t.generic).toBe(F.generic);
@@ -46,7 +48,7 @@ describe('Vorlage der Kontaktseite (Ä-08)', () => {
 
   test('PHP kennt dieselben Marken', () => {
     const php = readFileSync(join(process.cwd(), 'backend/src/ContactPage.php'), 'utf8');
-    for (const m of [' data-rt-field="%s">', ' data-rt-field="message"></textarea>', ' data-rt-option="%s">', ' data-rt-error="%s" hidden></p>', ' data-rt="summary" hidden>', ' data-rt="summary-title"></p>', ' data-rt="summary-items"></ul>'])
+    for (const m of [' data-rt-field="%s">', ' data-rt-field="message"></textarea>', ' data-rt-option="%s">', ' data-rt-error="%s" hidden></p>', ' data-rt="title">', ' data-rt="summary" hidden>', ' data-rt="summary-title"></p>', ' data-rt="summary-items"></ul>'])
       expect(php).toContain(`'${m}'`);
   });
 

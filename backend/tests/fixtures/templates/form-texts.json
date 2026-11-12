@@ -1,5 +1,6 @@
 {
   "de": {
+    "titlePrefix": "Fehler: ",
     "summaryOne": "Bitte korrigieren Sie 1 Angabe.",
     "summaryMany": "Bitte korrigieren Sie {n} Angaben.",
     "generic": "Das Formular wurde nicht gesendet. Bitte prüfen Sie Ihre Angaben.",
@@ -20,6 +21,7 @@
     }
   },
   "en": {
+    "titlePrefix": "Error: ",
     "summaryOne": "Please correct 1 entry.",
     "summaryMany": "Please correct {n} entries.",
     "generic": "The form was not sent. Please check your entries.",

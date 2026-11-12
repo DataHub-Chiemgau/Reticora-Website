@@ -102,10 +102,11 @@ export const UI = {
     sending: 'Wird gesendet …',
     processing: '[Hinweis zur Verarbeitung: Text vom Anbieter]',
     privacy: 'Datenschutzerklärung',
+    titlePrefix: 'Fehler: ',
     summaryOne: 'Bitte korrigieren Sie 1 Angabe.',
     summaryMany: 'Bitte korrigieren Sie {n} Angaben.',
     generic: 'Das Formular wurde nicht gesendet. Bitte prüfen Sie Ihre Angaben.',
-    rate: 'Sie haben in kurzer Zeit mehrere Nachrichten gesendet. Bitte versuchen Sie es in einer Stunde erneut.',
+    rate: 'Im Moment gehen sehr viele Anfragen ein. Bitte versuchen Sie es später noch einmal oder schreiben Sie uns direkt.',
     server: 'Ihre Nachricht konnte gerade nicht gesendet werden. Bitte versuchen Sie es in einigen Minuten erneut.',
     directContact: 'Direkter Kontakt:',
     errors: {
