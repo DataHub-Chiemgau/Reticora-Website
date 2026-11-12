@@ -14,13 +14,15 @@ interface Props {
   lang: Lang;
   path: string;
   noindex?: boolean;
+  /** Farbthema: Leitstand (dunkel, Standard) oder Dokument (hell, für Rechts- und Hinweisseiten). */
+  theme?: 'leitstand' | 'dokument';
 }
-const { title, description, lang, path, noindex = false } = Astro.props;
+const { title, description, lang, path, noindex = false, theme = 'leitstand' } = Astro.props;
 const T = ui(lang);
 const hideFromIndex = noindex || routeOf(path)?.noindex === true || process.env.RETICORA_RELEASE !== '1';
 ---
 
-<html lang={lang} data-theme="leitstand">
+<html lang={lang} data-theme={theme}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

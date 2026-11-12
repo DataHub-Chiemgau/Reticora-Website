@@ -1,0 +1,59 @@
+---
+import Leitstand from '../layouts/Leitstand.astro';
+import PageHero from '../components/PageHero.astro';
+import Placeholder from '../components/Placeholder.astro';
+import type { Lang } from '../data/types';
+import { SITE } from '../data/site';
+import { ui } from '../i18n';
+import { localize } from '../i18n/routes';
+
+/** Gerüst der Rechtsseiten: Überschrift, Stand-Zeile und sichtbarer Platzhalter. Rechtstexte schreibt der Anbieter.
+ *  Das Impressum zeigt zusätzlich die vorhandenen Angaben aus `SITE`; fehlende Angaben sind Platzhalter. */
+interface Props { lang: Lang; page: 'imprint' | 'privacy' | 'terms' | 'subprocessors' }
+const { lang, page } = Astro.props;
+const T = ui(lang);
+const P = T.legal.pages[page];
+const path = localize({ imprint: '/impressum/', privacy: '/datenschutz/', terms: '/agb/', subprocessors: '/subprozessoren/' }[page], lang);
+const L = T.legal.labels;
+const ph = T.placeholders;
+const rows: { key: string; label: string; value: string | null; placeholder: string; id: string }[] = [
+  { key: 'company', label: L.company, value: SITE.company, placeholder: '', id: '' },
+  { key: 'address', label: L.address, value: `${SITE.street}\n${SITE.city}`, placeholder: '', id: '' },
+  { key: 'email', label: L.email, value: SITE.email, placeholder: ph.email, id: 'impressum-email' },
+  { key: 'phone', label: L.phone, value: SITE.phone, placeholder: ph.phone, id: 'impressum-telefon' },
+  { key: 'managingDirector', label: L.managingDirector, value: SITE.managingDirector, placeholder: ph.managingDirector, id: 'impressum-geschaeftsfuehrung' },
+  { key: 'registerCourt', label: L.registerCourt, value: SITE.registerCourt, placeholder: ph.registerCourt, id: 'impressum-registergericht' },
+  { key: 'registerNumber', label: L.registerNumber, value: SITE.registerNumber, placeholder: ph.registerNumber, id: 'impressum-registernummer' },
+  { key: 'vatId', label: L.vatId, value: SITE.vatId, placeholder: ph.vatId, id: 'impressum-ustid' },
+];
+---
+
+<Leitstand title={`${P.title} – Reticora`} description={P.description} lang={lang} path={path} theme="dokument">
+  <PageHero title={P.title} />
+  <div class="rt-section legal">
+    <div class="rt-container legal-stack">
+      <p class="legal-meta">
+        {T.asOf}: <Placeholder id={`${page}-stand`}>{ph.date}</Placeholder>
+      </p>
+      {page === 'imprint' && (
+        <dl class="home-defs">
+          {rows.map((r) => (
+            <div>
+              <dt>{r.label}</dt>
+              <dd>
+                {r.value
+                  ? r.key === 'email'
+                    ? <a href={`mailto:${r.value}`}>{r.value}</a>
+                    : r.value.split('\n').map((line, i) => <>{i > 0 && <br />}{line}</>)
+                  : <Placeholder id={r.id}>{r.placeholder}</Placeholder>}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {page !== 'imprint' && (
+        <Placeholder id={page} block>{T.legal.pending}</Placeholder>
+      )}
+    </div>
+  </div>
+</Leitstand>

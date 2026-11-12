@@ -1,0 +1,51 @@
+---
+import Leitstand from '../layouts/Leitstand.astro';
+import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
+import DataTable from '../components/DataTable.astro';
+import Placeholder from '../components/Placeholder.astro';
+import { content } from '../content';
+import type { Lang } from '../data/types';
+import { ui } from '../i18n';
+import { localize } from '../i18n/routes';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const T = ui(lang);
+const A = content(lang).barrierefreiheit;
+const K = A.kontraste;
+const columns = [
+  { key: 'pair', head: K.heads.pair },
+  { key: 'dark', head: K.heads.dark, numeric: true },
+  { key: 'light', head: K.heads.light, numeric: true },
+  { key: 'min', head: K.heads.min, numeric: true },
+];
+---
+
+<Leitstand title={A.meta.title} description={A.meta.description} lang={lang} path={localize('/barrierefreiheit/', lang)} theme="dokument">
+  <PageHero title={A.hero.h1} lead={A.hero.lead}>
+    <p class="legal-meta">{T.asOf}: {A.hero.asOf}</p>
+  </PageHero>
+
+  <Section id="pruefen" title={A.pruefen.title}>
+    <ul class="legal-list">{A.pruefen.items.map((i) => <li>{i}</li>)}</ul>
+  </Section>
+
+  <Section id="kontraste" title={K.title} lead={K.text}>
+    <DataTable label={K.label} columns={columns} rows={K.rows.map((r) => ({ ...r }))} rowHeader="pair" lang={lang} />
+  </Section>
+
+  <Section id="bewegung" title={A.bewegung.title}>
+    <p class="legal-text">{A.bewegung.text}</p>
+  </Section>
+
+  <Section id="grenzen" title={A.grenzen.title}>
+    <ul class="legal-list">{A.grenzen.items.map((i) => <li>{i}</li>)}</ul>
+  </Section>
+
+  <Section id="hinweise" title={A.hinweise.title}>
+    <p class="legal-text">
+      {A.hinweise.text}{' '}<Placeholder id="barrierefreiheit-kontakt">{T.placeholders.a11yContact}</Placeholder>
+    </p>
+  </Section>
+</Leitstand>
