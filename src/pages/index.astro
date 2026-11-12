@@ -15,9 +15,11 @@ import ConnectionSchema from '../components/ConnectionSchema.astro';
 import { HOME } from '../content/de/home';
 import { LINKS } from '../data/links';
 import { PLANS, BETA } from '../data/pricing';
-import { UI } from '../i18n/de';
+import { ui } from '../i18n';
+import { localize } from '../i18n/routes';
 
 const lang = 'de';
+const UI = ui(lang);
 const H = HOME;
 const grouped = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 const planRows = PLANS.map((p) => ({
@@ -42,7 +44,7 @@ const planColumns = [
         <div class="home-actions">
           <div class="home-actions-row">
             <Button variant="primary" size="lg" href={LINKS.signup}>{UI.actions.trial}</Button>
-            <Button variant="secondary" size="lg" href={UI.footer.demoHref}>{UI.actions.demo}</Button>
+            <Button variant="secondary" size="lg" href={localize(UI.footer.demoHref, lang)}>{UI.actions.demo}</Button>
           </div>
           <p class="home-b2b">{UI.b2b}</p>
         </div>
@@ -136,7 +138,7 @@ const planColumns = [
   <Section id="schnittstellen" title={H.api.title}>
     <Fragment slot="lead">{H.api.lead}{' '}<Beleg claim={H.api.leadClaim} lang={lang} /></Fragment>
     <div class="home-split">
-      <CodeSample title={H.api.codeTitle} copyLabel={UI.copy} copiedLabel={UI.copied}><span class="c"># Alle CIs, deren Name „core“ enthält</span>
+      <CodeSample title={H.api.codeTitle} copyLabel={UI.copy} copiedLabel={UI.copied} lang={lang}><span class="c"># Alle CIs, deren Name „core“ enthält</span>
 curl <span class="k">"https://www.reticora.cloud/api/v1/cis?q=core&amp;limit=50"</span> \
   -H <span class="k">"X-API-Key: rk_live_…"</span></CodeSample>
       <SpecList items={H.api.specs.map((s) => ({ ...s }))} lang={lang} />
@@ -153,7 +155,7 @@ curl <span class="k">"https://www.reticora.cloud/api/v1/cis?q=core&amp;limit=50"
           </div>
         ))}
       </dl>
-      <Button class="home-link" variant="secondary" href="/sicherheit/">{H.sicherheit.link}</Button>
+      <Button class="home-link" variant="secondary" href={localize('/sicherheit/', lang)}>{H.sicherheit.link}</Button>
     </div>
   </Section>
 
@@ -164,7 +166,7 @@ curl <span class="k">"https://www.reticora.cloud/api/v1/cis?q=core&amp;limit=50"
         {H.geraete.list.map((i) => <div><dt>{i.term}</dt><dd>{i.value}</dd></div>)}
       </dl>
       <p class="home-caption">{H.geraete.note}</p>
-      <Button class="home-link" variant="secondary" href="/geraete/">{H.geraete.link}</Button>
+      <Button class="home-link" variant="secondary" href={localize('/geraete/', lang)}>{H.geraete.link}</Button>
     </div>
   </Section>
 
@@ -175,7 +177,7 @@ curl <span class="k">"https://www.reticora.cloud/api/v1/cis?q=core&amp;limit=50"
       </div>
       <Notice lead={H.pakete.betaLead}>{H.pakete.beta(Math.round(BETA.firstSixMonths * 100), Math.round(BETA.nextSixMonths * 100))}</Notice>
       <p class="home-b2b">{UI.b2b}</p>
-      <Button class="home-link" variant="secondary" href="/preise/">{H.pakete.link}</Button>
+      <Button class="home-link" variant="secondary" href={localize('/preise/', lang)}>{H.pakete.link}</Button>
     </div>
   </Section>
 
@@ -187,8 +189,8 @@ curl <span class="k">"https://www.reticora.cloud/api/v1/cis?q=core&amp;limit=50"
       <div class="home-actions">
         <div class="home-actions-row">
           <Button variant="primary" size="lg" href={LINKS.signup}>{UI.actions.trial}</Button>
-          <Button variant="secondary" size="lg" href={UI.footer.demoHref}>{UI.actions.demo}</Button>
-          <Button variant="quiet" size="lg" href="/kontakt/">{UI.actions.contact}</Button>
+          <Button variant="secondary" size="lg" href={localize(UI.footer.demoHref, lang)}>{UI.actions.demo}</Button>
+          <Button variant="quiet" size="lg" href={localize('/kontakt/', lang)}>{UI.actions.contact}</Button>
         </div>
         <p class="home-b2b">{UI.b2b}</p>
       </div>

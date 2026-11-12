@@ -249,6 +249,12 @@ textarea.rt-input { min-height: 120px; resize: vertical; }
   .rt-schema-frame text { fill: CanvasText; }
 }
 
+.page-hero { padding-block: var(--space-12) var(--space-8); }
+@media (min-width: 64rem) { .page-hero { padding-block: var(--space-16) var(--space-12); } }
+.page-hero h1 { max-width: 20ch; }
+.page-hero .lead { color: var(--fg-muted); max-width: var(--measure); margin-top: var(--space-6); }
+.page-hero-eyebrow { color: var(--fg-muted); margin-bottom: var(--space-4); }
+.rt-lang .is-off, .rt-footer .is-off { color: var(--fg-muted); text-decoration: line-through; cursor: default; }
 .home-hero { padding-block: var(--space-16); }
 @media (min-width: 64rem) { .home-hero { padding-block: var(--space-24) var(--space-16); } }
 .home-hero h1 { max-width: 18ch; }

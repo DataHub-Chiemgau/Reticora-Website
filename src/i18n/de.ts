@@ -11,7 +11,7 @@ export const UI = {
     ],
   },
   actions: { trial: '30 Tage testen', demo: 'Live-Demo', login: 'Anmelden', contact: 'Kontakt' },
-  lang: { label: 'Sprache', de: 'DE', en: 'EN', deHref: '/', enHref: '/en/' },
+  lang: { label: 'Sprache', de: 'DE', en: 'EN', deName: 'Deutsch', enName: 'English', soon: 'Englische Fassung folgt' },
   footer: {
     columns: [
       {
@@ -52,13 +52,15 @@ export const UI = {
       { label: 'Datenschutz', href: '/datenschutz/' },
       { label: 'AGB', href: '/agb/' },
     ],
-    english: 'English',
+    switch: 'English',
+    switchSoon: 'English (Fassung folgt)',
   },
   b2b: 'Angebot nur für Unternehmen.',
   b2bShort: 'Angebot nur für Unternehmen',
   home: 'Startseite',
   copyFailed: 'Kopieren nicht möglich',
   scrollHint: 'Schema seitlich verschiebbar.',
+  cta: { title: 'Testen Sie Reticora 30\u00a0Tage mit Ihrem eigenen Netz.' },
   skip: 'Zum Inhalt',
   menu: 'Menü',
   beleg: 'Beleg',
@@ -78,4 +80,4 @@ export const UI = {
     legendAffected: 'betroffen (grau dargestellt)',
     legendNote: 'Schemazeichnung, kein Screenshot',
   },
-} as const;
+};

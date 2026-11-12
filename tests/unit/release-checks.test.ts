@@ -83,6 +83,12 @@ describe('Release-Prüfungen', () => {
     expect(checkRoutesBuilt(routes, () => true)).toEqual([]);
     expect(checkRoutesBuilt(routes, () => false)).toEqual(['/: Seite fehlt in dist', '/en/: Seite fehlt in dist', '/a/: Seite fehlt in dist']);
   });
+  test('englische Seite zählt nur, wenn enStatus gebaut ist; geplante englische Seite blockiert den Release', () => {
+    const routes = [{ de: '/', en: '/en/', status: 'gebaut', enStatus: 'geplant' }];
+    expect(checkRoutesBuilt(routes, () => false)).toEqual(['/: Seite fehlt in dist']);
+    expect(checkRoutes(routes)).toEqual(['/en/: Seite nur geplant, nicht gebaut']);
+    expect(checkRoutes([{ de: '/', en: '/en/', status: 'gebaut', enStatus: 'gebaut' }])).toEqual([]);
+  });
   test('interner Link auf nicht gebaute Seite wird gemeldet', () => {
     const exists = (p: string) => ['index.html', 'a/index.html', 'x.svg', '_astro/s.css'].includes(p);
     const pages = [{

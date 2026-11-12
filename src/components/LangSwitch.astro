@@ -1,0 +1,27 @@
+---
+import type { Lang } from '../data/types';
+import { counterpart, isBuilt } from '../i18n/routes';
+import { ui } from '../i18n';
+
+interface Props { lang: Lang; path: string }
+const { lang, path } = Astro.props;
+const T = ui(lang);
+const other = counterpart(path);
+const otherLang: Lang = lang === 'de' ? 'en' : 'de';
+const live = other !== null && isBuilt(other);
+const cur = { code: lang === 'de' ? T.lang.de : T.lang.en };
+const oth = { code: otherLang === 'de' ? T.lang.de : T.lang.en, name: otherLang === 'de' ? T.lang.deName : T.lang.enName };
+const order: Lang[] = ['de', 'en'];
+---
+
+<div class="rt-lang" role="group" aria-label={T.lang.label}>
+  {order.map((l) =>
+    l === lang ? (
+      <span aria-current="true">{cur.code}</span>
+    ) : live ? (
+      <a href={other} lang={l} hreflang={l} aria-label={oth.name}>{oth.code}</a>
+    ) : (
+      <span class="is-off" title={T.lang.soon}>{oth.code}<span class="sr-only"> ({T.lang.soon})</span></span>
+    ),
+  )}
+</div>

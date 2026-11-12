@@ -2,19 +2,22 @@
 import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
-import { UI } from '../i18n/de';
+import Seo from '../components/Seo.astro';
+import type { Lang } from '../data/types';
+import { ui } from '../i18n';
+import { routeOf } from '../i18n/routes';
 import archivoUrl from '../assets/fonts/archivo-leitstand.woff2?url';
 
 interface Props {
   title: string;
   description: string;
-  lang: 'de' | 'en';
+  lang: Lang;
   path: string;
   noindex?: boolean;
 }
 const { title, description, lang, path, noindex = false } = Astro.props;
-const canonical = new URL(path, Astro.site).href;
-const hideFromIndex = noindex || process.env.RETICORA_RELEASE !== '1';
+const T = ui(lang);
+const hideFromIndex = noindex || routeOf(path)?.noindex === true || process.env.RETICORA_RELEASE !== '1';
 ---
 
 <html lang={lang} data-theme="leitstand">
@@ -23,15 +26,14 @@ const hideFromIndex = noindex || process.env.RETICORA_RELEASE !== '1';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-    {hideFromIndex && <meta name="robots" content="noindex" />}
+    <Seo title={title} description={description} lang={lang} path={path} noindex={hideFromIndex} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preload" href={archivoUrl} as="font" type="font/woff2" crossorigin />
   </head>
   <body>
-    <a class="sr-skip" href="#inhalt">{UI.skip}</a>
+    <a class="sr-skip" href="#inhalt">{T.skip}</a>
     <SiteHeader lang={lang} path={path} />
     <main id="inhalt"><slot /></main>
-    <SiteFooter lang={lang} />
+    <SiteFooter lang={lang} path={path} />
   </body>
 </html>

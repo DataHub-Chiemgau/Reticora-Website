@@ -208,7 +208,7 @@ test('ScreenshotSlot zeigt ID, Motiv und Zielmaß und hat das Seitenverhältnis 
   }
 });
 
-test('aktive Navigation trägt aria-current="page"; die aktive Sprache ist kein Link', async ({ page }) => {
+test('aktive Navigation trägt aria-current="page"; die aktive Sprache ist kein Link, die nicht gebaute auch nicht', async ({ page }) => {
   await page.setViewportSize(WIDE);
   await page.goto(PAGE);
   const nav = page.locator('.rt-header').getByRole('navigation', { name: 'Hauptnavigation', exact: true });
@@ -217,10 +217,10 @@ test('aktive Navigation trägt aria-current="page"; die aktive Sprache ist kein 
   const lang = page.locator('.rt-header .rt-lang');
   await expect(lang.locator('span[aria-current="true"]')).toHaveText('DE');
   await expect(lang.getByRole('link', { name: 'DE' })).toHaveCount(0);
-  const en = lang.getByRole('link', { name: 'EN' });
-  await expect(en).toHaveAttribute('href', '/en/');
-  await expect(en).toHaveAttribute('lang', 'en');
-  await expect(en).toHaveAttribute('hreflang', 'en');
+  // Die englische Seite zu dieser Adresse ist noch nicht gebaut: kein Link, nur sichtbar inaktiver Text.
+  await expect(lang.getByRole('link')).toHaveCount(0);
+  await expect(lang.locator('.is-off')).toHaveText(/^EN/);
+  await expect(lang.locator('.is-off')).toHaveAttribute('title', 'Englische Fassung folgt');
 });
 
 test('Kopfzeile verlinkt die drei Handlungen, Fußzeile die Pflichtlinks', async ({ page }) => {

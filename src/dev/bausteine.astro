@@ -12,7 +12,9 @@ import CodeSample from '../components/CodeSample.astro';
 import Notice from '../components/Notice.astro';
 import TopologyStage from '../components/TopologyStage.astro';
 import StatusTag from '../components/StatusTag.astro';
-import { UI } from '../i18n/de';
+import { ui } from '../i18n';
+
+const UI = ui('de');
 
 const columns = [
   { key: 'source', head: 'Quelle' },

@@ -3,15 +3,38 @@ import { ROUTES } from '../../src/i18n/routes';
 
 describe('ROUTES', () => {
   test('alle Adressen beginnen und enden mit Schrägstrich', () => {
-    for (const r of ROUTES) for (const p of [r.de, r.en]) if (p !== null) expect(p).toMatch(/^\/.*\/$|^\/$/);
+    for (const r of ROUTES) for (const p of [r.de, r.en]) expect(p).toMatch(/^\/.*\/$|^\/$/);
   });
-  test('keine englische Adresse ist nur das deutsche Muster mit Präfix (Ausnahme: /demo/, laut Spezifikation gleich)', () => {
+  test('keine englische Adresse ist nur das deutsche Muster mit Präfix (Ausnahme: /demo/)', () => {
     for (const r of ROUTES) if (r.de !== '/' && r.de !== '/demo/') expect(r.en).not.toBe(`/en${r.de}`);
   });
   test('englische Adressen sind eindeutig und beginnen mit /en/', () => {
     const en = ROUTES.map((r) => r.en).filter((x): x is string => x !== null);
     expect(new Set(en).size).toBe(en.length);
     for (const p of en) expect(p.startsWith('/en/')).toBe(true);
+  });
+  test('jede Route hat eine englische Adresse; die Paare sind eindeutig', () => {
+    expect(new Set(ROUTES.map((r) => r.de)).size).toBe(ROUTES.length);
+    expect(ROUTES).toHaveLength(21);
+    for (const r of ROUTES) expect(r.en.startsWith('/en/')).toBe(true);
+  });
+  test('festgelegte englische Adressen', () => {
+    const m = new Map(ROUTES.map((r) => [r.de, r.en]));
+    expect(m.get('/produkt/discovery/')).toBe('/en/product/discovery/');
+    expect(m.get('/produkt/datenqualitaet/')).toBe('/en/product/data-quality/');
+    expect(m.get('/produkt/topologie-impact/')).toBe('/en/product/topology-impact/');
+    expect(m.get('/produkt/verwaltung/')).toBe('/en/product/administration/');
+    expect(m.get('/produkt/betrieb/')).toBe('/en/product/operations/');
+    expect(m.get('/geraete/')).toBe('/en/devices/');
+    expect(m.get('/loesungen/msp/')).toBe('/en/solutions/msp/');
+    expect(m.get('/impressum/')).toBe('/en/legal-notice/');
+    expect(m.get('/datenschutz/')).toBe('/en/privacy/');
+    expect(m.get('/agb/')).toBe('/en/terms/');
+    expect(m.get('/subprozessoren/')).toBe('/en/subprocessors/');
+    expect(m.get('/barrierefreiheit/')).toBe('/en/accessibility/');
+  });
+  test('Dankeseiten sind noindex', () => {
+    expect(ROUTES.filter((r) => r.noindex).map((r) => r.de)).toEqual(['/kontakt/danke/']);
   });
   test('von der Spezifikation genannte Paare', () => {
     const m = new Map(ROUTES.map((r) => [r.de, r.en]));

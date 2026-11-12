@@ -1,15 +1,16 @@
 ---
-import { UI } from '../i18n/de';
+import type { Lang } from '../data/types';
+import { ui } from '../i18n';
 
-interface Props { title: string; copyLabel: string; copiedLabel: string; failedLabel?: string }
-const { title, copyLabel, copiedLabel, failedLabel = UI.copyFailed } = Astro.props;
+interface Props { title: string; copyLabel: string; copiedLabel: string; failedLabel?: string; lang?: Lang }
+const { title, copyLabel, copiedLabel, failedLabel, lang = 'de' } = Astro.props;
 ---
 
 <div class="rt-code">
   <div class="rt-code-head">
     <span>{title}</span>
     <span class="rt-code-status" role="status"></span>
-    <button class="rt-btn rt-btn--quiet" type="button" data-copy data-copied={copiedLabel} data-failed={failedLabel} hidden>{copyLabel}</button>
+    <button class="rt-btn rt-btn--quiet" type="button" data-copy data-copied={copiedLabel} data-failed={failedLabel ?? ui(lang).copyFailed} hidden>{copyLabel}</button>
   </div>
   <pre tabindex="0"><code><slot /></code></pre>
 </div>
