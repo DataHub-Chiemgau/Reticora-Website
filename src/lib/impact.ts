@@ -1,10 +1,13 @@
-import type { Lang, TopoEdge } from '../data/types';
+import type { Lang } from '../data/types';
 
 export const REDUNDANT_RELS: ReadonlySet<string> = new Set(['powered_by', 'member_of_cluster']);
 
+/** Beziehungen ohne Ausfallwirkung (ungerichtet). */
+export const IGNORED_RELS: ReadonlySet<string> = new Set(['connected_to']);
+
 export interface ImpactResult { failed: string[]; affected: string[]; guarded: string[] }
 
-type Edge = Pick<TopoEdge, 'from' | 'to' | 'rel'>;
+type Edge = { from: string; to: string; rel: string };
 
 export function computeImpact(nodes: readonly string[], edges: readonly Edge[], failed: readonly string[]): ImpactResult {
   const known = new Set(nodes);
@@ -14,6 +17,7 @@ export function computeImpact(nodes: readonly string[], edges: readonly Edge[], 
   // Anbieter je Knoten und Beziehungstyp
   const providers = new Map<string, Map<string, string[]>>();
   for (const e of edges) {
+    if (IGNORED_RELS.has(e.rel)) continue;
     const byRel = providers.get(e.from) ?? new Map<string, string[]>();
     byRel.set(e.rel, [...(byRel.get(e.rel) ?? []), e.to]);
     providers.set(e.from, byRel);

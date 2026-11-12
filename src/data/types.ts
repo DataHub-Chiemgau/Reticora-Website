@@ -10,6 +10,8 @@ export interface Claim {
   status: 'offen' | 'geprüft';
   checkedBy?: string;
   checkedOn?: string;
+  /** intern, deutsch, wird nie gerendert */
+  note?: string;
 }
 
 export interface Screenshot {

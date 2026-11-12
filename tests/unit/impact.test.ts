@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeImpact, impactSentence } from '../../src/lib/impact';
+import { computeImpact, impactSentence, IGNORED_RELS } from '../../src/lib/impact';
 
 const N = ['usv-01', 'pdu-a', 'pdu-b', 'sw-access-01', 'srv-01', 'srv-02', 'nas-01', 'vm-app-01', 'vm-db-01'];
 const E = [
@@ -30,8 +30,8 @@ describe('computeImpact (design-system §6.2)', () => {
   });
   it('usv-01', () => {
     const r = computeImpact(N, E, ['usv-01']);
-    expect(r.affected).toHaveLength(8);
-    expect(r.affected).not.toContain('usv-01');
+    expect(r.failed).toEqual(['usv-01']);
+    expect(r.affected).toEqual(N.slice(1));
     expect(r.guarded).toEqual([]);
   });
   it('srv-01', () => {
@@ -49,6 +49,33 @@ describe('computeImpact (design-system §6.2)', () => {
   });
   it('leere Auswahl', () => {
     expect(computeImpact(N, E, [])).toEqual({ failed: [], affected: [], guarded: [] });
+  });
+});
+
+describe('weitere Beziehungstypen', () => {
+  const nodes = ['a', 'b', 'c'];
+  it('member_of_cluster ist redundant', () => {
+    const e = [{ from: 'a', to: 'b', rel: 'member_of_cluster' }, { from: 'a', to: 'c', rel: 'member_of_cluster' }];
+    expect(computeImpact(nodes, e, ['b'])).toEqual({ failed: ['b'], affected: [], guarded: ['a'] });
+    expect(computeImpact(nodes, e, ['b', 'c']).affected).toEqual(['a']);
+  });
+  it('depends_on: ein Versorger genügt', () => {
+    const e = [{ from: 'a', to: 'b', rel: 'depends_on' }, { from: 'a', to: 'c', rel: 'depends_on' }];
+    expect(computeImpact(nodes, e, ['c'])).toEqual({ failed: ['c'], affected: ['a'], guarded: [] });
+  });
+  it('redundante und nicht redundante Beziehung: nicht redundanter Versorger fällt aus', () => {
+    const n = ['p1', 'p2', 'h', 'x'];
+    const e = [
+      { from: 'x', to: 'p1', rel: 'powered_by' }, { from: 'x', to: 'p2', rel: 'powered_by' },
+      { from: 'x', to: 'h', rel: 'hosted_on' },
+    ];
+    expect(computeImpact(n, e, ['h'])).toEqual({ failed: ['h'], affected: ['x'], guarded: [] });
+    expect(computeImpact(n, e, ['p1'])).toEqual({ failed: ['p1'], affected: [], guarded: ['x'] });
+  });
+  it('connected_to löst nie einen Ausfall aus', () => {
+    const e = [{ from: 'a', to: 'b', rel: 'connected_to' }, { from: 'b', to: 'a', rel: 'connected_to' }];
+    expect(computeImpact(nodes, e, ['b'])).toEqual({ failed: ['b'], affected: [], guarded: [] });
+    expect(IGNORED_RELS.has('connected_to')).toBe(true);
   });
 });
 
@@ -81,6 +108,20 @@ describe('impactSentence', () => {
       main: 'If 2 CIs (pdu-a, pdu-b) fail together, 6 more CIs are affected (shown in grey).',
       guarded: null,
     });
+  });
+  it('mehrere CIs mit geschützter Zeile', () => {
+    expect(s('de', ['pdu-a', 'vm-db-01'])).toEqual({
+      main: 'Fallen 2 CIs (pdu-a, vm-db-01) gemeinsam aus, ist 1 weiteres CI betroffen (grau dargestellt).',
+      guarded: 'Durch Redundanz geschützt: srv-01, srv-02.',
+    });
+    expect(s('en', ['pdu-a', 'vm-db-01'])).toEqual({
+      main: 'If 2 CIs (pdu-a, vm-db-01) fail together, 1 more CI is affected (shown in grey).',
+      guarded: 'Protected by redundancy: srv-01, srv-02.',
+    });
+  });
+  it('mehrere CIs, keines betroffen', () => {
+    expect(s('de', ['vm-app-01', 'vm-db-01'])).toEqual({ main: 'Fallen 2 CIs (vm-app-01, vm-db-01) gemeinsam aus, ist kein weiteres CI betroffen.', guarded: null });
+    expect(s('en', ['vm-app-01', 'vm-db-01'])).toEqual({ main: 'If 2 CIs (vm-app-01, vm-db-01) fail together, no other CI is affected.', guarded: null });
   });
   it('nichts gewählt', () => {
     expect(s('de', [])).toEqual({ main: 'Wählen Sie ein CI, um seinen Ausfall zu simulieren.', guarded: null });

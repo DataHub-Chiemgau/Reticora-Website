@@ -45,6 +45,8 @@ describe('claims', () => {
       expect(c.status).toBe('offen');
       expect(c.asOf).toBe('2026-11');
       expect(c.evidence.de).not.toMatch(/README|\.md|\.go|docs\/|backend\/|frontend\/|§/);
+      for (const t of [c.title.de, c.title.en, c.evidence.de, c.evidence.en])
+        expect(t).not.toMatch(/Nur mit Nachweis|Freigabe|noch zu|Auftraggeber|Betreiber|Launch|F-\d\d|to be confirmed|approval/i);
     }
   });
   it('claim() wirft bei unbekannter ID', () => {
