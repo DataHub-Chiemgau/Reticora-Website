@@ -60,7 +60,7 @@ const LABEL = {
 ---
 
 <section class="rt-topo" data-topo data-lang={lang} aria-label={T.section}>
-  <div class="rt-topo-frame" role="region" tabindex="0" aria-label={T.title}>
+  <section class="rt-topo-frame" tabindex="0" aria-label={T.title}>
     <svg viewBox="0 0 1100 420" role="img" aria-labelledby={`${id}-t ${id}-d`}>
       <title id={`${id}-t`}>{T.title}</title>
       <desc id={`${id}-d`}>{T.desc}</desc>
@@ -90,7 +90,7 @@ const LABEL = {
         })}
       </g>
     </svg>
-  </div>
+  </section>
   <div class="rt-topo-controls" role="group" aria-label={T.group} hidden>
     <span aria-hidden="true">{T.group}</span>
     {TOPO_NODES.map((n) => (

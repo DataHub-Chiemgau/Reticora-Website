@@ -8,7 +8,7 @@ interface Props {
 const { label, columns, rows, rowHeader } = Astro.props;
 ---
 
-<div class="rt-table-wrap" tabindex="0" role="region" aria-label={label}>
+<section class="rt-table-wrap" tabindex="0" aria-label={label}>
   <table class="rt-table">
     <thead>
       <tr>{columns.map((c) => <th scope="col" class={c.numeric ? 'num' : undefined}>{c.head}</th>)}</tr>
@@ -23,4 +23,4 @@ const { label, columns, rows, rowHeader } = Astro.props;
       ))}
     </tbody>
   </table>
-</div>
+</section>

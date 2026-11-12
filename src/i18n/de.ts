@@ -1,6 +1,7 @@
 export const UI = {
   nav: {
     label: 'Hauptnavigation',
+    menuLabel: 'Hauptnavigation im Menü',
     items: [
       { key: 'product', label: 'Produkt', href: '/produkt/discovery/', match: '/produkt/' },
       { key: 'devices', label: 'Geräte', href: '/geraete/', match: '/geraete/' },

@@ -9,7 +9,7 @@ const T = SCHEMA[lang];
 const devices = [76, 116, 156, 196];
 ---
 
-<div class="rt-schema-frame" role="region" tabindex="0" aria-label={T.title}>
+<section class="rt-schema-frame" tabindex="0" aria-label={T.title}>
   <svg viewBox="0 0 560 250" role="img" aria-labelledby={`${id}-t ${id}-d`}>
     <title id={`${id}-t`}>{T.title}</title>
     <desc id={`${id}-d`}>{T.desc}</desc>
@@ -36,4 +36,4 @@ const devices = [76, 116, 156, 196];
     <line class="s-wire" x1="244" y1="160" x2="352" y2="160" marker-end={`url(#${id}-pfeil)`} />
     <text class="s-wire-label" x="298" y="182">NATS mTLS 4222</text>
   </svg>
-</div>
+</section>
