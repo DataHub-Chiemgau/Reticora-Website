@@ -43,10 +43,16 @@ final class PhpMailerTransportTest extends TestCase
     /** @return array{log: list<string>, message: string} */
     private function serverResult(): array
     {
-        for ($i = 0; $i < 50 && !is_file($this->out); $i++) {
-            usleep(100_000);
+        // Der Hilfsserver schreibt die Datei, nachdem die Verbindung endet. Die Datei kann
+        // schon existieren, aber noch leer oder unvollständig sein: warten, bis sie lesbar ist.
+        for ($i = 0; $i < 100; $i++) {
+            $data = is_file($this->out) ? json_decode((string) file_get_contents($this->out), true) : null;
+            if (is_array($data)) {
+                return $data;
+            }
+            usleep(50_000);
         }
-        return json_decode((string) file_get_contents($this->out), true);
+        self::fail('Der SMTP-Hilfsserver hat kein Ergebnis geschrieben.');
     }
 
     public function testDeliversWithAuthLoginAndStrictCrlf(): void
