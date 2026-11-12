@@ -44,10 +44,11 @@ test('unbekannter Pfad: Status 404, Seite mit Links Startseite, Impressum, Daten
   expect(response!.status()).toBe(404);
   expect(response!.headers()['content-security-policy']).toBe(CSP);
   await expect(page.locator('h1')).toHaveText('Diese Seite gibt es nicht');
-  await expect(page.getByRole('link', { name: 'Zur Startseite' })).toHaveAttribute('href', '/');
-  await expect(page.getByRole('link', { name: 'Kontakt' })).toHaveAttribute('href', '/kontakt/');
-  await expect(page.getByRole('link', { name: 'Impressum' })).toHaveAttribute('href', '/impressum/');
-  await expect(page.getByRole('link', { name: 'Datenschutz' })).toHaveAttribute('href', '/datenschutz/');
+  const nav = page.getByRole('navigation', { name: 'Weiterführende Links' });
+  await expect(nav.getByRole('link', { name: 'Zur Startseite' })).toHaveAttribute('href', '/');
+  await expect(nav.getByRole('link', { name: 'Kontakt' })).toHaveAttribute('href', '/kontakt/');
+  await expect(nav.getByRole('link', { name: 'Impressum' })).toHaveAttribute('href', '/impressum/');
+  await expect(nav.getByRole('link', { name: 'Datenschutz' })).toHaveAttribute('href', '/datenschutz/');
 });
 
 test('Dateien unter /_astro/ ein Jahr im Cache, HTML ohne Cache', async ({ page, request }) => {
@@ -69,9 +70,44 @@ test('keine CSP-Verstöße in der Konsole', async ({ page }) => {
   const messages: string[] = [];
   page.on('console', (m) => messages.push(m.text()));
   page.on('pageerror', (e) => messages.push(String(e)));
+  await page.addInitScript(() => {
+    (window as any).__csp = [];
+    document.addEventListener('securitypolicyviolation', (e) => (window as any).__csp.push(`${e.violatedDirective} ${e.blockedURI}`));
+  });
   for (const p of ['/', '/gibt-es-nicht/']) {
     await page.goto(p);
     await page.evaluate(() => document.fonts.ready);
+    expect(await page.evaluate(() => (window as any).__csp)).toEqual([]);
   }
-  expect(messages.filter((t) => /content security policy|refused to/i.test(t))).toEqual([]);
+  expect(messages.filter((t) => /content[- ]security[- ]policy|refused to/i.test(t))).toEqual([]);
+});
+
+test('/ auf localhost antwortet mit 200 ohne Weiterleitung', async ({ request }) => {
+  const r = await request.get('/', { maxRedirects: 0 });
+  expect(r.status()).toBe(200);
+  expect(r.headers()['location']).toBeUndefined();
+});
+
+test('Host reticora.de auf /index.html: erst Hostwechsel (301 auf https://www.reticora.de/index.html), index.html wird im zweiten Schritt entfernt', async ({ request }) => {
+  const r = await request.get('/index.html', { maxRedirects: 0, headers: { Host: 'reticora.de' } });
+  expect(r.status()).toBe(301);
+  expect(r.headers()['location']).toBe('https://www.reticora.de/index.html');
+  expect(r.headers()['strict-transport-security']).toBe('max-age=31536000');
+});
+
+test('fehlende Datei unter /_astro/: 404 ohne immutable, mit Kopfzeilen', async ({ request }) => {
+  const r = await request.get('/_astro/gibt-es-nicht.abc123.css', { maxRedirects: 0 });
+  expect(r.status()).toBe(404);
+  expect(r.headers()['cache-control'] ?? '').not.toContain('immutable');
+  expect(r.headers()['content-security-policy']).toBe(CSP);
+});
+
+test('/_astro/ (Verzeichnis ohne Index) zeigt die eigene Fehlerseite, nicht die Apache-Standardseite', async ({ request }) => {
+  const r = await request.get('/_astro/', { maxRedirects: 0 });
+  expect([403, 404]).toContain(r.status());
+  const body = await r.text();
+  expect(body).toContain('Diese Seite gibt es nicht');
+  expect(body).not.toContain('Apache');
+  expect(r.headers()['cache-control'] ?? '').not.toContain('immutable');
+  expect(r.headers()['content-security-policy']).toBe(CSP);
 });
