@@ -18,7 +18,7 @@ export const UI = {
         links: [
           { label: 'Discovery', href: '/produkt/discovery/' },
           { label: 'Datenqualität', href: '/produkt/datenqualitaet/' },
-          { label: 'Topologie und Impact', href: '/produkt/topologie/' },
+          { label: 'Topologie und Impact', href: '/produkt/topologie-impact/' },
           { label: 'Verwaltung', href: '/produkt/verwaltung/' },
           { label: 'Betrieb', href: '/produkt/betrieb/' },
           { label: 'Compliance', href: '/produkt/compliance/' },
@@ -28,7 +28,7 @@ export const UI = {
       {
         title: 'Einsatz',
         links: [
-          { label: 'Für Netzbetreiber', href: '/loesungen/netzbetreiber/' },
+          { label: 'Für Netzbetreiber', href: '/loesungen/isp/' },
           { label: 'Für MSPs', href: '/loesungen/msp/' },
           { label: 'Unterstützte Geräte', href: '/geraete/' },
           { label: 'Preise', href: '/preise/' },
@@ -38,7 +38,7 @@ export const UI = {
         title: 'Vertrauen',
         links: [
           { label: 'Sicherheit', href: '/sicherheit/' },
-          { label: 'Subprozessoren', href: '/sicherheit/subprozessoren/' },
+          { label: 'Subprozessoren', href: '/subprozessoren/' },
           { label: 'Barrierefreiheit', href: '/barrierefreiheit/' },
         ],
       },

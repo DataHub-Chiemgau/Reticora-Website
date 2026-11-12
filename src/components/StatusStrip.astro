@@ -1,8 +1,11 @@
 ---
-interface Props { items: { label: string; value: string }[] }
-const { items } = Astro.props;
+import Beleg from './Beleg.astro';
+import type { ClaimId, Lang } from '../data/types';
+
+interface Props { items: { label: string; value: string; claim?: ClaimId }[]; lang?: Lang }
+const { items, lang = 'de' } = Astro.props;
 ---
 
 <dl class="rt-strip">
-  {items.map((i) => <div><dt>{i.label}</dt><dd>{i.value}</dd></div>)}
+  {items.map((i) => <div><dt>{i.label}</dt><dd>{i.value}{i.claim && <>{' '}<Beleg claim={i.claim} lang={lang} /></>}</dd></div>)}
 </dl>
