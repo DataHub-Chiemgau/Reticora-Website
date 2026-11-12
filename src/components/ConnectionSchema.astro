@@ -1,0 +1,43 @@
+---
+import type { Lang } from '../data/types';
+import { SCHEMA } from '../content/schema';
+import { UI } from '../i18n/de';
+
+interface Props { lang: Lang; id?: string }
+const { lang, id = `verbindung-${lang}` } = Astro.props;
+
+const T = SCHEMA[lang];
+const devices = [76, 116, 156, 196];
+---
+
+<div class="rt-schema">
+<section class="rt-schema-frame" tabindex="0" aria-label={T.title}>
+  <svg viewBox="0 0 560 250" role="img" aria-labelledby={`${id}-t ${id}-d`}>
+    <title id={`${id}-t`}>{T.title}</title>
+    <desc id={`${id}-d`}>{T.desc}</desc>
+    <defs>
+      <marker id={`${id}-pfeil`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+        <path d="M0 0 10 5 0 10z" class="s-arrow" />
+      </marker>
+    </defs>
+    <rect class="s-zone" x="16" y="16" width="236" height="218" rx="8" />
+    <text class="s-zone-label" x="32" y="42">{T.net}</text>
+    <rect class="s-zone" x="352" y="16" width="192" height="218" rx="8" />
+    <text class="s-zone-label" x="368" y="42">{T.cloud}</text>
+    {devices.map((y) => (
+      <g>
+        <line class="s-link" x1="44" y1={y} x2="148" y2="146" />
+        <circle class="s-dot" cx="44" cy={y} r="8" />
+      </g>
+    ))}
+    <text class="s-note" x="32" y="222">{T.devices}</text>
+    <rect class="s-collector" x="148" y="120" width="96" height="52" rx="6" />
+    <text class="s-collector-label" x="196" y="151">{T.collector}</text>
+    <line class="s-wire" x1="244" y1="134" x2="352" y2="134" marker-end={`url(#${id}-pfeil)`} />
+    <text class="s-wire-label" x="298" y="124">HTTPS 443</text>
+    <line class="s-wire" x1="244" y1="160" x2="352" y2="160" marker-end={`url(#${id}-pfeil)`} />
+    <text class="s-wire-label" x="298" y="182">NATS mTLS 4222</text>
+  </svg>
+</section>
+<p class="rt-scroll-hint">{lang === 'de' ? UI.scrollHint : 'Schematic scrolls sideways.'}</p>
+</div>

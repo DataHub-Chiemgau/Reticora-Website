@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: sudo apt-get update && sudo apt-get install -y apache2
+      - run: npm run check
+      - run: npm run build
+      - run: npm test
+      - run: npm run validate
+      - run: npx playwright install --with-deps
+      - run: npm run test:e2e -- --trace off
+      - run: npm run lhci
+      # Alle Pakete sind devDependencies (nichts davon läuft im ausgelieferten Build), daher wird der ganze Baum geprüft.
+      # Stand: 9 high, 0 critical; alle 9 stammen aus der Kette @lhci/cli (basic-ftp über proxy-agent). Kritische Funde sperren.
+      - run: npm audit --audit-level=critical

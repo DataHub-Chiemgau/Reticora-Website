@@ -1,0 +1,77 @@
+/* erzeugt aus design/leitstand/tokens.json – nicht von Hand ändern */
+
+:root, [data-theme="leitstand"] {
+  color-scheme: dark;
+  --canvas: #0d1215;
+  --panel: #151b20;
+  --raised: #1b2329;
+  --line: #262f36;
+  --line-strong: #36424a;
+  --control: #65747f;
+  --fg: #e8edef;
+  --fg-muted: #a2aeb6;
+  --fg-subtle: #8a98a1;
+  --accent: #4cc3ce;
+  --accent-strong: #82dae0;
+  --accent-soft: #10292e;
+  --accent-fg: #0d1215;
+  --signal: #fbbf24;
+  --danger: #f87171;
+  --success: #4ade80;
+  --graph-active: #16a34a;
+  --graph-failed: #dc2626;
+}
+
+[data-theme="dokument"] {
+  color-scheme: light;
+  --canvas: #f5f7f8;
+  --panel: #ffffff;
+  --raised: #ffffff;
+  --line: #e1e6e9;
+  --line-strong: #cbd3d8;
+  --control: #808f9a;
+  --fg: #171e23;
+  --fg-muted: #4e5c65;
+  --fg-subtle: #5d6d76;
+  --accent: #087680;
+  --accent-strong: #065a62;
+  --accent-soft: #e4f3f4;
+  --accent-fg: #ffffff;
+  --signal: #b45309;
+  --danger: #b91c1c;
+  --success: #15803d;
+  --graph-active: #16a34a;
+  --graph-failed: #dc2626;
+}
+
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --space-30: 120px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --container: 1200px;
+  --measure: 68ch;
+  --gutter: 24px;
+  --header-height: 64px;
+  --target-min: 44px;
+  --hairline: 1px;
+  --bp-sm: 480px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-nav: 1120px;
+  --bp-xl: 1280px;
+  --font-display: "Archivo", "Arial Nova", "Helvetica Neue", Arial, sans-serif;
+  --font-text: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}

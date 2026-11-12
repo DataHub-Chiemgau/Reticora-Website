@@ -1,0 +1,39 @@
+# Apache-Testkonfiguration; Platzhalter @...@ ersetzt start.sh.
+ServerName localhost
+ServerRoot "@TMP@"
+PidFile "@TMP@/apache.pid"
+Mutex file:@TMP@ default
+DefaultRuntimeDir "@TMP@"
+Listen 127.0.0.1:8080
+ServerTokens Prod
+
+LoadModule mpm_event_module @MODS@/mod_mpm_event.so
+LoadModule authz_core_module @MODS@/mod_authz_core.so
+LoadModule dir_module @MODS@/mod_dir.so
+LoadModule mime_module @MODS@/mod_mime.so
+LoadModule rewrite_module @MODS@/mod_rewrite.so
+LoadModule headers_module @MODS@/mod_headers.so
+LoadModule expires_module @MODS@/mod_expires.so
+LoadModule deflate_module @MODS@/mod_deflate.so
+LoadModule setenvif_module @MODS@/mod_setenvif.so
+LoadModule filter_module @MODS@/mod_filter.so
+LoadModule alias_module @MODS@/mod_alias.so
+@IDENTITY@
+TypesConfig /etc/mime.types
+AddType font/woff2 .woff2
+AddDefaultCharset UTF-8
+
+ErrorLog "|/bin/sh -c 'exec cat >&2'"
+LogLevel warn
+
+DocumentRoot "@DOCROOT@"
+<Directory />
+  AllowOverride None
+  Require all denied
+</Directory>
+<Directory "@DOCROOT@">
+  AllowOverride All
+  Options FollowSymLinks
+  Require all granted
+</Directory>
+DirectoryIndex index.html

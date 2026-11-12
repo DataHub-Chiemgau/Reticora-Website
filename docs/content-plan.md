@@ -20,6 +20,8 @@
    Standort, CI, Review, Collector, Scope.
 5. **Screenshots sind Platzhalter**, bis die Bilder aus der Demo-Organisation
    vorliegen (§8).
+6. **Der Wortlaut je Seite** steht unter `docs/copy/`; die Startseite in
+   `copy/startseite-de.md`.
 
 ## 2. Sitemap
 
@@ -110,7 +112,7 @@ für Prüfer und für Enterprise-Interessenten steht der Kontakt vorn.
 | Nr. | Abschnitt | Aussage | Bild |
 |---|---|---|---|
 | 1 | Einstieg | „Die CMDB, die Ihr Netz selbst ausliest und jeden Wert belegt.“ Ein Satz dazu, für wen und wie. Zwei Handlungsaufrufe. Darunter die Leiste mit Betriebswerten. | Netzschema mit Ausfallsimulation (Schemazeichnung, kein Screenshot) |
-| 2 | So entsteht der Bestand | Ablauf in fünf Schritten: Collector verbinden, Scope bestätigen, auslesen, abgleichen, prüfen. Die Reihenfolge ist die des Onboardings der App. | Schema Collector → Cloud |
+| 2 | So entsteht Ihr Bestand | Ablauf in fünf Schritten: Collector verbinden, Scopes bestätigen, auslesen, abgleichen, prüfen. Die ersten beiden heißen wie im Onboarding der App. | Schema der Verbindungsrichtung |
 | 3 | Daten, denen Sie trauen | Quelle, Zeitpunkt und Grund je Feld; manuell gewinnt; Review-Inbox statt stiller Überschreibung | S-02 CI-Detail, S-03 Review-Inbox |
 | 4 | Zusammenhänge | Topologie aus LLDP, Rack höheneinheitengenau, Ausfallsimulation mit Redundanz | S-04, S-05, S-06 |
 | 5 | Für mehrere Kunden | Organisation → Kunde → Standort; getrennt bis in die Datenbank; Rollen mit Geltungsbereich | S-18 Arbeitsbereich |
@@ -177,6 +179,15 @@ Angabe des Auftraggebers vom 2026-11-12. Sie ersetzt die Preise in
 | Enterprise Shared | ab 999 € | auf Anfrage | – |
 | Enterprise Local | ab 1.999 € | auf Anfrage | – |
 
+Limits je Paket nach `README.md` §14 (W-E16):
+
+| Paket | CIs | Collectors | Nutzer |
+|---|---|---|---|
+| Essentials | 500 | 2 | 5 |
+| Standard | 2.500 | 5 | 25 |
+| Pro | 10.000 | 20 | 100 |
+| Enterprise Shared, Enterprise Local | 50.000 | unbegrenzt | unbegrenzt |
+
 - **Enterprise Shared:** in der Cloud auf getrennter Infrastruktur.
   **Enterprise Local:** beim Kunden gehostet; der Preis enthält alle Arbeiten.
 - **Beta-Rabatt:** 20 % in den ersten sechs Monaten, 10 % in den folgenden
@@ -189,11 +200,13 @@ Angabe des Auftraggebers vom 2026-11-12. Sie ersetzt die Preise in
 - **Downgrade:** Es gehen keine Daten verloren. CIs über dem Limit des neuen
   Tarifs werden als zusätzliche CIs abgerechnet. Funktionen, die der Tarif
   nicht enthält, werden gesperrt, ihre Daten bleiben erhalten (W-E15).
-- **Darstellung:** Nettopreise mit dem Zusatz „zzgl. USt.“ und dem Hinweis
+- **Darstellung:** Nettopreise mit dem Zusatz „zzgl. MwSt.“ und dem Hinweis
   „Angebot nur für Unternehmen“ (`compliance-matrix.md` B-02). Die
   Bedingungen des Beta-Rabatts stehen direkt bei den Preisen (I-03).
-- **Offen (F-04):** netto ja/nein; Schreibweise „Essentials“; Limits je
-  Tarif; Buchungszeitraum des Beta-Rabatts; Weg vom Test zum Vertrag (F-19).
+- **Geklärt (W-E16):** Nettopreise mit „zzgl. MwSt.“; der Paketname lautet
+  „Essentials“; die Limits stehen oben.
+- **Offen:** Buchungszeitraum des Beta-Rabatts; Weg vom Test zum Vertrag
+  (F-19).
 
 ### 6.2 Funktionen je Paket
 
@@ -214,14 +227,11 @@ zusammen.
 | Compliance, Befunde und Endpoint-Agent | Enterprise |
 | Add-ons: IGA, KI-Assistent | zu jedem Paket buchbar |
 
-Zu klären (F-23): Code und `README.md` §14 weichen ab (Befunde: Enterprise
-im Code, Pro in der README; Schulungen: Pro im Code, Enterprise in der
-README). Die README nennt außerdem Funktionen ohne Schlüssel im Code
-(SMS/Pager, Ticketing Pro, Disposition, erweitertes Audit, Reseller, RFID,
-GIS). Limits für CIs, Collectors und Nutzer stehen nur in der README
-(500 / 2.500 / 10.000 / 50.000 CIs; 2 / 5 / 20 / unbegrenzt Collectors;
-5 / 25 / 100 / unbegrenzt Nutzer) und sind dort als unbestätigt markiert.
-Ohne enthaltene Menge hat der Preis je zusätzlichem CI keine Basis.
+Zu klären (F-23): Code und `README.md` §14 weichen bei einzelnen Funktionen
+ab (Befunde: Enterprise im Code, Pro in der README; Schulungen: Pro im Code,
+Enterprise in der README). Die README nennt außerdem Funktionen ohne
+Schlüssel im Code (SMS/Pager, Ticketing Pro, Disposition, erweitertes Audit,
+Reseller, RFID, GIS). Bis zur Klärung gilt die Zuordnung des Codes.
 
 ### 6.3 Begriffe in beiden Sprachen
 
@@ -259,19 +269,19 @@ benannte Person ihn abgehakt hat (F-14).
 
 | ID | Aussage | Beleg | Vor Go-live |
 |---|---|---|---|
-| C-01 | Automatische Erfassung über SNMP v2c/v3, SSH, Redfish, IPMI/WMI, NAS- und Strom-Plugins | `README.md` §5.1 | Stand der Auslieferung |
+| C-01 | Automatische Erfassung über SNMP v2c/v3, SSH und Redfish sowie NAS- und Strom-Plugins; IPMI und WMI ergänzend | `README.md` §5.1 (IPMI und WMI dort als „Best Effort“) | IPMI und WMI nicht gleichrangig bewerben |
 | C-02 | Collector baut nur ausgehende Verbindungen auf (443, 4222) | `README.md` §2.1, `docs/betrieb/firewall-matrix.md` | – |
 | C-03 | Herkunft je Feld: Quelle, Wert, Zeitpunkt, Auswahlgrund | `README.md` §5.3 | – |
 | C-04 | Manuelle Werte werden nie automatisch überschrieben | `README.md` §1.1 | – |
 | C-05 | Kein automatisches Zusammenführen allein über den Hostnamen | `README.md` §5.3 | – |
-| C-06 | Mandantentrennung in der Datenbank (Row-Level Security) | `README.md` §4, `docs/decisions/0001-timescale-rls.md` | – |
+| C-06 | Mandantentrennung wird in der Datenbank erzwungen: Row-Level Security auf den Mandantentabellen; Metrik-Zeitreihen sind über eigene Sichten getrennt | `README.md` §4; Ausnahme für Metriken: `docs/decisions/0001-timescale-rls.md` | nie „alle Daten per Row-Level Security“ schreiben |
 | C-07 | Daten, Backups, Logs und Suchindex in der EU | `README.md` §3 | **Region und Anbieter vom Betreiber bestätigen (F-10)** |
 | C-08 | Liste erkannter Hersteller und Geräteklassen | `README.md` §5.4, `collector/profiles` | mit Profilstand abgleichen |
 | C-09 | Ausfallsimulation mit Redundanz und Mehrfachausfall | `README.md` §7 | – |
 | C-10 | Rack-Ansicht höheneinheitengenau | `README.md` §9 | – |
 | C-11 | REST-API nach OpenAPI, signierte Webhooks, Export | `README.md` §8 | öffentliche Doku vorhanden? (F-15) |
 | C-12 | Audit-Protokoll mit Hash-Kette, prüfbar | `README.md` §12 | – |
-| C-13 | Zugangsdaten verschlüsselt (AES-256-GCM), Klartext nur im Speicher des Collectors | `README.md` §5.6 | – |
+| C-13 | Zugangsdaten liegen verschlüsselt in der Plattform (AES-256-GCM) und gehen zusätzlich verschlüsselt an den Collector; im Klartext nur im Arbeitsspeicher, nie auf Datenträgern, in API-Antworten oder Logs | `README.md` §5.6 | nicht „nur im Collector“ schreiben |
 | C-14 | Personenbezogene Daten in einem eigenen Tresor; Löschung durch Vernichten des Schlüssels | `README.md` §12 | – |
 | C-15 | Signierte Release-Artefakte und SBOM | `README.md` §3, §15 | – |
 | C-16 | Externer Penetrationstest | nur Erklärung des Auftraggebers, kein Bericht im Repository (`docs/security/pentest-g1.md`) | **nur mit Nachweis nennen (F-10)** |
@@ -284,13 +294,26 @@ benannte Person ihn abgehakt hat (F-14).
 | C-23 | Barrierefreiheit der App | Ziel WCAG 2.2 AA (`frontend/DESIGN.md` §7) | als Ziel formulieren, nicht als Konformität |
 | C-24 | Funktionen späterer Produktphasen (Monitoring-Alarme, Workflows, Compliance-Befunde, Endpoint-Agent, SAML/SCIM, Reseller, RFID, GIS, Mobil) | `README.md` §14, §17 | **gegen Launch-Umfang prüfen (F-03)** |
 | C-25 | Dedicated Instance und Air-Gapped-Betrieb | `docs/betrieb/referenzmodell.md` | Angebot bestätigen |
+| C-26 | Sweep alle 24 Stunden, Abfrage über SNMP und Redfish alle 15 Minuten, einstellbar ab 5 Minuten | `README.md` §5.2 | – |
+| C-27 | Ohne Verbindung puffert der Collector bis 24 Stunden und liefert in ursprünglicher Reihenfolge nach | `README.md` §2.1, §5.2 | – |
+| C-28 | Collector als Docker-Image, OVA oder Windows-Installer | `README.md` §5.6 | Stand der Auslieferung |
+| C-29 | Nach dem Enrollment schlägt der Collector seine lokalen Netze als Scopes vor | `README.md` §5.2 | – |
+| C-30 | Review-Inbox mit Vergleich von Beobachtung und CI; Aktionen zusammenführen, neu anlegen, übernehmen, verwerfen | `README.md` §9; `frontend/src/i18n/de-DE.json` (`reviews.actions.*`) | – |
+| C-31 | Nachbarschaften aus LLDP als Beziehung `connected_to` | `README.md` §5.5 | – |
+| C-32 | Ebenen Organisation → Kunde → Standort | `README.md` §4 | – |
+| C-33 | Rollen mit Geltungsbereich auf Organisation, Kunde, Standort oder Team | `README.md` §12 | – |
+| C-34 | Zweiter Faktor ist Pflicht für Administratoren der Organisation | `README.md` §12 | – |
+| C-35 | Assets mit Kaufdaten, Zuweisung mit Unterschrift, Verträge, Dokumente | `README.md` §6.5; `docs/releases/phase2.md` | – |
+| C-36 | Lagerbestand, Bewegungen, Inventur, Etiketten | `docs/releases/phase2.md` | – |
+| C-37 | Tickets mit SLA und Geschäftskalender | `README.md` §6.5 | – |
+| C-38 | 600 Anfragen je Minute und Schlüssel | `README.md` §8 | – |
 
 ## 8. Screenshot-Platzhalter
 
-Alle Bilder entstehen später in der Demo-Organisation bzw. im
-Simulationsmodus der App (`README.md` §16: 30 deterministische Geräte), helles
-Thema, 1440 × 900 px in doppelter Auflösung, deutsche Oberfläche. Keine
-Kundendaten.
+Alle Bilder entstehen später in der Demo-Organisation bzw. mit dem
+Simulationsmodus des Collectors (`README.md` §16: 30 deterministische
+Geräte), dunkles Thema, 1440 × 900 px in doppelter Auflösung, Oberfläche in
+der Sprache der Seite. Keine Kundendaten.
 
 | ID | Motiv | Seite der App | Verwendet auf |
 |---|---|---|---|
@@ -305,13 +328,17 @@ Kundendaten.
 | S-09 | Asset mit Zuweisung | `AssetDetailPage` | Verwaltung |
 | S-10 | Inventur | `StocktakeDetailPage` | Verwaltung |
 | S-11 | Ticket mit SLA | `TicketDetailPage` | Betrieb |
-| S-12 | Monitoring | `MonitoringPage` | Betrieb |
-| S-13 | Compliance und Befunde | `CompliancePage`, `FindingsPage` | Compliance |
+| S-12 | Monitoring: Metriken und Alarmregeln | `MonitoringPage` | Betrieb |
+| S-13 | Compliance: Regeln, Score und Abweichungen | `CompliancePage` | Compliance |
 | S-14 | Audit-Protokoll | `AuditPage` | Compliance, Sicherheit |
-| S-15 | Webhooks und API-Schlüssel | `WebhooksPage` | API |
+| S-15 | Webhooks: Abonnements, Zustellverlauf und Dead-Letter-Queue | `WebhooksPage` | API |
 | S-16 | Dashboard | `DashboardPage` | Lösungen |
 | S-17 | Berechtigungen | `PermissionsPage` | Sicherheit |
 | S-18 | Arbeitsbereich Organisation → Kunde → Standort | Kopfzeile der App, `ClientsPage` | Startseite, Lösungen MSP |
+
+API-Schlüssel haben in der App derzeit keine Oberfläche; die API-Seite zeigt
+sie als Code-Beispiel. S-12 und S-13 setzen voraus, dass die Demo die
+Module für Alarmregeln und Compliance eingeschaltet hat (F-23).
 
 ## 9. Formular „Kontakt“
 

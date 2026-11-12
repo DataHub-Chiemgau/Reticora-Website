@@ -1,0 +1,15 @@
+---
+interface Props { id: string; title: string; lead?: string }
+const { id, title, lead } = Astro.props;
+---
+
+<section class="rt-section" id={id} aria-labelledby={`${id}-titel`}>
+  <div class="rt-container">
+    <div class="rt-section-head">
+      <h2 class="heading-l" id={`${id}-titel`}>{title}</h2>
+      {lead && <p class="lead">{lead}</p>}
+      {Astro.slots.has('lead') && <div class="lead rt-para-lead" role="paragraph"><slot name="lead" /></div>}
+    </div>
+    <slot />
+  </div>
+</section>
