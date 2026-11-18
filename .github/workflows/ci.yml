@@ -41,6 +41,20 @@ jobs:
       - run: npm run test:e2e
         env:
           RETICORA_ACCESS_LOG: ${{ runner.temp }}/apache-access.log
+      # Die Artefakte lassen sich in manchen Umgebungen nicht herunterladen; deshalb steht die Auswertung
+      # des Zugriffsprotokolls zusätzlich im Job-Log: langsame (>1 s) und abgebrochene Anfragen (%X = X)
+      # sowie die Zahl der Abrufe je HTML-Seite (fehlt ein Abruf, kam die Anfrage nie beim Server an).
+      - name: Zugriffsprotokoll auswerten
+        if: failure()
+        env:
+          LOG: ${{ runner.temp }}/apache-access.log
+        run: |
+          [ -f "$LOG" ] || { echo "kein Zugriffsprotokoll"; exit 0; }
+          echo "Anfragen gesamt: $(wc -l < "$LOG")"
+          echo "--- langsamer als 1 s oder abgebrochen ---"
+          awk '{ d=$(NF-1); x=$NF; if (d+0 > 1000000 || x == "X") print }' "$LOG" | head -n 200
+          echo "--- Abrufe je HTML-Seite ---"
+          awk '{ p=$5; if (p ~ /\/$/) n[p]++ } END { for (k in n) print n[k], k }' "$LOG" | sort -k2 | head -n 120
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: failure()
         with:
