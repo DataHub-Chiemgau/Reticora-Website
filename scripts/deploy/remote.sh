@@ -8,8 +8,14 @@
 # Es liest nur den Pfad $CONFIG_FILE (legt davon einen Symlink in das Release/den Betriebsstand, ändert aber nie die Datei),
 # berührt die Datenbank nicht und schreibt nichts außerhalb dieser Pfade.
 #
-# Aufruf:  remote.sh verify <sha> | preview <sha> | activate <sha> | rollback | status | prune [Anzahl]
+# Aufruf:  remote.sh exists <sha> | install <sha> <.incoming-…> | verify <sha> | preview <sha> | activate <sha> | rollback
+#          | status | prune [Anzahl]
 # `preview` liest eine Zeile für .htpasswd von STDIN.
+#
+# Hochladen (S-03): Der Workflow lädt nie in $RELEASES/<sha> selbst, sondern in einen neuen Ordner $RELEASES/.incoming-<sha>-<lauf>;
+# `install` prüft ihn und benennt ihn atomar in $RELEASES/<sha> um. Gibt es <sha> schon (z. B. das laufende Release), wird der
+# Upload verworfen; ein laufendes Release wird nie überschrieben. `exists` sagt vorher, ob sich der Upload überhaupt lohnt.
+# Nur Release-Builds (S-13): verify, install, preview, activate und rollback verlangen "build: release" in MANIFEST.txt.
 #
 # Umschaltstrategie (RETICORA_SWITCH):
 #   symlink (Standard)  $LIVE ist ein Symlink auf $RELEASES/<sha>; Umschalten = Symlink atomar ersetzen (ln + mv -T).
@@ -44,13 +50,21 @@ check_sha() {
 
 release_dir() { echo "$RELEASES/$1"; }
 
-verify_release() {
-  local dir; dir="$(release_dir "$1")"
-  [[ -d "$dir/www" && -d "$dir/reticora" && -f "$dir/MANIFEST.txt" ]] || die "Release $1 unvollständig oder nicht vorhanden"
+# Prüft einen Release-Ordner: vollständig, Release-Build, gehört zu <sha>, keine echte config.php, Prüfsummen.
+verify_dir() { # <Ordner> <sha>
+  local dir="$1" sha="$2"
+  [[ -d "$dir/www" && -d "$dir/reticora" && -f "$dir/MANIFEST.txt" ]] || die "Release $sha unvollständig oder nicht vorhanden"
+  # S-13: ein mit --allow-dev gebautes Paket (ohne bestandene Release-Prüfung) wird auf dem Host nie aktiv.
+  grep -qx 'build: release' "$dir/MANIFEST.txt" || die "Release $sha ist kein Release-Build (MANIFEST.txt ohne 'build: release')"
+  grep -q "^git: $sha" "$dir/MANIFEST.txt" || die "MANIFEST.txt gehört nicht zum Release $sha"
   # Eine echte config.php gehört nicht ins Release; der Symlink auf die gemeinsame Datei entsteht erst beim Aktivieren.
-  [[ ! -f "$dir/reticora/config.php" || -L "$dir/reticora/config.php" ]] || die "Release $1 enthält eine echte config.php"
+  [[ ! -f "$dir/reticora/config.php" || -L "$dir/reticora/config.php" ]] || die "Release $sha enthält eine echte config.php"
   # Alles nach der Zeile "---" ist "<sha256>  <Pfad>".
-  ( cd "$dir" && sed -n '/^---$/,$p' MANIFEST.txt | tail -n +2 | sha256sum --check --quiet - ) || die "Release $1: Prüfsummen stimmen nicht mit MANIFEST.txt überein"
+  ( cd "$dir" && sed -n '/^---$/,$p' MANIFEST.txt | tail -n +2 | sha256sum --check --quiet - ) || die "Release $sha: Prüfsummen stimmen nicht mit MANIFEST.txt überein"
+}
+
+verify_release() {
+  verify_dir "$(release_dir "$1")" "$1"
   echo "verify ok: $1"
 }
 
@@ -89,6 +103,28 @@ switch_live() {
       ;;
     *) die "unbekannte Strategie RETICORA_SWITCH='$STRATEGY' (symlink oder rsync)" ;;
   esac
+}
+
+cmd_exists() {
+  if [[ -d "$(release_dir "$1")" ]]; then echo vorhanden; else echo fehlt; fi
+}
+
+cmd_install() { # <sha> <Upload-Ordner unter $RELEASES>
+  local sha="$1" name="${2:-}" src dst
+  [[ "$name" =~ ^\.incoming-([0-9a-f]{7,40})-[0-9]+-[0-9]+$ && "${BASH_REMATCH[1]}" == "$sha" ]] \
+    || die "ungültiger Upload-Ordner: '$name' (erwartet .incoming-$sha-<Lauf>-<Versuch>)"
+  src="$RELEASES/$name"; dst="$(release_dir "$sha")"
+  [[ -d "$src" && ! -L "$src" ]] || die "Upload-Ordner fehlt: $src"
+  if [[ -e "$dst" ]]; then
+    # Nie in ein vorhandenes (womöglich laufendes) Release schreiben; der Upload war überflüssig.
+    rm -rf -- "${RELEASES:?}/$name"
+    echo "install: $sha schon vorhanden, Upload verworfen"
+    verify_release "$sha"
+    return
+  fi
+  verify_dir "$src" "$sha"
+  mv -T -- "$src" "$dst" # atomar; scheitert, falls <sha> inzwischen entstanden ist
+  echo "install ok: $sha"
 }
 
 cmd_preview() {
@@ -156,6 +192,13 @@ cmd_prune() {
   local keep="${1:-$KEEP_DEFAULT}" cur prev pv n=0 d name
   [[ "$keep" =~ ^[0-9]+$ && "$keep" -ge 2 ]] || die "Anzahl muss mindestens 2 sein"
   cur="$(state_get current)"; prev="$(state_get previous)"; pv="$(state_get preview)"
+  # liegengebliebene Upload-Ordner abgebrochener Läufe (Deploy-Läufe laufen nie gleichzeitig: concurrency im Workflow)
+  while IFS= read -r d; do
+    name="$(basename "$d")"
+    [[ "$name" =~ ^\.incoming-[0-9a-f]{7,40}-[0-9]+-[0-9]+$ ]] || continue
+    rm -rf -- "${RELEASES:?}/$name"
+    echo "prune: $name"
+  done < <(find "$RELEASES" -mindepth 1 -maxdepth 1 -type d -name '.incoming-*')
   # neueste zuerst; current, previous und preview bleiben immer
   while IFS= read -r d; do
     name="$(basename "$d")"
@@ -172,13 +215,15 @@ main() {
   mkdir -p "$RELEASES"
   local cmd="${1:-}"
   case "$cmd" in
+    exists)   check_sha "${2:-}"; cmd_exists "$2" ;;
+    install)  check_sha "${2:-}"; cmd_install "$2" "${3:-}" ;;
     verify)   check_sha "${2:-}"; verify_release "$2" ;;
     preview)  check_sha "${2:-}"; cmd_preview "$2" ;;
     activate) check_sha "${2:-}"; cmd_activate "$2" ;;
     rollback) cmd_rollback ;;
     status)   cmd_status ;;
     prune)    cmd_prune "${2:-}" ;;
-    *) die "Aufruf: remote.sh verify|preview|activate <sha> | rollback | status | prune [Anzahl]" ;;
+    *) die "Aufruf: remote.sh exists|verify|preview|activate <sha> | install <sha> <.incoming-…> | rollback | status | prune [Anzahl]" ;;
   esac
 }
 main "$@"

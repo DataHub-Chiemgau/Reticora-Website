@@ -67,6 +67,46 @@ export function excluded(rel) {
   return false;
 }
 
+/** Dateien eines Pakets, die zur Laufzeit oder für die Lizenz gebraucht werden; alles andere (Doku, Tests, CI, Git) fällt weg. */
+const KEEP_IN_PACKAGE = /^(LICEN[CS]E|COPYING|NOTICE|COMMITMENT|VERSION)(\.[a-z]+)?$|^composer\.json$|^language$/i;
+
+/**
+ * Räumt vendor/ auf (S-12): je Paket (vendor/<Anbieter>/<Name>) nur die Autoload-Pfade aus seiner composer.json und die Dateien
+ * aus KEEP_IN_PACKAGE; vendor/composer bleibt (Autoloader). Danach keine Punktdateien und keine leeren Ordner.
+ */
+export function stripVendor(vendor) {
+  for (const owner of readdirSync(vendor, { withFileTypes: true })) {
+    if (!owner.isDirectory() || owner.name === 'composer' || owner.name === 'bin') continue;
+    for (const pkg of readdirSync(join(vendor, owner.name), { withFileTypes: true })) {
+      if (!pkg.isDirectory()) continue;
+      const dir = join(vendor, owner.name, pkg.name);
+      let autoload = {};
+      try { autoload = JSON.parse(readFileSync(join(dir, 'composer.json'), 'utf8')).autoload ?? {}; } catch { autoload = {}; }
+      const keep = new Set(
+        [...Object.values(autoload['psr-4'] ?? {}), ...Object.values(autoload['psr-0'] ?? {}), autoload.classmap ?? [], autoload.files ?? []]
+          .flat()
+          .map((p) => String(p).replace(/^\.\//, '').split('/')[0])
+          .filter(Boolean),
+      );
+      for (const e of readdirSync(dir)) {
+        if (!keep.has(e) && !KEEP_IN_PACKAGE.test(e)) rmSync(join(dir, e), { recursive: true, force: true });
+      }
+    }
+  }
+  // Ballast innerhalb der behaltenen Ordner: Beispiele, Tests, Source-Maps, Punktdateien.
+  for (const p of walk(vendor)) {
+    const rel = relative(vendor, p);
+    if (excluded(rel) || /[\\/](tests?|Tests?)[\\/]/.test(rel) || rel.split(sep).some((x) => x.startsWith('.'))) rmSync(p, { force: true });
+  }
+  const dirs = (d) => readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory()).flatMap((e) => [...dirs(join(d, e.name)), join(d, e.name)]);
+  for (const d of dirs(vendor)) {
+    if (/^(examples?|tests?)$/i.test(basename(d)) || basename(d).startsWith('.')) rmSync(d, { recursive: true, force: true });
+  }
+  for (const d of dirs(vendor)) {
+    if (existsSync(d) && readdirSync(d).length === 0) rmSync(d, { recursive: true, force: true });
+  }
+}
+
 function copyTree(src, dst, { dropDirs = [] } = {}) {
   cpSync(src, dst, {
     recursive: true,
@@ -114,6 +154,12 @@ export function verifyLayout(root) {
     if (!existsSync(f) || readFileSync(f, 'utf8') !== DENY_ALL) problems.push(`${relative(root, d)}/.htaccess (alles verboten) fehlt`);
   }
   if (existsSync(join(app, 'vendor', 'phpunit'))) problems.push('vendor/phpunit: Entwicklungsabhängigkeiten im Paket');
+  const dirsOf = (d) => readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory()).flatMap((e) => [join(d, e.name), ...dirsOf(join(d, e.name))]);
+  for (const d of dirsOf(root)) {
+    const rel = relative(root, d);
+    // .well-known (security.txt) im Webroot ist gewollt; sonst kein Punktordner, nirgends .git
+    if (basename(d) === '.git' || (basename(d).startsWith('.') && !rel.startsWith('www' + sep))) problems.push(`Ordner mit führendem Punkt im Paket: ${rel}`);
+  }
   if (!existsSync(join(app, 'vendor', 'autoload.php'))) problems.push('vendor/autoload.php fehlt');
   if (problems.length) throw new Error(problems.join('\n'));
 }
@@ -159,16 +205,11 @@ export function buildPackage(opts) {
   cpSync(join(backend, 'config.example.php'), join(app, 'config.example.php'));
   cpSync(join(backend, 'composer.json'), join(app, 'composer.json'));
   cpSync(join(backend, 'composer.lock'), join(app, 'composer.lock'));
-  execFileSync(process.env.COMPOSER_BIN || 'composer', ['install', '--no-dev', '--optimize-autoloader', '--no-interaction', '--no-progress', '--no-scripts', `--working-dir=${app}`], {
+  // S-12: Archive statt Git-Quellstand, keine Composer-Plugins; danach nur Laufzeitdateien behalten (stripVendor).
+  execFileSync(process.env.COMPOSER_BIN || 'composer', ['install', '--no-dev', '--prefer-dist', '--no-plugins', '--optimize-autoloader', '--no-interaction', '--no-progress', '--no-scripts', `--working-dir=${app}`], {
     stdio: ['ignore', 'inherit', 'inherit'],
   });
-  // Ballast aus vendor/ entfernen (Beispiele, Tests, Source-Maps).
-  for (const p of walk(join(app, 'vendor'))) {
-    if (excluded(relative(join(app, 'vendor'), p)) || /[\\/](tests?|Tests?)[\\/]/.test(relative(app, p))) rmSync(p, { force: true });
-  }
-  for (const d of readdirSync(join(app, 'vendor'), { recursive: true, withFileTypes: true })) {
-    if (d.isDirectory() && /^(examples?|tests?)$/i.test(d.name)) rmSync(join(d.parentPath, d.name), { recursive: true, force: true });
-  }
+  stripVendor(join(app, 'vendor'));
   writeFileSync(join(app, '.htaccess'), DENY_ALL);
   for (const e of readdirSync(app, { withFileTypes: true })) {
     if (e.isDirectory()) writeFileSync(join(app, e.name, '.htaccess'), DENY_ALL);

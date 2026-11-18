@@ -95,6 +95,22 @@ describe.skipIf(!hasDist || !hasComposer)('Release-Paket', () => {
     expect(lines[3]).toBe(`files: ${entries.length}`);
   });
 
+  test('S-12: vendor/ enthält nur Laufzeitdateien: kein .git, keine Punktdateien, keine Entwicklerdateien, keine leeren Ordner', () => {
+    const dirs = (d: string): string[] => readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory()).flatMap((e) => [join(d, e.name), ...dirs(join(d, e.name))]);
+    const allDirs = dirs(root).map((p) => relative(root, p).split(sep).join('/'));
+    expect(allDirs.filter((d) => d.split('/').some((p) => p.startsWith('.')))).toEqual([]);
+    expect(allDirs.filter((d) => readdirSync(join(root, d)).length === 0)).toEqual([]);
+    expect(files.filter((f) => f.startsWith('reticora/vendor/') && f.split('/').some((p) => p.startsWith('.') && p !== '.htaccess'))).toEqual([]);
+    expect(files.filter((f) => f.startsWith('reticora/vendor/') && f.split('/').slice(2, -1).length > 0 && f.endsWith('/.htaccess'))).toEqual([]);
+    const mailer = files.filter((f) => f.startsWith('reticora/vendor/phpmailer/phpmailer/')).map((f) => f.slice('reticora/vendor/phpmailer/phpmailer/'.length));
+    expect(mailer.filter((f) => !/^(src\/|language\/|LICENSE$|COMMITMENT$|VERSION$|composer\.json$)/.test(f))).toEqual([]);
+    expect(mailer).toContain('src/PHPMailer.php');
+    expect(mailer).toContain('LICENSE');
+    const src = readFileSync(join(repo, 'scripts/deploy/package.mjs'), 'utf8');
+    expect(src).toMatch(/'--prefer-dist'/);
+    expect(src).toMatch(/'--no-plugins'/);
+  });
+
   test('Release-Marke und Quellen gelangen nicht ins Paket', () => {
     expect(files.filter((f) => f.endsWith('.release'))).toEqual([]);
     expect(files.filter((f) => f.startsWith('www/') && /(^|\/)(src|backend|\.git|\.superpowers)\//.test(f))).toEqual([]);
@@ -102,7 +118,7 @@ describe.skipIf(!hasDist || !hasComposer)('Release-Paket', () => {
 
   test.skipIf(!hasPhp)('lead.php findet vendor/ aus www/api/ ohne Änderung (../../reticora) und antwortet auf GET mit 405', async () => {
     const cfg = join(tmp, 'config.test.php');
-    writeFileSync(cfg, `<?php return ['site_url'=>'https://www.example.test','contact_email'=>'k@example.test','db'=>['dsn'=>'sqlite::memory:'],'mail'=>['transport'=>'smtp']];`);
+    writeFileSync(cfg, `<?php return ['site_url'=>'https://www.example.test','contact_email'=>'k@example.test','retention_days'=>90,'db'=>['dsn'=>'sqlite::memory:'],'mail'=>['transport'=>'smtp']];`);
     const port = 18000 + Math.floor(Math.random() * 2000);
     const srv: ChildProcess = spawn('php', ['-S', `127.0.0.1:${port}`, '-t', join(root, 'www')], { env: { ...process.env, RETICORA_CONFIG: cfg }, stdio: 'ignore' });
     try {
