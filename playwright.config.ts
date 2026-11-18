@@ -1,9 +1,16 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const projects = [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }];
+import type { PlaywrightTestProject } from '@playwright/test';
+
+const projects: PlaywrightTestProject[] = [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }];
 if (process.env.CI) {
   projects.push(
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    // Firefox bleibt in der CI bei etwa 1 von 1000 Seitenaufrufen bis zum Zeitlimit beim Laden hängen. Das
+    // Zugriffsprotokoll des Testservers zeigt in diesen Läufen keine Anfrage über 1 s und keinen Abbruch: Der Server
+    // antwortet, das Hängen liegt im Browser. Bei rund 1000 Firefox-Tests je Lauf trifft es mit einem
+    // Wiederholungsversuch zu oft denselben Test zweimal; daher zwei Versuche und ein kürzeres Navigationslimit,
+    // damit ein Hänger schnell abbricht. Jeder wiederholte Test steht im Bericht als „flaky“.
+    { name: 'firefox', retries: 2, use: { ...devices['Desktop Firefox'], navigationTimeout: 15_000 } },
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   );
 }
