@@ -51,7 +51,8 @@ test('Pakettabelle: jede Zahl stammt aus PLANS', async ({ page }) => {
     const cell = async (c: string) => norm(await row.locator(`[data-col="${c}"]`).innerText());
     expect(await cell('monthly')).toBe(`${p.from ? 'ab ' : ''}${eur(p.monthly)}`);
     expect(await cell('yearly')).toBe(p.yearly === null ? 'auf Anfrage' : eur(p.yearly));
-    expect(await cell('beta')).toBe(p.betaYearly === null ? '–' : eur(p.betaYearly));
+    // ohne Beta-Preis: sichtbar ein Strich, für Screenreader das Wort (a11y-audit „Tabellenzelle nur mit Strich“)
+    expect(await cell('beta')).toBe(p.betaYearly === null ? `– ${ui('de').matrix.na}` : eur(p.betaYearly));
     expect(await cell('cis')).toBe(`bis ${grouped(p.limits.cis)}`);
     expect(await cell('collectors')).toBe(p.limits.collectors === null ? 'unbegrenzt' : grouped(p.limits.collectors));
     expect(await cell('users')).toBe(p.limits.users === null ? 'unbegrenzt' : grouped(p.limits.users));

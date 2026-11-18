@@ -9,6 +9,7 @@ if (f) {
   document.querySelectorAll<HTMLElement>('#form-msgs li').forEach((l) => msg.set(l.dataset.code!, l.textContent!));
   const sum = q('#form-summary')!;
   const btn = q<HTMLButtonElement>('button[type=submit]', f)!;
+  const status = q('[data-form-status]', f);
   const label = btn.textContent!;
   f.noValidate = true;
 
@@ -65,7 +66,8 @@ if (f) {
     ev.preventDefault();
     btn.disabled = true;
     btn.textContent = btn.dataset.sending!;
-    const done = () => ((btn.disabled = false), (btn.textContent = label));
+    if (status) status.textContent = btn.dataset.sending!;
+    const done = () => ((btn.disabled = false), (btn.textContent = label), status && (status.textContent = ''));
     fetch(f.action, {
       method: 'POST',
       headers: { Accept: 'application/json' },

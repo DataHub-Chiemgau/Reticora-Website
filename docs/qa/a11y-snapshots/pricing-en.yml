@@ -1,0 +1,350 @@
+# /en/pricing/ (pricing-en), Chromium, 1280 × 900; Prüfung in docs/qa/2026-11-barrierefreiheit.md
+- link "Skip to content":
+  - /url: "#inhalt"
+- banner:
+  - link "Reticora":
+    - /url: /en/
+  - navigation "Main navigation":
+    - link "Product":
+      - /url: /en/product/discovery/
+    - link "Devices":
+      - /url: /en/devices/
+    - link "Solutions":
+      - /url: /en/solutions/msp/
+    - link "Security":
+      - /url: /en/security/
+    - link "Pricing":
+      - /url: /en/pricing/
+  - group "Language":
+    - link "DE – Deutsch":
+      - /url: /preise/
+      - text: DE
+    - text: EN
+  - link "Sign in":
+    - /url: https://www.reticora.cloud/login
+  - link "Live demo":
+    - /url: /en/demo/
+  - link "Try for 30 days":
+    - /url: https://www.reticora.cloud/onboarding
+- main:
+  - region "Plans and pricing":
+    - heading "Plans and pricing" [level=1]
+    - paragraph: Every plan includes CMDB, discovery, topology, racks and API. You pay monthly or yearly in advance. Prices excl. VAT.
+  - region "The plans":
+    - heading "The plans" [level=2]
+    - paragraph: excl. VAT
+    - paragraph: Offer for businesses only.
+    - region "Plans, prices and limits":
+      - table:
+        - rowgroup:
+          - row "Plan Description and action per month per year first beta year CIs Collectors Users Evidence":
+            - columnheader "Plan"
+            - columnheader "Description and action"
+            - columnheader "per month"
+            - columnheader "per year"
+            - columnheader "first beta year"
+            - columnheader "CIs"
+            - columnheader "Collectors"
+            - columnheader "Users"
+            - columnheader "Evidence"
+        - rowgroup:
+          - 'row "Essentials CMDB, discovery, topology, racks, API, assets, tickets Try for 30 days: Essentials €49 €490 €441 up to 500 2 5"':
+            - rowheader "Essentials"
+            - 'cell "CMDB, discovery, topology, racks, API, assets, tickets Try for 30 days: Essentials"':
+              - paragraph: CMDB, discovery, topology, racks, API, assets, tickets
+              - 'link "Try for 30 days: Essentials"':
+                - /url: https://www.reticora.cloud/onboarding
+                - text: Try for 30 days
+            - cell "€49"
+            - cell "€490"
+            - cell "€441"
+            - cell "up to 500"
+            - cell "2"
+            - cell "5"
+            - cell:
+              - group: "Evidence : Plan contents, limits and prices"
+          - 'row "Standard plus stock, stocktakes, labels, signatures, SLAs, DATEV export Try for 30 days: Standard €119 €1,190 €1,071 up to 2,500 5 25"':
+            - rowheader "Standard"
+            - 'cell "plus stock, stocktakes, labels, signatures, SLAs, DATEV export Try for 30 days: Standard"':
+              - paragraph: plus stock, stocktakes, labels, signatures, SLAs, DATEV export
+              - 'link "Try for 30 days: Standard"':
+                - /url: https://www.reticora.cloud/onboarding
+                - text: Try for 30 days
+            - cell "€119"
+            - cell "€1,190"
+            - cell "€1,071"
+            - cell "up to 2,500"
+            - cell "5"
+            - cell "25"
+            - cell:
+              - group: "Evidence : Plan contents, limits and prices"
+          - 'row "Pro plus monitoring, workflows, forms, purchase orders Try for 30 days: Pro €299 €2,990 €2,691 up to 10,000 20 100"':
+            - rowheader "Pro"
+            - 'cell "plus monitoring, workflows, forms, purchase orders Try for 30 days: Pro"':
+              - paragraph: plus monitoring, workflows, forms, purchase orders
+              - 'link "Try for 30 days: Pro"':
+                - /url: https://www.reticora.cloud/onboarding
+                - text: Try for 30 days
+            - cell "€299"
+            - cell "€2,990"
+            - cell "€2,691"
+            - cell "up to 10,000"
+            - cell "20"
+            - cell "100"
+            - cell:
+              - group: "Evidence : Plan contents, limits and prices"
+          - 'row "Enterprise Shared plus compliance and endpoint agent, in the cloud on separate infrastructure Get in touch: Enterprise Shared from €999 on request not applicable up to 50,000 unlimited unlimited"':
+            - rowheader "Enterprise Shared"
+            - 'cell "plus compliance and endpoint agent, in the cloud on separate infrastructure Get in touch: Enterprise Shared"':
+              - paragraph: plus compliance and endpoint agent, in the cloud on separate infrastructure
+              - 'link "Get in touch: Enterprise Shared"':
+                - /url: /en/contact/?topic=enterprise
+                - text: Get in touch
+            - cell "from €999"
+            - cell "on request"
+            - cell "not applicable"
+            - cell "up to 50,000"
+            - cell "unlimited"
+            - cell "unlimited"
+            - cell:
+              - group: "Evidence : Plan contents, limits and prices"
+              - group: "Evidence : Enterprise Shared and Enterprise Local"
+          - 'row "Enterprise Local hosted by you, all work included Get in touch: Enterprise Local from €1,999 on request not applicable up to 50,000 unlimited unlimited"':
+            - rowheader "Enterprise Local"
+            - 'cell "hosted by you, all work included Get in touch: Enterprise Local"':
+              - paragraph: hosted by you, all work included
+              - 'link "Get in touch: Enterprise Local"':
+                - /url: /en/contact/?topic=enterprise
+                - text: Get in touch
+            - cell "from €1,999"
+            - cell "on request"
+            - cell "not applicable"
+            - cell "up to 50,000"
+            - cell "unlimited"
+            - cell "unlimited"
+            - cell:
+              - group: "Evidence : Plan contents, limits and prices"
+              - group: "Evidence : Enterprise Shared and Enterprise Local"
+    - paragraph:
+      - text: "Beta discount: 20% in the first six months, 10% in the following six months, then the full price. If you pay yearly, the price in the column “first beta year” applies in the first year."
+      - group: "Evidence : Plan contents, limits and prices"
+  - region "Features by plan":
+    - heading "Features by plan" [level=2]
+    - region "Features by plan compared":
+      - table:
+        - rowgroup:
+          - row "Feature Essentials Standard Pro Enterprise Shared Enterprise Local":
+            - columnheader "Feature"
+            - columnheader "Essentials"
+            - columnheader "Standard"
+            - columnheader "Pro"
+            - columnheader "Enterprise Shared"
+            - columnheader "Enterprise Local"
+        - rowgroup:
+          - row "CMDB, discovery and reviews included included included included included":
+            - rowheader "CMDB, discovery and reviews"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+          - row "Topology, outage simulation and racks included included included included included":
+            - rowheader "Topology, outage simulation and racks"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+          - row "API, webhooks, CSV export and import included included included included included":
+            - rowheader "API, webhooks, CSV export and import"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+          - row "DATEV export not included included included included included":
+            - rowheader "DATEV export"
+            - cell "not included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+          - row "Assets, assignments, contracts and documents included included included included included":
+            - rowheader "Assets, assignments, contracts and documents"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+          - row "Document storage 1,000 MiB 10,000 MiB 50,000 MiB unlimited unlimited":
+            - rowheader "Document storage"
+            - cell "1,000 MiB"
+            - cell "10,000 MiB"
+            - cell "50,000 MiB"
+            - cell "unlimited"
+            - cell "unlimited":
+              - text: unlimited
+              - group: "Evidence : Documents"
+          - row "Tickets included included included included included":
+            - rowheader "Tickets"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+          - row "SLAs and business calendars not included included included included included":
+            - rowheader "SLAs and business calendars"
+            - cell "not included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+          - row "Stock, stocktakes, labels and signatures not included included included included included":
+            - rowheader "Stock, stocktakes, labels and signatures"
+            - cell "not included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+          - row "Purchase orders not included not included included included included":
+            - rowheader "Purchase orders"
+            - cell "not included"
+            - cell "not included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+          - row "Monitoring, workflows and forms not included not included included included included":
+            - rowheader "Monitoring, workflows and forms"
+            - cell "not included"
+            - cell "not included"
+            - cell "included"
+            - cell "included"
+            - cell "included"
+          - row "Compliance, findings and endpoint agent not included not included not included included included":
+            - rowheader "Compliance, findings and endpoint agent"
+            - cell "not included"
+            - cell "not included"
+            - cell "not included"
+            - cell "included"
+            - cell "included"
+          - row "IGA and AI assistant Add-on Add-on Add-on Add-on Add-on":
+            - rowheader "IGA and AI assistant"
+            - cell "Add-on"
+            - cell "Add-on"
+            - cell "Add-on"
+            - cell "Add-on"
+            - cell "Add-on"
+    - paragraph: "✓ included · – not included · ∞ unlimited · Add-on: can be added to any plan, price on request"
+    - paragraph:
+      - text: Features by plan. Enterprise Shared and Enterprise Local differ in how they are operated.
+      - group: "Evidence : Plan contents, limits and prices"
+  - region "Additional charges":
+    - heading "Additional charges" [level=2]
+    - term: per CI above the plan limit
+    - definition:
+      - text: €0.05 per month
+      - group: "Evidence : Additional charges"
+    - term: per monitoring service
+    - definition:
+      - text: €0.03 per month
+      - group: "Evidence : Additional charges"
+    - term: IGA and AI assistant add-ons
+    - definition: on request
+    - paragraph: All amounts excl. VAT.
+  - region "Try for 30 days":
+    - heading "Try for 30 days" [level=2]
+    - paragraph:
+      - text: The trial covers the Standard plan for up to 100 CIs. You create an account, confirm your email address and set up an authenticator app at your first sign-in. After the trial your CMDB is kept for 30 days; if you do not choose a plan by then, it is deleted.
+      - group: "Evidence : Trial and downgrade"
+    - link "Try for 30 days":
+      - /url: https://www.reticora.cloud/onboarding
+  - region "Questions about pricing and plans":
+    - heading "Questions about pricing and plans" [level=2]
+    - heading "What counts as a CI?" [level=3]
+    - paragraph:
+      - text: "A CI is an entry in the CMDB: a device, a virtual machine, a service. The limit counts every CI of your organization that is not deleted, across all customers, whether discovery created it or a person."
+      - group: "Evidence : What counts as a CI"
+    - heading "What happens above the limit?" [level=3]
+    - paragraph:
+      - text: "Each CI above your plan’s limit costs €0.05 per month. If discovery finds a new device above the limit, Reticora does not discard it: it waits in the review inbox as an “Unlicensed CI” until it can be added."
+      - group: "Evidence : Additional charges"
+      - group: "Evidence : New devices above the limit"
+    - heading "What happens after the trial?" [level=3]
+    - paragraph:
+      - text: Your CMDB is kept for 30 days after the trial ends. If you choose a plan within that time, you keep working with all your data; otherwise it is deleted.
+      - group: "Evidence : Trial and downgrade"
+    - heading "What happens if I switch to a smaller plan?" [level=3]
+    - paragraph:
+      - text: You lose no data. CIs above the new plan’s limit are charged as additional CIs. Features the new plan does not include are locked; their data is kept.
+      - group: "Evidence : Trial and downgrade"
+      - group: "Evidence : Additional charges"
+    - heading "How does the beta discount work?" [level=3]
+    - paragraph:
+      - text: In the first six months you pay 20% less, in the following six months 10% less, then the full price. If you pay yearly in advance, the price in the column “first beta year” applies in the first year.
+      - group: "Evidence : Plan contents, limits and prices"
+    - heading "What is the difference between Enterprise Shared and Enterprise Local?" [level=3]
+    - paragraph:
+      - text: Enterprise Shared runs in the cloud on separate infrastructure. Enterprise Local is hosted by you; the price includes all work for it.
+      - group: "Evidence : Enterprise Shared and Enterprise Local"
+    - heading "What do IGA and the AI assistant cost?" [level=3]
+    - paragraph: Both add-ons can be added to any plan. The price is available on request.
+    - heading "Can private individuals buy Reticora?" [level=3]
+    - paragraph: No. The offer is for businesses only. All prices are exclusive of VAT.
+  - region "Try Reticora on your own network for 30 days.":
+    - heading "Try Reticora on your own network for 30 days." [level=2]
+    - link "Try for 30 days":
+      - /url: https://www.reticora.cloud/onboarding
+    - link "Live demo":
+      - /url: /en/demo/
+    - link "Contact":
+      - /url: /en/contact/
+    - paragraph: Offer for businesses only.
+- contentinfo:
+  - heading "Product" [level=2]
+  - link "Discovery":
+    - /url: /en/product/discovery/
+  - link "Data quality":
+    - /url: /en/product/data-quality/
+  - link "Topology and impact":
+    - /url: /en/product/topology-impact/
+  - link "Administration":
+    - /url: /en/product/administration/
+  - link "Operations":
+    - /url: /en/product/operations/
+  - link "Compliance":
+    - /url: /en/product/compliance/
+  - link "API":
+    - /url: /en/product/api/
+  - heading "Use cases" [level=2]
+  - link "For network operators":
+    - /url: /en/solutions/isp/
+  - link "For MSPs":
+    - /url: /en/solutions/msp/
+  - link "Supported devices":
+    - /url: /en/devices/
+  - link "Pricing":
+    - /url: /en/pricing/
+  - heading "Trust" [level=2]
+  - link "Security":
+    - /url: /en/security/
+  - link "Subprocessors":
+    - /url: /en/subprocessors/
+  - link "Accessibility":
+    - /url: /en/accessibility/
+  - heading "Contact" [level=2]
+  - link "Contact":
+    - /url: /en/contact/
+  - link "Live demo":
+    - /url: /en/demo/
+  - link "Sign in":
+    - /url: https://www.reticora.cloud/login
+  - text: Koyer Consulting für IT und Kommunikation UG (haftungsbeschränkt)
+  - link "Legal notice":
+    - /url: /en/legal-notice/
+  - link "Privacy":
+    - /url: /en/privacy/
+  - link "Terms":
+    - /url: /en/terms/
+  - text: Offer for businesses only
+  - link "Deutsch":
+    - /url: /preise/

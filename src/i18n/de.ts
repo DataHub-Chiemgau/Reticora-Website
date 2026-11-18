@@ -71,7 +71,7 @@ export const UI = {
   tableHint: 'Die Tabelle lässt sich seitlich verschieben.',
   featuresLabel: 'Funktionen',
   copyNamed: '{label} kopieren',
-  matrix: { yes: 'enthalten', no: 'nicht enthalten', unlimited: 'unbegrenzt' },
+  matrix: { yes: 'enthalten', no: 'nicht enthalten', unlimited: 'unbegrenzt', none: 'keines', na: 'entfällt' },
   devices: { filter: 'Kategorie', all: 'Alle', one: '1 Gerätefamilie', many: '{n} Gerätefamilien' },
   asOf: 'Stand',
   topo: {

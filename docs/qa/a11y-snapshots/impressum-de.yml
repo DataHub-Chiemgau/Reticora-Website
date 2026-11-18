@@ -1,0 +1,97 @@
+# /impressum/ (impressum-de), Chromium, 1280 × 900; Prüfung in docs/qa/2026-11-barrierefreiheit.md
+- link "Zum Inhalt":
+  - /url: "#inhalt"
+- banner:
+  - link "Reticora":
+    - /url: /
+  - navigation "Hauptnavigation":
+    - link "Produkt":
+      - /url: /produkt/discovery/
+    - link "Geräte":
+      - /url: /geraete/
+    - link "Lösungen":
+      - /url: /loesungen/msp/
+    - link "Sicherheit":
+      - /url: /sicherheit/
+    - link "Preise":
+      - /url: /preise/
+  - group "Sprache":
+    - text: DE
+    - link "EN – English":
+      - /url: /en/legal-notice/
+      - text: EN
+  - link "Anmelden":
+    - /url: https://www.reticora.cloud/login
+  - link "Live-Demo":
+    - /url: /demo/
+  - link "30 Tage testen":
+    - /url: https://www.reticora.cloud/onboarding
+- main:
+  - region "Impressum":
+    - heading "Impressum" [level=1]
+    - paragraph: "Stand: [Datum: Angabe vom Anbieter]"
+  - term: Firma
+  - definition: Koyer Consulting für IT und Kommunikation UG (haftungsbeschränkt)
+  - term: Anschrift
+  - definition: Dr. Albert-Frank-Str. 2 83308 Trostberg
+  - term: E-Mail-Adresse
+  - definition: "[E-Mail-Adresse: Angabe vom Anbieter]"
+  - term: Telefon
+  - definition: "[Telefon: Angabe vom Anbieter]"
+  - term: Geschäftsführung
+  - definition: "[Geschäftsführung: Angabe vom Anbieter]"
+  - term: Registergericht
+  - definition: "[Registergericht: Angabe vom Anbieter]"
+  - term: Registernummer
+  - definition: "[Registernummer: Angabe vom Anbieter]"
+  - term: USt-IdNr.
+  - definition: "[USt-IdNr.: Angabe vom Anbieter]"
+- contentinfo:
+  - heading "Produkt" [level=2]
+  - link "Discovery":
+    - /url: /produkt/discovery/
+  - link "Datenqualität":
+    - /url: /produkt/datenqualitaet/
+  - link "Topologie und Impact":
+    - /url: /produkt/topologie-impact/
+  - link "Verwaltung":
+    - /url: /produkt/verwaltung/
+  - link "Betrieb":
+    - /url: /produkt/betrieb/
+  - link "Compliance":
+    - /url: /produkt/compliance/
+  - link "API":
+    - /url: /produkt/api/
+  - heading "Einsatz" [level=2]
+  - link "Für Netzbetreiber":
+    - /url: /loesungen/isp/
+  - link "Für MSPs":
+    - /url: /loesungen/msp/
+  - link "Unterstützte Geräte":
+    - /url: /geraete/
+  - link "Preise":
+    - /url: /preise/
+  - heading "Vertrauen" [level=2]
+  - link "Sicherheit":
+    - /url: /sicherheit/
+  - link "Subprozessoren":
+    - /url: /subprozessoren/
+  - link "Barrierefreiheit":
+    - /url: /barrierefreiheit/
+  - heading "Kontakt" [level=2]
+  - link "Kontakt":
+    - /url: /kontakt/
+  - link "Live-Demo":
+    - /url: /demo/
+  - link "Anmelden":
+    - /url: https://www.reticora.cloud/login
+  - text: Koyer Consulting für IT und Kommunikation UG (haftungsbeschränkt)
+  - link "Impressum":
+    - /url: /impressum/
+  - link "Datenschutz":
+    - /url: /datenschutz/
+  - link "AGB":
+    - /url: /agb/
+  - text: Angebot nur für Unternehmen
+  - link "English":
+    - /url: /en/legal-notice/

@@ -1,0 +1,351 @@
+# /en/ (home-en), Chromium, 1280 × 900; Prüfung in docs/qa/2026-11-barrierefreiheit.md
+- link "Skip to content":
+  - /url: "#inhalt"
+- banner:
+  - link "Reticora":
+    - /url: /en/
+  - navigation "Main navigation":
+    - link "Product":
+      - /url: /en/product/discovery/
+    - link "Devices":
+      - /url: /en/devices/
+    - link "Solutions":
+      - /url: /en/solutions/msp/
+    - link "Security":
+      - /url: /en/security/
+    - link "Pricing":
+      - /url: /en/pricing/
+  - group "Language":
+    - link "DE – Deutsch":
+      - /url: /
+      - text: DE
+    - text: EN
+  - link "Sign in":
+    - /url: https://www.reticora.cloud/login
+  - link "Live demo":
+    - /url: /en/demo/
+  - link "Try for 30 days":
+    - /url: https://www.reticora.cloud/onboarding
+- main:
+  - region "The CMDB that reads your network itself and backs every value with its source.":
+    - heading "The CMDB that reads your network itself and backs every value with its source." [level=1]
+    - paragraph: A collector in your network records switches, routers, servers, UPSs and storage. Reticora reconciles the observations and shows the source and time for every field. For ISPs and network MSPs.
+    - link "Try for 30 days":
+      - /url: https://www.reticora.cloud/onboarding
+    - link "Live demo":
+      - /url: /en/demo/
+    - paragraph: Offer for businesses only.
+    - region "Outage simulation":
+      - region "Schematic of a power chain with outage simulation":
+        - img "Schematic of a power chain with outage simulation usv-01 powers pdu-a and pdu-b. srv-01 and srv-02 hang off both PDUs, sw-access-01 only off pdu-a, nas-01 only off pdu-b. vm-app-01 runs on srv-01, vm-db-01 on srv-02.": powered_by powered_by powered_by powered_by powered_by powered_by powered_by hosted_on hosted_on usv-01 pdu-a pdu-b sw-access-01 srv-01 srv-02 nas-01 vm-app-01 vm-db-01
+      - group "Simulate outage":
+        - button "usv-01"
+        - button "pdu-a" [pressed]
+        - button "pdu-b"
+        - button "sw-access-01"
+        - button "srv-01"
+        - button "srv-02"
+        - button "nas-01"
+        - button "vm-app-01"
+        - button "vm-db-01"
+      - status: "If “pdu-a” fails, 1 more CI is affected (shown in gray). Protected by redundancy: srv-01, srv-02."
+      - paragraph: CI, status “Active” failed affected (shown in gray) Schematic, not a screenshot
+    - term: Sweep
+    - definition:
+      - text: every 24 h
+      - group: "Evidence : Sweep and polling intervals"
+    - term: Poll
+    - definition:
+      - text: every 15 min
+      - group: "Evidence : Sweep and polling intervals"
+    - term: Buffer
+    - definition:
+      - text: up to 24 h
+      - group: "Evidence : Buffering without a connection"
+    - term: Connection
+    - definition:
+      - text: outbound only · 443, 4222
+      - group: "Evidence : Outbound connections only"
+    - term: Hosting
+    - definition:
+      - text: EU
+      - group: "Evidence : Data residency in the EU"
+  - region "How your inventory comes together":
+    - heading "How your inventory comes together" [level=2]
+    - paragraph: It takes five steps from the collector to a reviewed entry. You never type in a device by hand.
+    - list:
+      - listitem:
+        - heading "Connect the collector" [level=3]
+        - paragraph:
+          - text: You install the collector in your network and enter an enrollment code. The collector opens the connection itself. Nobody reaches into your network from outside.
+          - group: "Evidence : Outbound connections only"
+      - listitem:
+        - heading "Confirm scopes" [level=3]
+        - paragraph:
+          - text: The collector reports its local networks. You decide which of them it scans.
+          - group: "Evidence : Scope suggestions"
+      - listitem:
+        - heading "Collect" [level=3]
+        - paragraph:
+          - text: A sweep finds the reachable devices. The collector then queries them over SNMP, SSH and Redfish.
+          - group: "Evidence : Collection methods"
+      - listitem:
+        - heading "Reconcile" [level=3]
+        - paragraph:
+          - text: "Reticora works out which observation belongs to which device: by serial number, hardware UUID, MAC addresses and management IP. One device never becomes a second CI."
+          - group: "Evidence : No merging by hostname alone"
+      - listitem:
+        - heading "Review" [level=3]
+        - paragraph:
+          - text: Anything ambiguous goes to the review inbox, where you decide. Nothing is discarded without you.
+          - group: "Evidence : Manual values are kept"
+    - 'figure "Fig. 1 · The collector connects outbound: HTTPS 443 and NATS with mTLS 4222. Schematic drawing."':
+      - region "Connection direction of the collector":
+        - 'img "Connection direction of the collector On the left the area “Your network” with four devices and the collector, on the right the area “Reticora (EU)”. Two lines run from the collector to the right: HTTPS 443 and NATS mTLS 4222. There is no line from right to left."': Your network Reticora (EU) Devices Collector HTTPS 443 NATS mTLS 4222
+      - text: "Fig. 1 · The collector connects outbound: HTTPS 443 and NATS with mTLS 4222. Schematic drawing."
+  - region "Data you can trust":
+    - heading "Data you can trust" [level=2]
+    - paragraph: A CMDB is only useful if people believe it. Reticora tells you for every field where the value comes from, and never overwrites what you set by hand.
+    - heading "Provenance for every field" [level=3]
+    - paragraph:
+      - text: For every field you see the source, its rank, the time of the observation and the reason why this value applies.
+      - group: "Evidence : Provenance per field"
+      - group: Source ranking
+    - figure "Fig. 2 · Provenance of a field in the CI view.": S-02 CI detail with provenance of a field Screenshot placeholder · 1440 × 900 · dark theme Fig. 2 · Provenance of a field in the CI view.
+    - heading "Manual wins" [level=3]
+    - paragraph:
+      - text: An override stays until you remove it. If a source later reports something else, you see both values side by side and decide.
+      - group: "Evidence : Manual values are kept"
+    - heading "Decide instead of cleaning up" [level=3]
+    - paragraph:
+      - text: "The review inbox collects what automation may not decide on its own: an unknown device, a probable duplicate, conflicting values. You compare observation and CI and decide: merge, create new, accept or discard."
+      - group: "Evidence : Review inbox"
+    - 'figure "Fig. 3 · Review inbox: observation and CI compared."': "S-03 Review inbox with comparison view Screenshot placeholder · 1440 × 900 · dark theme Fig. 3 · Review inbox: observation and CI compared."
+  - region "See how things connect":
+    - heading "See how things connect" [level=2]
+    - paragraph: "The observations add up to a picture of your network: what is connected to what, what sits where in the rack, and what is affected when a device fails."
+    - heading "Topology" [level=3]
+    - paragraph:
+      - text: Neighbors from LLDP and the dependencies between CIs as a graph.
+      - group: "Evidence : Neighbors from LLDP"
+    - 'figure "Fig. 4 · Topology: relationships between CIs as a graph."': "S-04 Topology Screenshot placeholder · 1440 × 900 · dark theme Fig. 4 · Topology: relationships between CIs as a graph."
+    - heading "Racks" [level=3]
+    - paragraph:
+      - text: Occupancy per rack unit, front and rear.
+      - group: "Evidence : Rack view"
+    - figure "Fig. 5 · Rack, front.": S-05 Rack, front view Screenshot placeholder · 720 × 900 · dark theme Fig. 5 · Rack, front.
+    - heading "Outage simulation" [level=3]
+    - paragraph:
+      - text: Let one or more CIs fail and see what is affected. Devices with a second power supply only count once both paths have failed.
+      - group: "Evidence : Outage simulation"
+    - figure "Fig. 6 · Outage simulation in the topology.": S-06 Outage simulation Screenshot placeholder · 1440 × 900 · dark theme Fig. 6 · Outage simulation in the topology.
+  - region "Built for many customers":
+    - heading "Built for many customers" [level=2]
+    - paragraph: "Organization, customer, site: the current workspace is always shown in the app header. Someone who looks after a single customer sees only that customer’s data."
+    - term: Levels
+    - definition:
+      - text: Organization → Customer → Site
+      - group: "Evidence : Organization, customer, site"
+    - term: Separation
+    - definition:
+      - text: enforced in the database
+      - group: "Evidence : Tenant separation in the database"
+    - term: Roles
+    - definition:
+      - text: scoped to a customer, site or team
+      - group: "Evidence : Scoped roles"
+    - term: Second factor
+    - definition:
+      - text: mandatory for administrators
+      - group: "Evidence : Second factor for administrators"
+    - 'figure "Fig. 7 · The workspace: organization, customer, site."': "S-18 Workspace Organization → Customer → Site Screenshot placeholder · 1440 × 900 · dark theme Fig. 7 · The workspace: organization, customer, site."
+  - region "More than an inventory":
+    - heading "More than an inventory" [level=2]
+    - paragraph: Service desk, warehouse and compliance work on the same inventory. There is only one inventory, so there is nothing to reconcile.
+    - term: Assets and contracts
+    - definition:
+      - text: Purchase data, signed assignments, contracts and documents on the device.
+      - group: "Evidence : Assets and contracts"
+    - term: Stock and stocktakes
+    - definition:
+      - text: Stock levels, movements and stocktakes with labels and barcodes.
+      - group: "Evidence : Stock and stocktakes"
+    - term: Tickets
+    - definition:
+      - text: Tickets with SLA and business calendar, right on the affected CI.
+      - group: "Evidence : Tickets with SLA"
+    - term: Monitoring
+    - definition:
+      - text: Reachability, interface counters, UPS and PDU values as history on the CI; alert rules trigger tickets and notifications.
+      - group: "Evidence : Features of later product phases"
+    - term: Workflows and forms
+    - definition:
+      - text: Handovers, approvals and recurring processes, without writing code.
+      - group: "Evidence : Features of later product phases"
+    - term: Compliance
+    - definition:
+      - text: Rules, findings and an audit log with a hash chain.
+      - group: "Evidence : Audit log with hash chain"
+      - group: "Evidence : Features of later product phases"
+  - region "For people and for machines":
+    - heading "For people and for machines" [level=2]
+    - paragraph:
+      - text: The REST API is fully described in OpenAPI. Changes are additive only. Reticora announces any removal at least twelve months in advance.
+      - group: "Evidence : API, webhooks and export"
+    - text: GET /api/v1/cis
+    - status
+    - button "Copy"
+    - code: "# All CIs whose name contains “core” curl \"https://www.reticora.cloud/api/v1/cis?q=core&limit=50\" \\ -H \"X-API-Key: rk_live_…\""
+    - term: Authentication
+    - definition:
+      - text: API key in the X-API-Key header
+      - group: "Evidence : API, webhooks and export"
+    - term: Webhooks
+    - definition:
+      - text: signed with HMAC-SHA256
+      - group: "Evidence : API, webhooks and export"
+    - term: Export
+    - definition:
+      - text: CSV and DATEV
+      - group: "Evidence : API, webhooks and export"
+    - term: Rate limit
+    - definition:
+      - text: 600 requests per minute per key
+      - group: "Evidence : API rate limit"
+  - region "Security you can verify":
+    - heading "Security you can verify" [level=2]
+    - paragraph: The first questions your security team will ask are answered here. The details are on the Security page.
+    - term: Connection
+    - definition:
+      - text: The collector connects outbound. Reticora opens no connection into your network.
+      - group: "Evidence : Outbound connections only"
+    - term: Credentials
+    - definition:
+      - text: stored encrypted (AES-256-GCM); in plain text only in memory, never on disk, in API responses or in logs
+      - group: "Evidence : Protection of credentials"
+    - term: Separation
+    - definition:
+      - text: row-level security on the tenant tables
+      - group: "Evidence : Tenant separation in the database"
+    - term: Audit log
+    - definition:
+      - text: audit log with a hash chain per organization, verifiable from the command line
+      - group: "Evidence : Audit log with hash chain"
+    - term: Data location
+    - definition:
+      - text: data, backups, logs and search index in the EU
+      - group: "Evidence : Data residency in the EU"
+    - link "Go to the Security page":
+      - /url: /en/security/
+  - region "Recognizes what is in your racks":
+    - heading "Recognizes what is in your racks" [level=2]
+    - paragraph:
+      - text: Reticora ships with profiles for common network, server, storage and power devices. Anything it does not know, it creates as a generic device and asks you.
+      - group: "Evidence : Recognized vendors and device classes"
+    - term: Network
+    - definition: Cisco Catalyst, ISR, ASR, ASA and Firepower · Aruba CX and ProCurve · Ubiquiti UniFi · MikroTik · FortiGate · OPNsense and pfSense
+    - term: Servers and virtualization
+    - definition: Dell iDRAC · HPE iLO · Lenovo XCC · Supermicro BMC · VMware ESXi · Proxmox VE · Windows Server · Linux
+    - term: Storage
+    - definition: Synology · QNAP · TrueNAS
+    - term: Power
+    - definition: UPSs from APC and Eaton · PDUs from APC and Raritan
+    - paragraph: Vendor names are trademarks of their respective owners and appear here only to describe compatibility.
+    - link "All supported devices":
+      - /url: /en/devices/
+  - region "Plans and pricing":
+    - heading "Plans and pricing" [level=2]
+    - paragraph: Every plan includes CMDB, discovery, topology, racks and API. Prices per month, excl. VAT.
+    - region "Prices and CI limits per plan":
+      - table:
+        - rowgroup:
+          - row "Plan CIs per month":
+            - columnheader "Plan"
+            - columnheader "CIs"
+            - columnheader "per month"
+        - rowgroup:
+          - row "Essentials CMDB, discovery, topology, racks, API, assets, tickets 500 €49":
+            - rowheader "Essentials CMDB, discovery, topology, racks, API, assets, tickets"
+            - cell "500"
+            - cell "€49"
+          - row "Standard plus stock, stocktakes, labels, signatures, SLAs, DATEV export 2,500 €119":
+            - rowheader "Standard plus stock, stocktakes, labels, signatures, SLAs, DATEV export"
+            - cell "2,500"
+            - cell "€119"
+          - row "Pro plus monitoring, workflows, forms, purchase orders 10,000 €299":
+            - rowheader "Pro plus monitoring, workflows, forms, purchase orders"
+            - cell "10,000"
+            - cell "€299"
+          - row "Enterprise Shared plus compliance and endpoint agent, in the cloud on separate infrastructure 50,000 from €999":
+            - rowheader "Enterprise Shared plus compliance and endpoint agent, in the cloud on separate infrastructure"
+            - cell "50,000"
+            - cell "from €999"
+          - row "Enterprise Local hosted by you, all work included 50,000 from €1,999":
+            - rowheader "Enterprise Local hosted by you, all work included"
+            - cell "50,000"
+            - cell "from €1,999"
+    - paragraph: "Beta discount: 20% for the first six months, 10% for the following six months, then the full price."
+    - paragraph: Offer for businesses only.
+    - link "All prices and features":
+      - /url: /en/pricing/
+  - region "Try Reticora on your own network for 30 days.":
+    - heading "Try Reticora on your own network for 30 days." [level=2]
+    - paragraph:
+      - text: The trial includes the Standard plan for up to 100 CIs. You create an account, confirm your email address and set up an authenticator app when you first sign in. After the trial your CMDB is kept for 30 days.
+      - group: "Evidence : Trial and downgrade"
+    - link "Try for 30 days":
+      - /url: https://www.reticora.cloud/onboarding
+    - link "Live demo":
+      - /url: /en/demo/
+    - link "Contact":
+      - /url: /en/contact/
+    - paragraph: Offer for businesses only.
+- contentinfo:
+  - heading "Product" [level=2]
+  - link "Discovery":
+    - /url: /en/product/discovery/
+  - link "Data quality":
+    - /url: /en/product/data-quality/
+  - link "Topology and impact":
+    - /url: /en/product/topology-impact/
+  - link "Administration":
+    - /url: /en/product/administration/
+  - link "Operations":
+    - /url: /en/product/operations/
+  - link "Compliance":
+    - /url: /en/product/compliance/
+  - link "API":
+    - /url: /en/product/api/
+  - heading "Use cases" [level=2]
+  - link "For network operators":
+    - /url: /en/solutions/isp/
+  - link "For MSPs":
+    - /url: /en/solutions/msp/
+  - link "Supported devices":
+    - /url: /en/devices/
+  - link "Pricing":
+    - /url: /en/pricing/
+  - heading "Trust" [level=2]
+  - link "Security":
+    - /url: /en/security/
+  - link "Subprocessors":
+    - /url: /en/subprocessors/
+  - link "Accessibility":
+    - /url: /en/accessibility/
+  - heading "Contact" [level=2]
+  - link "Contact":
+    - /url: /en/contact/
+  - link "Live demo":
+    - /url: /en/demo/
+  - link "Sign in":
+    - /url: https://www.reticora.cloud/login
+  - text: Koyer Consulting für IT und Kommunikation UG (haftungsbeschränkt)
+  - link "Legal notice":
+    - /url: /en/legal-notice/
+  - link "Privacy":
+    - /url: /en/privacy/
+  - link "Terms":
+    - /url: /en/terms/
+  - text: Offer for businesses only
+  - link "Deutsch":
+    - /url: /

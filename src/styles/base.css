@@ -1,13 +1,18 @@
 /* Grundregeln aus design/leitstand/components/bundle.css */
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--canvas); color: var(--fg); font-family: var(--font-text); font-size: 17px; line-height: 28px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+/* overflow-wrap: ein Wort, das nicht in die Zeile passt (lange Komposita bei 320 px mit vergrößerten Textabständen, WCAG 1.4.12),
+   bricht um statt über den Rand zu ragen; ändert nichts, solange jedes Wort passt. */
+body { margin: 0; background: var(--canvas); color: var(--fg); font-family: var(--font-text); font-size: 17px; line-height: 28px; overflow-wrap: break-word; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 h1, h2, h3, h4, p, figure, dl, dd, ol, ul { margin: 0; }
 ol, ul { padding: 0; list-style: none; }
 h1, h2, h3, h4 { text-wrap: balance; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 a { color: var(--accent-strong); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 a:hover { color: var(--fg); }
+/* Die Grundregeln von Tailwind setzen text-decoration auf inherit; Links im Fließtext brauchen die Unterstreichung,
+   sonst unterscheidet sie nur die Farbe vom Text daneben (WCAG 1.4.1). Knöpfe und Navigation setzen sie in ihren Bausteinen ab. */
+p a, .rt-placeholder a { text-decoration-line: underline; }
 
 .sr-skip {
   position: absolute;

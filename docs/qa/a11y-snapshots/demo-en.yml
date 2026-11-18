@@ -1,0 +1,128 @@
+# /en/demo/ (demo-en), Chromium, 1280 × 900; Prüfung in docs/qa/2026-11-barrierefreiheit.md
+- link "Skip to content":
+  - /url: "#inhalt"
+- banner:
+  - link "Reticora":
+    - /url: /en/
+  - navigation "Main navigation":
+    - link "Product":
+      - /url: /en/product/discovery/
+    - link "Devices":
+      - /url: /en/devices/
+    - link "Solutions":
+      - /url: /en/solutions/msp/
+    - link "Security":
+      - /url: /en/security/
+    - link "Pricing":
+      - /url: /en/pricing/
+  - group "Language":
+    - link "DE – Deutsch":
+      - /url: /demo/
+      - text: DE
+    - text: EN
+  - link "Sign in":
+    - /url: https://www.reticora.cloud/login
+  - link "Live demo":
+    - /url: /en/demo/
+  - link "Try for 30 days":
+    - /url: https://www.reticora.cloud/onboarding
+- main:
+  - region "Live demo":
+    - heading "Live demo" [level=1]
+    - paragraph: "The demo is a separate instance of Reticora with sample data. You do not need an account: sign in with the login below and try whatever interests you."
+  - region "Demo login":
+    - heading "Demo login" [level=2]
+    - term: Address
+    - definition:
+      - code: https://www.demo.reticora.cloud
+      - button "Copy Address": Copy
+      - status
+    - term: User
+    - definition:
+      - code: demo@reticora.cloud
+      - button "Copy User": Copy
+      - status
+    - term: Password
+    - definition:
+      - code: Demo
+      - button "Copy Password": Copy
+      - status
+    - paragraph: "Shared account. All demo visitors use the same account and see what others enter. Do not enter real data: no names, no addresses, no credentials, nothing from your network or your customers’ networks."
+    - link "Open demo":
+      - /url: https://www.demo.reticora.cloud
+  - region "Three things to try":
+    - heading "Three things to try" [level=2]
+    - heading "Simulate an outage" [level=3]
+    - paragraph:
+      - text: Open “Topology”, select a PDU or UPS and click “Simulate outage”. The affected CIs are shown in gray. Servers connected to two power paths appear under “Protected by redundancy”. Add a second CI and see how the picture changes.
+      - group: "Evidence : Outage simulation"
+    - figure "Fig. 1 · Outage simulation in the topology.": S-06 Outage simulation Screenshot placeholder · 1440 × 900 · dark theme Fig. 1 · Outage simulation in the topology.
+    - heading "View the provenance of a field" [level=3]
+    - paragraph:
+      - text: Open a CI, then the provenance of one of its fields, such as the serial number. You see source, rank, time of observation and why this value applies.
+      - group: "Evidence : Provenance per field"
+    - figure "Fig. 2 · Provenance of a field in the CI view.": S-02 CI detail with provenance of a field Screenshot placeholder · 1440 × 900 · dark theme Fig. 2 · Provenance of a field in the CI view.
+    - heading "Resolve a review" [level=3]
+    - paragraph:
+      - text: "Open the review inbox and select an entry. Observation and CI appear side by side. Decide: merge, create new, accept or discard."
+      - group: "Evidence : Review inbox"
+    - 'figure "Fig. 3 · Review inbox: observation and CI compared."': "S-03 Review inbox with comparison view Screenshot placeholder · 1440 × 900 · dark theme Fig. 3 · Review inbox: observation and CI compared."
+  - region "Prefer your own network?":
+    - heading "Prefer your own network?" [level=2]
+    - paragraph:
+      - text: In the trial you connect a collector to your network and see your own devices, for 30 days on the Standard plan with up to 100 CIs.
+      - group: "Evidence : Trial and downgrade"
+    - link "Try for 30 days":
+      - /url: https://www.reticora.cloud/onboarding
+    - link "Contact":
+      - /url: /en/contact/
+    - paragraph: Offer for businesses only.
+- contentinfo:
+  - heading "Product" [level=2]
+  - link "Discovery":
+    - /url: /en/product/discovery/
+  - link "Data quality":
+    - /url: /en/product/data-quality/
+  - link "Topology and impact":
+    - /url: /en/product/topology-impact/
+  - link "Administration":
+    - /url: /en/product/administration/
+  - link "Operations":
+    - /url: /en/product/operations/
+  - link "Compliance":
+    - /url: /en/product/compliance/
+  - link "API":
+    - /url: /en/product/api/
+  - heading "Use cases" [level=2]
+  - link "For network operators":
+    - /url: /en/solutions/isp/
+  - link "For MSPs":
+    - /url: /en/solutions/msp/
+  - link "Supported devices":
+    - /url: /en/devices/
+  - link "Pricing":
+    - /url: /en/pricing/
+  - heading "Trust" [level=2]
+  - link "Security":
+    - /url: /en/security/
+  - link "Subprocessors":
+    - /url: /en/subprocessors/
+  - link "Accessibility":
+    - /url: /en/accessibility/
+  - heading "Contact" [level=2]
+  - link "Contact":
+    - /url: /en/contact/
+  - link "Live demo":
+    - /url: /en/demo/
+  - link "Sign in":
+    - /url: https://www.reticora.cloud/login
+  - text: Koyer Consulting für IT und Kommunikation UG (haftungsbeschränkt)
+  - link "Legal notice":
+    - /url: /en/legal-notice/
+  - link "Privacy":
+    - /url: /en/privacy/
+  - link "Terms":
+    - /url: /en/terms/
+  - text: Offer for businesses only
+  - link "Deutsch":
+    - /url: /demo/

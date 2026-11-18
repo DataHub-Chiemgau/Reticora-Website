@@ -67,7 +67,7 @@ const claimIds = [...new Set(JSON.stringify(C).match(/\bC-\d+\b/g) ?? [])].sort(
                   </td>
                   <td class="num" data-label={H.monthly} data-col="monthly">{r.monthly}</td>
                   <td class="num" data-label={H.yearly} data-col="yearly">{r.yearly}</td>
-                  <td class="num rt-beta" data-label={H.beta} data-col="beta">{r.beta}</td>
+                  <td class="num rt-beta" data-label={H.beta} data-col="beta">{r.beta === '–' ? <><span aria-hidden="true">–</span><span class="sr-only">{UI.matrix.na}</span></> : r.beta}</td>
                   <td class="num" data-label={H.cis} data-col="cis">{r.cis}</td>
                   <td class="num" data-label={H.collectors} data-col="collectors">{r.collectors}</td>
                   <td class="num" data-label={H.users} data-col="users">{r.users}</td>

@@ -74,7 +74,7 @@ export const UI: typeof DeUI = {
   tableHint: 'The table scrolls sideways.',
   featuresLabel: 'Features',
   copyNamed: 'Copy {label}',
-  matrix: { yes: 'included', no: 'not included', unlimited: 'unlimited' },
+  matrix: { yes: 'included', no: 'not included', unlimited: 'unlimited', none: 'none', na: 'not applicable' },
   devices: { filter: 'Category', all: 'All', one: '1 device family', many: '{n} device families' },
   asOf: 'As of',
   topo: {

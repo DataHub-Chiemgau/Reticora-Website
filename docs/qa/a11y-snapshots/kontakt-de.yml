@@ -1,0 +1,117 @@
+# /kontakt/ (kontakt-de), Chromium, 1280 × 900; Prüfung in docs/qa/2026-11-barrierefreiheit.md
+- link "Zum Inhalt":
+  - /url: "#inhalt"
+- banner:
+  - link "Reticora":
+    - /url: /
+  - navigation "Hauptnavigation":
+    - link "Produkt":
+      - /url: /produkt/discovery/
+    - link "Geräte":
+      - /url: /geraete/
+    - link "Lösungen":
+      - /url: /loesungen/msp/
+    - link "Sicherheit":
+      - /url: /sicherheit/
+    - link "Preise":
+      - /url: /preise/
+  - group "Sprache":
+    - text: DE
+    - link "EN – English":
+      - /url: /en/contact/
+      - text: EN
+  - link "Anmelden":
+    - /url: https://www.reticora.cloud/login
+  - link "Live-Demo":
+    - /url: /demo/
+  - link "30 Tage testen":
+    - /url: https://www.reticora.cloud/onboarding
+- main:
+  - region "Kontakt":
+    - heading "Kontakt" [level=1]
+    - paragraph: Schreiben Sie uns, worum es geht. Wir antworten an Ihre geschäftliche E-Mail-Adresse.
+  - paragraph: Angebot nur für Unternehmen.
+  - paragraph: Felder mit „(Pflicht)“ müssen ausgefüllt sein.
+  - text: Name (Pflicht)
+  - textbox "Name (Pflicht)"
+  - text: Geschäftliche E-Mail-Adresse (Pflicht)
+  - paragraph: An diese Adresse antworten wir.
+  - textbox "Geschäftliche E-Mail-Adresse (Pflicht)"
+  - text: Unternehmen (Pflicht)
+  - textbox "Unternehmen (Pflicht)"
+  - text: Anliegen (Pflicht)
+  - combobox "Anliegen (Pflicht)":
+    - option "Bitte wählen" [selected]
+    - option "Vorführung"
+    - option "Enterprise"
+    - option "Sicherheit und Datenschutz"
+    - option "Sonstiges"
+  - text: Nachricht
+  - paragraph: Höchstens 4.000 Zeichen.
+  - textbox "Nachricht"
+  - button "Nachricht senden"
+  - status
+  - text: "[Hinweis zur Verarbeitung: Text vom Anbieter]"
+  - link "Datenschutzerklärung":
+    - /url: /datenschutz/
+  - complementary "Anbieter":
+    - heading "Anbieter" [level=2]
+    - term: Firma
+    - definition: Koyer Consulting für IT und Kommunikation UG (haftungsbeschränkt)
+    - term: Anschrift
+    - definition: Dr. Albert-Frank-Str. 2 83308 Trostberg
+    - term: E-Mail-Adresse
+    - definition: "[E-Mail-Adresse: Angabe vom Anbieter]"
+    - term: Telefon
+    - definition: "[Telefon: Angabe vom Anbieter]"
+    - link "Impressum":
+      - /url: /impressum/
+- contentinfo:
+  - heading "Produkt" [level=2]
+  - link "Discovery":
+    - /url: /produkt/discovery/
+  - link "Datenqualität":
+    - /url: /produkt/datenqualitaet/
+  - link "Topologie und Impact":
+    - /url: /produkt/topologie-impact/
+  - link "Verwaltung":
+    - /url: /produkt/verwaltung/
+  - link "Betrieb":
+    - /url: /produkt/betrieb/
+  - link "Compliance":
+    - /url: /produkt/compliance/
+  - link "API":
+    - /url: /produkt/api/
+  - heading "Einsatz" [level=2]
+  - link "Für Netzbetreiber":
+    - /url: /loesungen/isp/
+  - link "Für MSPs":
+    - /url: /loesungen/msp/
+  - link "Unterstützte Geräte":
+    - /url: /geraete/
+  - link "Preise":
+    - /url: /preise/
+  - heading "Vertrauen" [level=2]
+  - link "Sicherheit":
+    - /url: /sicherheit/
+  - link "Subprozessoren":
+    - /url: /subprozessoren/
+  - link "Barrierefreiheit":
+    - /url: /barrierefreiheit/
+  - heading "Kontakt" [level=2]
+  - link "Kontakt":
+    - /url: /kontakt/
+  - link "Live-Demo":
+    - /url: /demo/
+  - link "Anmelden":
+    - /url: https://www.reticora.cloud/login
+  - text: Koyer Consulting für IT und Kommunikation UG (haftungsbeschränkt)
+  - link "Impressum":
+    - /url: /impressum/
+  - link "Datenschutz":
+    - /url: /datenschutz/
+  - link "AGB":
+    - /url: /agb/
+  - text: Angebot nur für Unternehmen
+  - link "English":
+    - /url: /en/contact/

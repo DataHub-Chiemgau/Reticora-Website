@@ -1,0 +1,117 @@
+# /en/contact/ (contact-en), Chromium, 1280 × 900; Prüfung in docs/qa/2026-11-barrierefreiheit.md
+- link "Skip to content":
+  - /url: "#inhalt"
+- banner:
+  - link "Reticora":
+    - /url: /en/
+  - navigation "Main navigation":
+    - link "Product":
+      - /url: /en/product/discovery/
+    - link "Devices":
+      - /url: /en/devices/
+    - link "Solutions":
+      - /url: /en/solutions/msp/
+    - link "Security":
+      - /url: /en/security/
+    - link "Pricing":
+      - /url: /en/pricing/
+  - group "Language":
+    - link "DE – Deutsch":
+      - /url: /kontakt/
+      - text: DE
+    - text: EN
+  - link "Sign in":
+    - /url: https://www.reticora.cloud/login
+  - link "Live demo":
+    - /url: /en/demo/
+  - link "Try for 30 days":
+    - /url: https://www.reticora.cloud/onboarding
+- main:
+  - region "Contact":
+    - heading "Contact" [level=1]
+    - paragraph: Tell us what it is about. We will reply to your business email address.
+  - paragraph: Offer for businesses only.
+  - paragraph: Fields marked “(required)” must be filled in.
+  - text: Name (required)
+  - textbox "Name (required)"
+  - text: Business email address (required)
+  - paragraph: We will reply to this address.
+  - textbox "Business email address (required)"
+  - text: Company (required)
+  - textbox "Company (required)"
+  - text: Topic (required)
+  - combobox "Topic (required)":
+    - option "Please choose" [selected]
+    - option "Demo"
+    - option "Enterprise"
+    - option "Security and privacy"
+    - option "Other"
+  - text: Message
+  - paragraph: Up to 4,000 characters.
+  - textbox "Message"
+  - button "Send message"
+  - status
+  - text: "[Notice on data processing: text from the provider]"
+  - link "Privacy policy":
+    - /url: /en/privacy/
+  - complementary "Provider":
+    - heading "Provider" [level=2]
+    - term: Company
+    - definition: Koyer Consulting für IT und Kommunikation UG (haftungsbeschränkt)
+    - term: Address
+    - definition: Dr. Albert-Frank-Str. 2 83308 Trostberg
+    - term: Email address
+    - definition: "[Email address: details from the provider]"
+    - term: Phone
+    - definition: "[Phone: details from the provider]"
+    - link "Legal notice":
+      - /url: /en/legal-notice/
+- contentinfo:
+  - heading "Product" [level=2]
+  - link "Discovery":
+    - /url: /en/product/discovery/
+  - link "Data quality":
+    - /url: /en/product/data-quality/
+  - link "Topology and impact":
+    - /url: /en/product/topology-impact/
+  - link "Administration":
+    - /url: /en/product/administration/
+  - link "Operations":
+    - /url: /en/product/operations/
+  - link "Compliance":
+    - /url: /en/product/compliance/
+  - link "API":
+    - /url: /en/product/api/
+  - heading "Use cases" [level=2]
+  - link "For network operators":
+    - /url: /en/solutions/isp/
+  - link "For MSPs":
+    - /url: /en/solutions/msp/
+  - link "Supported devices":
+    - /url: /en/devices/
+  - link "Pricing":
+    - /url: /en/pricing/
+  - heading "Trust" [level=2]
+  - link "Security":
+    - /url: /en/security/
+  - link "Subprocessors":
+    - /url: /en/subprocessors/
+  - link "Accessibility":
+    - /url: /en/accessibility/
+  - heading "Contact" [level=2]
+  - link "Contact":
+    - /url: /en/contact/
+  - link "Live demo":
+    - /url: /en/demo/
+  - link "Sign in":
+    - /url: https://www.reticora.cloud/login
+  - text: Koyer Consulting für IT und Kommunikation UG (haftungsbeschränkt)
+  - link "Legal notice":
+    - /url: /en/legal-notice/
+  - link "Privacy":
+    - /url: /en/privacy/
+  - link "Terms":
+    - /url: /en/terms/
+  - text: Offer for businesses only
+  - link "Deutsch":
+    - /url: /kontakt/
