@@ -33,7 +33,7 @@ final class RetrierTest extends TestCase
     private function mailer(MailTransport $transport): Mailer
     {
         $config = Config::fromArray([
-            'site_url' => 'https://www.example.com', 'contact_email' => 'k@example.com', 'db' => [],
+            'site_url' => 'https://www.example.com', 'contact_email' => 'k@example.com', 'retention_days' => 90, 'db' => [],
             'mail' => ['from_address' => 'v@example.com', 'from_name' => 'W', 'to_address' => 'vertrieb@example.com'],
         ]);
         return new Mailer($transport, $config, static fn (): int => self::NOW + 99999);
@@ -61,6 +61,42 @@ final class RetrierTest extends TestCase
         self::assertSame('delivered', $this->repo->find($a)['delivery']);
         self::assertSame('delivered', $this->repo->find($b)['delivery']);
         self::assertSame('delivered', $this->repo->find($skip)['delivery']);
+    }
+
+    public function testPendingOlderThan15MinutesIsDeliveredLikeNotDeliveredButFreshPendingIsLeftAlone(): void
+    {
+        // DS-05: Ein Lead bleibt auf pending, wenn der Prozess zwischen Speichern und Zustellstatus endet (z. B. Zeitlimit beim SMTP-Versand).
+        $mail = new ArrayTransport();
+        $now = self::NOW + 86400;
+        $stale = $this->add(LeadRepository::PENDING, $now - 16 * 60, 'Abgebrochen');
+        $edge = $this->add(LeadRepository::PENDING, $now - 15 * 60 + 1, 'Gerade erst');
+        $fresh = $this->add(LeadRepository::PENDING, $now - 5, 'Läuft noch');
+        $r = (new Retrier($this->pdo, $this->mailer($mail)))->run(Retrier::DEFAULT_MAX, $now);
+        self::assertSame(['sent' => 1, 'failed' => 0, 'remaining' => 0], $r);
+        self::assertCount(1, $mail->sent);
+        self::assertStringContainsString('Abgebrochen', $mail->sent[0]->body);
+        self::assertSame('delivered', $this->repo->find($stale)['delivery']);
+        self::assertSame('pending', $this->repo->find($edge)['delivery']);
+        self::assertSame('pending', $this->repo->find($fresh)['delivery']);
+        // eine Viertelstunde später sind auch die beiden anderen fällig
+        $r = (new Retrier($this->pdo, $this->mailer($mail)))->run(Retrier::DEFAULT_MAX, $now + 15 * 60);
+        self::assertSame(['sent' => 2, 'failed' => 0, 'remaining' => 0], $r);
+        self::assertSame('delivered', $this->repo->find($edge)['delivery']);
+        self::assertSame('delivered', $this->repo->find($fresh)['delivery']);
+    }
+
+    public function testStalePendingThatFailsBecomesNotDelivered(): void
+    {
+        $id = $this->add(LeadRepository::PENDING, self::NOW - 3600);
+        $failing = new class implements MailTransport {
+            public function send(MailMessage $message): void
+            {
+                throw new RuntimeException('down');
+            }
+        };
+        $r = (new Retrier($this->pdo, $this->mailer($failing)))->run(Retrier::DEFAULT_MAX, self::NOW);
+        self::assertSame(['sent' => 0, 'failed' => 1, 'remaining' => 1], $r);
+        self::assertSame('not_delivered', $this->repo->find($id)['delivery']);
     }
 
     public function testMailCarriesTheTimeOfReceiptNotOfTheRetry(): void

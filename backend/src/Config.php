@@ -10,6 +10,9 @@ use InvalidArgumentException;
 final class Config
 {
     public const PLACEHOLDER = 'AENDERN';
+    /** Aufbewahrungsfrist in Tagen (DS-09): Pflicht, ganze Zahl in diesem Bereich. */
+    public const RETENTION_MIN = 1;
+    public const RETENTION_MAX = 3650;
 
     /** @param array<string,mixed> $values */
     private function __construct(private readonly array $values)
@@ -26,6 +29,12 @@ final class Config
         }
         if (parse_url($values['site_url'], PHP_URL_HOST) === null || parse_url($values['site_url'], PHP_URL_HOST) === false) {
             throw new InvalidArgumentException("Konfiguration: 'site_url' ist keine gültige Adresse");
+        }
+        // DS-09: Die Frist ist eine Entscheidung des Auftraggebers und wird nie still angenommen.
+        $days = $values['retention_days'] ?? null;
+        if (!is_int($days) || $days < self::RETENTION_MIN || $days > self::RETENTION_MAX) {
+            throw new InvalidArgumentException("Konfiguration: 'retention_days' fehlt oder ist ungültig (ganze Zahl von Tagen, "
+                . self::RETENTION_MIN . '–' . self::RETENTION_MAX . ')');
         }
         foreach (['db', 'mail'] as $section) {
             if (!isset($values[$section]) || !is_array($values[$section])) {
@@ -96,6 +105,21 @@ final class Config
     public function globalMax(): int
     {
         return $this->clampedInt('rate_limit.global_max', RateLimiter::GLOBAL_LIMIT, 1, 1000);
+    }
+
+    /**
+     * Höchstzahl gespeicherter zurückgehaltener Anfragen (S-01): Standard 500, begrenzt auf 50–5000. Darüber 429, nichts gespeichert.
+     * Zurückgehaltene werden nie automatisch gelöscht (purge.php meldet sie mit Exit 1).
+     */
+    public function heldMax(): int
+    {
+        return $this->clampedInt('rate_limit.held_max', LeadRepository::HELD_MAX, 50, 5000);
+    }
+
+    /** Aufbewahrungsfrist der Anfragen und Protokolldateien in Tagen (Pflichtwert, geprüft in fromArray). */
+    public function retentionDays(): int
+    {
+        return $this->int('retention_days');
     }
 
     /** Origin der Website ("https://www.reticora.de") aus site_url. */

@@ -66,8 +66,8 @@ final class AppTest extends AppTestCase
             $this->post($this->validFields()),
             $this->post($this->validFields(['name' => '']), self::JSON, '203.0.113.20'),
             $this->post($this->validFields(['name' => '']), [], '203.0.113.21'),
-            $this->app->handle(new Request('GET', [], [], '', '1.2.3.4')),
-            $this->app->handle(new Request('PUT', [], [], '', '1.2.3.4')),
+            $this->app->handle(new Request('GET', [], [], '', '192.0.2.4')),
+            $this->app->handle(new Request('PUT', [], [], '', '192.0.2.4')),
         ];
         foreach ($responses as $i => $r) {
             self::assertSame('nosniff', $r->headers['X-Content-Type-Options']);
@@ -372,23 +372,26 @@ final class AppTest extends AppTestCase
         self::assertSame([], $left);
     }
 
-    public function testRateLimitKeyIsRandomAndOverwrittenDaily(): void
+    public function testRateLimitKeyIsRandomAndOverwrittenHourly(): void
     {
+        // DS-03 (Spec Ä-36): ein Schlüssel je Stundenfenster. Ein Zähler ist nur so lange rückrechenbar, wie er ohnehin gilt.
         $this->post($this->validFields(), self::JSON);
-        $day1 = $this->pdo->query('SELECT * FROM rate_limit_key')->fetchAll();
-        self::assertCount(1, $day1);
+        $hour1 = $this->pdo->query('SELECT * FROM rate_limit_key')->fetchAll();
+        self::assertCount(1, $hour1);
+        self::assertSame((string) (intdiv($this->now, 3600) * 3600), (string) $hour1[0]['window_start']);
         $hash1 = $this->pdo->query('SELECT hash FROM rate_limit')->fetchColumn();
-        // gleicher Tag: gleicher Schlüssel
-        $this->now += 3600;
+        // gleiches Fenster: gleicher Schlüssel, gleicher Hash
+        $this->now += 1800;
         $this->post($this->validFields(), self::JSON);
-        self::assertSame($day1, $this->pdo->query('SELECT * FROM rate_limit_key')->fetchAll());
+        self::assertSame($hour1, $this->pdo->query('SELECT * FROM rate_limit_key')->fetchAll());
         self::assertSame($hash1, $this->pdo->query('SELECT hash FROM rate_limit')->fetchColumn());
-        // nächster Tag: Schlüssel überschrieben, eine Zeile, anderer Hash für dieselbe Adresse
-        $this->now += 86400;
+        // nächstes Stundenfenster: Schlüssel überschrieben, eine Zeile, anderer Hash für dieselbe Adresse
+        $this->now += 1800;
         $this->post($this->validFields(), self::JSON);
-        $day2 = $this->pdo->query('SELECT * FROM rate_limit_key')->fetchAll();
-        self::assertCount(1, $day2);
-        self::assertNotSame($day1[0]['secret'], $day2[0]['secret']);
+        $hour2 = $this->pdo->query('SELECT * FROM rate_limit_key')->fetchAll();
+        self::assertCount(1, $hour2);
+        self::assertNotSame($hour1[0]['secret'], $hour2[0]['secret']);
+        self::assertSame((string) (intdiv($this->now, 3600) * 3600), (string) $hour2[0]['window_start']);
         self::assertNotSame($hash1, $this->pdo->query('SELECT hash FROM rate_limit')->fetchColumn());
     }
 
@@ -445,6 +448,47 @@ final class AppTest extends AppTestCase
         self::assertContains('global_ceiling', $this->logLines);
         $this->now += 3600;
         self::assertSame(200, $this->post($this->validFields(), self::JSON, '10.2.0.2')->status);
+    }
+
+    private function seedHeld(int $count): void
+    {
+        $repo = new \Reticora\Lead\LeadRepository($this->pdo);
+        for ($i = 0; $i < $count; $i++) {
+            $repo->setDelivery($repo->insert(['lang' => 'de', 'name' => 'Alt', 'email' => 'alt@example.com', 'company' => 'X', 'topic' => 'demo', 'message' => ''], $this->now - 7200), 'held');
+        }
+    }
+
+    public function testStoredHeldLeadsAreCappedByHeldMaxAndTheRestGet429(): void
+    {
+        // S-01: über held_max zurückgehaltenen Anfragen wird nichts mehr gespeichert; neutrale 429 wie an der harten Grenze.
+        $this->app = $this->makeApp(config: $this->config(['rate_limit' => ['global_max' => 1, 'held_max' => 50]]));
+        $this->seedGlobal(1); // weiche Grenze erreicht: jede weitere gültige Anfrage würde gehalten
+        $this->seedHeld(49);
+        self::assertSame(200, $this->post($this->validFields(), self::JSON, '10.3.0.1')->status, 'Platz 50 wird noch gehalten');
+        self::assertSame(50, (int) $this->pdo->query("SELECT COUNT(*) FROM lead WHERE delivery = 'held'")->fetchColumn());
+        $json = $this->post($this->validFields(['name' => 'Zu viel']), self::JSON, '10.3.0.2');
+        self::assertSame(429, $json->status);
+        self::assertSame('{"ok":false}', $json->body);
+        self::assertArrayHasKey('Retry-After', $json->headers);
+        $html = $this->post($this->validFields(['name' => 'Zu viel']), [], '10.3.0.3');
+        self::assertSame(429, $html->status);
+        self::assertStringContainsString('Im Moment gehen sehr viele Anfragen ein.', $html->body);
+        self::assertSame(0, (int) $this->pdo->query("SELECT COUNT(*) FROM lead WHERE name = 'Zu viel'")->fetchColumn());
+        self::assertCount(0, $this->mail->sent);
+        self::assertContains('held_ceiling', $this->logLines);
+        // Zurückgehaltene werden nie automatisch gelöscht; erst wenn retry.php zustellt, ist wieder Platz.
+        $this->pdo->exec("UPDATE lead SET delivery = 'delivered' WHERE id = 1");
+        self::assertSame(200, $this->post($this->validFields(['name' => 'Wieder Platz']), self::JSON, '10.3.0.4')->status);
+        self::assertSame('held', $this->pdo->query("SELECT delivery FROM lead WHERE name = 'Wieder Platz'")->fetchColumn());
+    }
+
+    public function testHeldMaxDoesNotTouchNormalDelivery(): void
+    {
+        // Unter der weichen Grenze wird zugestellt, auch wenn der Bestand an zurückgehaltenen Anfragen voll ist.
+        $this->app = $this->makeApp(config: $this->config(['rate_limit' => ['global_max' => 60, 'held_max' => 50]]));
+        $this->seedHeld(50);
+        self::assertSame(200, $this->post($this->validFields(), self::JSON, '10.3.1.1')->status);
+        self::assertCount(1, $this->mail->sent);
     }
 
     public function testOneAttackerSpreadOver16Networks64CannotLockOutARealVisitor(): void
@@ -516,7 +560,7 @@ final class AppTest extends AppTestCase
     public function testMissingOriginRejectedUnlessSecFetchSiteSameOrigin(): void
     {
         $send = function (array $headers): int {
-            $req = new Request('POST', $headers + ['content-type' => 'application/x-www-form-urlencoded'], [], http_build_query($this->validFields()), '198.51.100.1');
+            $req = self::postRequest($headers + ['content-type' => 'application/x-www-form-urlencoded'], http_build_query($this->validFields()), '198.51.100.1');
             return $this->app->handle($req)->status;
         };
         self::assertSame(403, $send([]));
@@ -566,7 +610,7 @@ final class AppTest extends AppTestCase
             throw new \RuntimeException('db down');
         });
         $headers = ['origin' => 'https://www.example.com', 'content-type' => 'application/x-www-form-urlencoded'];
-        $r = $app->handle(new Request('POST', $headers, [], http_build_query($this->validFields()), '1.2.3.4'));
+        $r = $app->handle(self::postRequest($headers, http_build_query($this->validFields()), '192.0.2.4'));
         self::assertSame(500, $r->status);
         self::assertStringNotContainsString('<script>', $r->body);
         self::assertStringContainsString('&lt;script&gt;', $r->body);
@@ -582,12 +626,12 @@ final class AppTest extends AppTestCase
     public function testOnlyPostIsAllowedAndThereIsNoTokenEndpoint(): void
     {
         foreach (['GET', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'] as $m) {
-            $r = $this->app->handle(new Request($m, [], [], '', '1.2.3.4'));
+            $r = $this->app->handle(new Request($m, [], [], '', '192.0.2.4'));
             self::assertSame(405, $r->status, $m);
             self::assertSame('POST', $r->headers['Allow']);
         }
         foreach ([['token' => '1'], ['token' => '0'], ['topic' => 'demo']] as $query) {
-            $r = $this->app->handle(new Request('GET', ['accept' => 'application/json'], $query, '', '1.2.3.4'));
+            $r = $this->app->handle(new Request('GET', ['accept' => 'application/json'], $query, '', '192.0.2.4'));
             self::assertSame(405, $r->status);
             self::assertSame('{"ok":false}', $r->body);
         }
@@ -599,7 +643,7 @@ final class AppTest extends AppTestCase
         $app = $this->makeApp(pdoFactory: function (): PDO {
             throw new \RuntimeException('db down');
         });
-        self::assertSame(405, $app->handle(new Request('GET', [], ['token' => '1'], '', '1.2.3.4'))->status);
+        self::assertSame(405, $app->handle(new Request('GET', [], ['token' => '1'], '', '192.0.2.4'))->status);
     }
 
     public function testBodyOver16KbRejected(): void
@@ -618,6 +662,36 @@ final class AppTest extends AppTestCase
         $body = 'x=' . str_repeat('a', 16384 - 2);
         self::assertSame(strlen($body), 16384);
         self::assertNotSame(413, $this->postRaw($body, self::JSON)->status);
+    }
+
+    public function testPostWithoutContentLengthIs411AndStoresNothing(): void
+    {
+        // S-06: ohne Content-Length (z. B. Transfer-Encoding: chunked) kann Apache den Körper kürzen, während PHP ihn verarbeitet.
+        $body = http_build_query($this->validFields());
+        $r = $this->app->handle(new Request('POST', ['origin' => 'https://www.example.com', 'content-type' => 'application/x-www-form-urlencoded', 'accept' => 'application/json'], [], $body, '203.0.113.30'));
+        self::assertSame(411, $r->status);
+        self::assertSame('{"ok":false}', $r->body);
+        $r = $this->app->handle(new Request('POST', ['origin' => 'https://www.example.com', 'content-type' => 'application/x-www-form-urlencoded'], [], $body, '203.0.113.30'));
+        self::assertSame(411, $r->status);
+        self::assertSame("Length Required\n", $r->body);
+        self::assertSame(0, $this->countLeads());
+        self::assertCount(0, $this->mail->sent);
+    }
+
+    public function testChunkedTransferEncodingIs411EvenWithALength(): void
+    {
+        foreach (['chunked', 'gzip, chunked', 'Chunked'] as $te) {
+            $r = $this->postRaw(http_build_query($this->validFields()), ['Transfer-Encoding' => $te, 'Accept' => 'application/json']);
+            self::assertSame(411, $r->status, $te);
+        }
+        self::assertSame(0, $this->countLeads());
+    }
+
+    public function testInvalidContentLengthIs411(): void
+    {
+        foreach (['', 'abc', '-1', '12 34'] as $len) {
+            self::assertSame(411, $this->postRaw('x=1', ['Content-Length' => $len])->status, var_export($len, true));
+        }
     }
 
     public function testWrongContentTypeRejected(): void
@@ -693,11 +767,11 @@ final class AppTest extends AppTestCase
             throw new \PDOException('SQLSTATE secret-db-host password=hunter2');
         });
         $headers = ['origin' => 'https://www.example.com', 'content-type' => 'application/x-www-form-urlencoded', 'accept' => 'application/json'];
-        $r = $app->handle(new Request('POST', $headers, [], http_build_query($this->validFields()), '1.2.3.4'));
+        $r = $app->handle(self::postRequest($headers, http_build_query($this->validFields()), '192.0.2.4'));
         self::assertSame(500, $r->status);
         self::assertSame('{"ok":false}', $r->body);
         unset($headers['accept']);
-        $r = $app->handle(new Request('POST', $headers, [], http_build_query($this->validFields(['lang' => 'en'])), '1.2.3.4'));
+        $r = $app->handle(self::postRequest($headers, http_build_query($this->validFields(['lang' => 'en'])), '192.0.2.4'));
         self::assertSame(500, $r->status);
         self::assertStringContainsString('kontakt@example.com', $r->body);
         self::assertStringContainsString('lang="en"', $r->body);
@@ -711,16 +785,16 @@ final class AppTest extends AppTestCase
             throw new \InvalidArgumentException('SMTP ohne Anmeldung, Passwort=hunter2');
         });
         $headers = ['origin' => 'https://www.example.com', 'content-type' => 'application/x-www-form-urlencoded'];
-        $r = $app->handle(new Request('POST', $headers + ['accept' => 'application/json'], [], http_build_query($this->validFields()), '1.2.3.4'));
+        $r = $app->handle(self::postRequest($headers + ['accept' => 'application/json'], http_build_query($this->validFields()), '192.0.2.4'));
         self::assertSame(500, $r->status);
         self::assertSame('{"ok":false}', $r->body);
-        $r = $app->handle(new Request('POST', $headers, [], http_build_query($this->validFields()), '1.2.3.5'));
+        $r = $app->handle(self::postRequest($headers, http_build_query($this->validFields()), '192.0.2.5'));
         self::assertSame(500, $r->status);
         self::assertStringContainsString('kontakt@example.com', $r->body);
         self::assertSame(0, $this->countLeads());
         self::assertStringNotContainsString('hunter2', $r->body . implode('', $this->logLines));
         // Eingabefehler brauchen keinen Mailversand und werden weiter angezeigt.
-        $r = $app->handle(new Request('POST', $headers, [], http_build_query($this->validFields(['name' => ''])), '1.2.3.6'));
+        $r = $app->handle(self::postRequest($headers, http_build_query($this->validFields(['name' => ''])), '192.0.2.6'));
         self::assertSame(422, $r->status);
     }
 

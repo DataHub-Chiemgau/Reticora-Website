@@ -148,8 +148,9 @@ abstract class IntegrationTestCase extends TestCase
      */
     protected function post(App $app, array $fields, string $ip = '203.0.113.7', array $headers = ['Accept' => 'application/json']): Response
     {
-        $headers = array_change_key_case($headers + ['Origin' => self::ORIGIN, 'Content-Type' => 'application/x-www-form-urlencoded'], CASE_LOWER);
-        return $app->handle(new Request('POST', $headers, [], http_build_query($fields), $ip));
+        $body = http_build_query($fields);
+        $headers = array_change_key_case($headers + ['Origin' => self::ORIGIN, 'Content-Type' => 'application/x-www-form-urlencoded', 'Content-Length' => (string) strlen($body)], CASE_LOWER);
+        return $app->handle(new Request('POST', $headers, [], $body, $ip));
     }
 
     /** @param array<string,string> $override @return array<string,string> */

@@ -240,6 +240,14 @@ final class ContactPageTest extends TestCase
         self::assertStringContainsString('Header always set Cross-Origin-Opener-Policy "same-origin"', $ht);
     }
 
+    public function testImagesOnlyFromTheOwnOriginNoDataUrls(): void
+    {
+        // S-08 (Spec Ä-37): der Build braucht keine data:-Adressen; eingeschleuste Bilder sollen nichts ohne Netz laden.
+        self::assertStringContainsString("img-src 'self';", Response::SITE_CSP);
+        self::assertStringNotContainsString('data:', Response::SITE_CSP);
+        self::assertStringNotContainsString('data:', (string) file_get_contents(__DIR__ . '/../../public/.htaccess'));
+    }
+
     public function testTheBuiltTemplateRendersWhenPresent(): void
     {
         if (!is_file(self::BUILT . '/contact.de.html')) {

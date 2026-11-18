@@ -143,7 +143,7 @@ final class PhpMailerTransportTest extends TestCase
 
     public function testFromConfigRequiresHostAndAuthenticatedEncryptedSmtp(): void
     {
-        $base = ['site_url' => 'https://x.example', 'contact_email' => 'a@example.com', 'db' => []];
+        $base = ['site_url' => 'https://x.example', 'contact_email' => 'a@example.com', 'retention_days' => 90, 'db' => []];
         $ok = ['host' => 'smtp.example.com', 'port' => 587, 'encryption' => 'starttls', 'user' => 'u@example.com', 'pass' => 'p'];
         self::assertInstanceOf(PhpMailerTransport::class, PhpMailerTransport::fromConfig(Config::fromArray($base + ['mail' => $ok])));
         foreach ([['host' => ''], ['encryption' => 'none'], ['user' => ''], ['pass' => ''], ['encryption' => 'tls1']] as $bad) {

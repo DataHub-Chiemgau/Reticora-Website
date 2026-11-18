@@ -13,3 +13,15 @@ Options -Indexes
         Allow from all
     </Files>
 </IfModule>
+# Sicherheitskopfzeilen kommen nur aus der Wurzel-.htaccess ("Header always set"). PHP setzt dieselben Namen für den Betrieb
+# ohne .htaccess (Response::make); mit PHP als Apache-Modul stünden sie sonst doppelt in der Antwort (S-04). X-Powered-By
+# entfernt auch lead.php selbst (S-05). "unset" wirkt auf die Kopfzeilen der Anwendung, "always unset" auf Apaches eigene.
+<IfModule mod_headers.c>
+    Header unset Content-Security-Policy
+    Header unset Referrer-Policy
+    Header unset X-Content-Type-Options
+    Header unset Cross-Origin-Opener-Policy
+    Header unset Permissions-Policy
+    Header unset X-Powered-By
+    Header always unset X-Powered-By
+</IfModule>

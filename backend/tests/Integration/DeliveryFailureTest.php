@@ -26,7 +26,7 @@ final class DeliveryFailureTest extends IntegrationTestCase
         $wrongFile = $this->configFile($wrong);
         [$code, $out, $err] = $this->runBin('purge', $wrongFile);
         self::assertSame(1, $code, 'purge.php meldet nicht zugestellte Anfragen');
-        self::assertMatchesRegularExpression('/ purge leads_deleted=0 rate_limit_deleted=0 undelivered=1 held=0 not_delivered=1 key_rotated=[01]\n$/', $out);
+        self::assertMatchesRegularExpression('/ purge leads_deleted=0 rate_limit_deleted=0 logs_deleted=0 undelivered=1 held=0 not_delivered=1 pending=0 key_rotated=[01]\n$/', $out);
         self::assertStringContainsString('ACHTUNG: 1 Anfragen sind nicht zugestellt', $err);
 
         [$code, $out] = $this->runBin('retry', $wrongFile);

@@ -16,7 +16,7 @@ final class MailerTest extends TestCase
     private function cfg(): Config
     {
         return Config::fromArray([
-            'site_url' => 'https://www.example.com', 'contact_email' => 'k@example.com', 'db' => [],
+            'site_url' => 'https://www.example.com', 'contact_email' => 'k@example.com', 'retention_days' => 90, 'db' => [],
             'mail' => ['from_address' => 'versand@example.com', 'from_name' => 'Reticora Website', 'to_address' => 'vertrieb@example.com'],
         ]);
     }

@@ -6,9 +6,9 @@
 #     Zertifikat von einer beim Start erzeugten Test-CA (docker/web/gen-secrets.sh), jede Mail als JSON-Datei
 # und führt die Backend-Integrationstests aus (backend/tests/Integration, PHPUnit-Testsuite "integration").
 #
-# Mit --browser zusätzlich: Apache auf 127.0.0.1:8088 nach tests/server/httpd.conf.tmpl (dist/ als Webroot,
-# /api/lead.php per Proxy an den PHP-Entwicklungsserver mit derselben MariaDB und demselben SMTP-Fänger) und die
-# Browser-Integrationstests (playwright.integration.config.ts, nur Chromium). Vorher npm run build.
+# Mit --browser zusätzlich: Apache auf 127.0.0.1:8088 nach tests/server/httpd.conf.tmpl (dist/ als Webroot, /api/lead.php
+# mit api/.htaccess über PHP-FPM wie beim Hoster, mit derselben MariaDB und demselben SMTP-Fänger) und die
+# Browser-Integrationstests (playwright.integration.config.ts, nur Chromium). Vorher npm run build. Braucht php-fpm.
 #
 # Voraussetzungen: apt-get install -y mariadb-server; Python mit aiosmtpd (RETICORA_IT_PYTHON, Standard python3);
 # PHP mit pdo_mysql; openssl; cd backend && composer install.
@@ -28,7 +28,7 @@ python="${RETICORA_IT_PYTHON:-python3}"
 db_port="${RETICORA_IT_DB_PORT:-3307}"
 smtp_port="${RETICORA_IT_SMTP_PORT:-2587}"
 web_port=8088
-php_port=8089
+fpm_port=8089
 
 need() { command -v "$1" >/dev/null 2>&1 || { echo "$1 fehlt. $2" >&2; exit 1; }; }
 need mariadbd "Installation: sudo apt-get install -y mariadb-server"
@@ -45,12 +45,13 @@ run="${RETICORA_IT_DIR:-$(mktemp -d "${TMPDIR:-/tmp}/reticora-it.XXXXXX")}"
 mkdir -p "$run"
 run="$(cd "$run" && pwd)"
 pids=()
+FPM_PID=""
 apache_dir=""
 cleanup() {
   local status=$?
   if [ -n "$apache_dir" ] && [ -f "$apache_dir/apache.pid" ]; then kill "$(cat "$apache_dir/apache.pid")" 2>/dev/null || true; fi
-  for p in "${pids[@]}"; do kill "$p" 2>/dev/null || true; done
-  for p in "${pids[@]}"; do wait "$p" 2>/dev/null || true; done
+  for p in "${pids[@]}" $FPM_PID; do kill "$p" 2>/dev/null || true; done
+  for p in "${pids[@]}" $FPM_PID; do wait "$p" 2>/dev/null || true; done
   [ -n "$apache_dir" ] && rm -rf "$apache_dir"
   if [ "${RETICORA_IT_KEEP:-0}" = "1" ] || [ "$status" -ne 0 ]; then
     echo "Protokolle und Daten: $run" >&2
@@ -150,7 +151,8 @@ export RETICORA_IT_DB_PASS_FILE="$run/secrets/db_pass"
 export RETICORA_IT_SMTP_HOST=localhost
 export RETICORA_IT_SMTP_PORT="$smtp_port"
 export RETICORA_IT_SMTP_ENCRYPTION=starttls
-export RETICORA_IT_SMTP_USER="$(cat "$run/secrets/smtp_user")"
+RETICORA_IT_SMTP_USER="$(cat "$run/secrets/smtp_user")"
+export RETICORA_IT_SMTP_USER
 export RETICORA_IT_SMTP_PASS_FILE="$run/secrets/smtp_pass"
 export RETICORA_IT_SMTP_MISMATCH_HOST=127.0.0.1
 export RETICORA_IT_MAIL_DIR="$run/mails"
@@ -160,6 +162,7 @@ export SSL_CERT_FILE="$run/secrets/ca.crt"
 
 echo "MariaDB $(cat "$run/mariadb-version") auf 127.0.0.1:$db_port, SMTP-Fänger (STARTTLS, Anmeldung) auf localhost:$smtp_port"
 # config.php wie im Container (docker/config.integration.php); dient migrate.php und dem PHP-Server für --browser.
+# shellcheck disable=SC2016 # PHP-Code, keine Shell-Ausdrücke
 php -r 'echo "<?php return " . var_export(require $argv[1], true) . ";\n";' "$root/docker/config.integration.php" > "$run/config.php"
 chmod 600 "$run/config.php"
 php "$root/backend/bin/migrate.php" "$run/config.php"
@@ -168,13 +171,14 @@ php "$root/backend/bin/migrate.php" "$run/config.php"
 
 [ "$browser" = "1" ] || exit 0
 
-# 5. Browser-Integrationstests gegen Apache (Webroot dist/) + PHP-Entwicklungsserver mit MariaDB und SMTP-Fänger.
+# 5. Browser-Integrationstests gegen Apache (Webroot dist/, /api/lead.php über PHP-FPM) mit MariaDB und SMTP-Fänger.
 [ -f "$root/dist/index.html" ] || { echo "dist/ fehlt: npm run build" >&2; exit 1; }
+# shellcheck source=tests/server/php-fpm.sh
+. "$root/tests/server/php-fpm.sh"
+fpm="$(find_php_fpm)"
+[ -n "$fpm" ] || { echo "php-fpm fehlt: sudo apt-get install -y php-fpm php-mysql" >&2; exit 1; }
 # Browser-Tests starten mit leeren Zählern (alle Anfragen kommen von 127.0.0.1).
 mariadb --no-defaults --socket="$run/mysqld.sock" -u "$me" reticora_it -e 'DELETE FROM rate_limit'
-RETICORA_CONFIG="$run/config.php" RETICORA_HOME="$root/backend" \
-  php -d expose_php=0 -d display_errors=0 -S "127.0.0.1:$php_port" -t "$root/backend/public" >"$run/php-server.log" 2>&1 &
-pids+=($!)
 
 apache="$(command -v apache2 || echo /usr/sbin/apache2)"
 mods=""
@@ -185,19 +189,23 @@ done
 # Apache-Kinder laufen als root unter www-data; das Verzeichnis muss für sie erreichbar sein (wie in tests/server/start.sh).
 apache_dir="$(mktemp -d)"
 chmod 755 "$apache_dir"
+chmod 644 "$run/config.php" # PHP-FPM liest sie (als root gestartet: Kinder als root, sonst als aktueller Benutzer)
+make_api_root "$apache_dir/www" "$root" api
+# SSL_CERT_FILE gilt für PHP/OpenSSL in FPM nicht (Umgebung geleert); die Test-CA kommt als openssl.cafile dazu.
+start_php_fpm "$fpm" "$apache_dir" "$fpm_port" "$run/php-fpm.log" "php_admin_value[openssl.cafile] = $run/secrets/ca.crt"
 identity=""
 if [ "$(id -u)" = "0" ]; then identity="User www-data
 Group www-data"; fi
 sed -e "s#@TMP@#$apache_dir#g" -e "s#@MODS@#$mods#g" -e "s#@DOCROOT@#$root/dist#g" \
     -e "s#^Listen 127.0.0.1:8080#Listen 127.0.0.1:$web_port#" \
-    -e "s#http://127.0.0.1:8081/lead.php#http://127.0.0.1:$php_port/lead.php#" \
-    -e '/api-limit/d' \
+    -e "s#@FPM@#127.0.0.1:$fpm_port#g" -e "s#@BACKEND@#$root/backend#g" -e "s#@CONFIG_MAIN@#$run/config.php#g" \
+    -e '/# api-limit-anfang/,/# api-limit-ende/d' \
     "$root/tests/server/httpd.conf.tmpl" | awk -v id="$identity" '{ sub(/@IDENTITY@/, id); print }' > "$apache_dir/httpd.conf"
 "$apache" -f "$apache_dir/httpd.conf" -k start
 for _ in $(seq 1 50); do
+  # shellcheck disable=SC2016 # PHP-Code, keine Shell-Ausdrücke
   php -r 'exit(@file_get_contents($argv[1]) === false ? 1 : 0);' "http://127.0.0.1:$web_port/" && break
   sleep 0.2
 done
 
-# RETICORA_IT_API_PROXIED: /api/lead.php läuft hier über den Proxy (ohne .htaccess); dessen Kopfzeilen prüft nur der Container.
-(cd "$root" && RETICORA_IT_API_PROXIED=1 RETICORA_IT_BASE_URL="http://127.0.0.1:$web_port" npx playwright test -c playwright.integration.config.ts)
+(cd "$root" && RETICORA_IT_BASE_URL="http://127.0.0.1:$web_port" npx playwright test -c playwright.integration.config.ts)

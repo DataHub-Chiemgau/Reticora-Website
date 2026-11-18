@@ -52,9 +52,9 @@ describe('Sitemap', () => {
     expect(m.get('/en/a/')).toEqual(m.get('/a/'));
   });
   test('XML mit Ursprung und Namensraum', () => {
-    const x = sitemapXml(FAKE, 'https://x.de');
-    expect(x).toContain('<loc>https://x.de/en/a/</loc>');
-    expect(x).toContain('hreflang="x-default" href="https://x.de/a/"');
+    const x = sitemapXml(FAKE, 'https://example.org');
+    expect(x).toContain('<loc>https://example.org/en/a/</loc>');
+    expect(x).toContain('hreflang="x-default" href="https://example.org/a/"');
     expect(x).not.toContain('thanks');
     expect(x).toContain('xmlns:xhtml=');
   });
@@ -62,7 +62,7 @@ describe('Sitemap', () => {
 
 describe('robots.txt', () => {
   test('Release erlaubt, Entwicklung sperrt; beide nennen die Sitemap', () => {
-    expect(robotsTxt(true, 'https://x.de')).toBe('User-agent: *\nAllow: /\n\nSitemap: https://x.de/sitemap.xml\n');
-    expect(robotsTxt(false, 'https://x.de')).toBe('User-agent: *\nDisallow: /\n\nSitemap: https://x.de/sitemap.xml\n');
+    expect(robotsTxt(true, 'https://example.org')).toBe('User-agent: *\nAllow: /\n\nSitemap: https://example.org/sitemap.xml\n');
+    expect(robotsTxt(false, 'https://example.org')).toBe('User-agent: *\nDisallow: /\n\nSitemap: https://example.org/sitemap.xml\n');
   });
 });

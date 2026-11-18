@@ -7,6 +7,8 @@ namespace Reticora\Lead\Tests\Integration;
 use PDO;
 use Reticora\Lead\Database;
 use Reticora\Lead\LeadRepository;
+use Reticora\Lead\RateLimiter;
+use Reticora\Lead\RateLimitKey;
 
 /** sql/001_init.sql auf MariaDB: idempotent, utf8mb4 für Formulardaten, ASCII für Hashes. */
 final class MigrationTest extends IntegrationTestCase
@@ -26,6 +28,29 @@ final class MigrationTest extends IntegrationTestCase
 
         self::assertSame('Ä', (new LeadRepository($this->pdo))->find($id)['name'] ?? null);
         self::assertCount(1, $this->leads());
+    }
+
+    public function testTableFromTheFirstSchemaGetsTheHourlyKeyColumn(): void
+    {
+        // DS-03 (Ä-36): eine mit der ersten Fassung (Spalte "day") angelegte Datenbank wird umgestellt, ohne Datenverlust in lead.
+        $id = (new LeadRepository($this->pdo))->insert(['lang' => 'de', 'name' => 'Bleibt', 'email' => 'a@example.com', 'company' => 'X', 'topic' => 'demo', 'message' => ''], $this->now);
+        $this->pdo->exec('DROP TABLE rate_limit_key');
+        $this->pdo->exec('CREATE TABLE rate_limit_key (id TINYINT UNSIGNED NOT NULL PRIMARY KEY, day CHAR(10) NOT NULL, secret CHAR(64) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=ascii');
+        $this->pdo->exec("INSERT INTO rate_limit_key VALUES (1, '2027-01-15', '" . str_repeat('ab', 32) . "')");
+
+        [$code, , $err] = $this->runBin('migrate', $this->configFile($this->configArray()));
+        self::assertSame(0, $code, $err);
+        [$code, , $err] = $this->runBin('migrate', $this->configFile($this->configArray()));
+        self::assertSame(0, $code, 'zweimal: idempotent ' . $err);
+
+        $columns = $this->pdo->query(
+            "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'rate_limit_key' ORDER BY ORDINAL_POSITION"
+        )->fetchAll(PDO::FETCH_COLUMN);
+        self::assertSame(['id', 'window_start', 'secret'], $columns);
+        $key = (new RateLimitKey($this->pdo))->current($this->now);
+        self::assertNotSame(str_repeat("\xab", 32), $key, 'der alte Tagesschlüssel gilt nicht mehr');
+        self::assertSame(RateLimiter::windowStart($this->now), (int) $this->pdo->query('SELECT window_start FROM rate_limit_key')->fetchColumn());
+        self::assertSame('Bleibt', (new LeadRepository($this->pdo))->find($id)['name'] ?? null);
     }
 
     public function testSchemaOnMariaDb(): void
