@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Stand | 2026-11-18 (Phase 7, Task 4) |
+| Stand | 2026-11-18 (Phase 7, Task 4); Behebung der Hinweise ohne Gestaltungsentscheidung und Auswertung des ersten CI-Laufs in Firefox und WebKit am selben Tag, Abschnitt 8 |
 | Gegenstand | die gebaute statische Website (`dist/`) beider Sprachen hinter dem Apache-Testserver (`tests/server/start.sh`), dazu die vom PHP-Backend ausgelieferte Fehlerseite des Formulars (422) |
 | Maßstab | WCAG 2.2, Stufen A und AA, Kriterium für Kriterium |
 | Nicht Gegenstand | die Anwendung Reticora (`reticora.cloud`), die Demo-Instanz, Inhalte, die der Anbieter noch liefert (Rechtstexte, Screenshots) |
@@ -146,7 +146,7 @@ Gelesen wurden alle 20 Schnappschüsse in `docs/qa/a11y-snapshots/`.
 
 ### 5.2 Widgets
 
-- **Ausfallsimulation:** Bereich „Ausfallsimulation“ mit dem fokussierbaren Rahmen „Schema einer Stromkette mit Ausfallsimulation“, darin das Bild mit Titel und Beschreibung; Gruppe „Ausfall simulieren“ mit neun Umschaltknöpfen (`pdu-a` gedrückt), Ergebniszeile als `status` („Fällt „pdu-a“ aus, ist 1 weiteres CI betroffen (grau dargestellt). Durch Redundanz geschützt: srv-01, srv-02.“), Legende als Text. Der zugängliche Name des Bilds enthält Titel und Beschreibung zusammen (lang, Hinweis H-2).
+- **Ausfallsimulation:** Bereich „Ausfallsimulation“ mit dem fokussierbaren Rahmen „Schema einer Stromkette mit Ausfallsimulation“, darin das Bild mit Titel und Beschreibung; Gruppe „Ausfall simulieren“ mit neun Umschaltknöpfen (`pdu-a` gedrückt), Ergebniszeile als `status` („Fällt „pdu-a“ aus, ist 1 weiteres CI betroffen (grau dargestellt). Durch Redundanz geschützt: srv-01, srv-02.“), Legende als Text. Der zugängliche Name des Bilds enthielt Titel und Beschreibung zusammen (lang, Hinweis H-2; behoben, Abschnitt 8: Name = Titel, Beschreibung = `desc`).
 - **Gerätefilter:** Gruppe „Kategorie“ mit fünf Umschaltknöpfen, Anzahl als Absatz mit `aria-live="polite"`, Tabelle mit Spaltenköpfen, Kategoriezeilen als `th scope="rowgroup"`, Hersteller als Zeilenkopf.
 - **Preise:** Pakettabelle mit verborgenen Spaltenköpfen „Beschreibung und Handlung“ und „Belege“; Zeilenkopf nur der Paketname; Knöpfe „30 Tage testen: Essentials“ usw. Matrix: Wort statt Symbol („enthalten“, „nicht enthalten“, „unbegrenzt“). Bei 390 px meldet Chromium beide Tabellen weiter als Tabelle mit Kopf- und Datenzellen (CDP-Test); die sichtbaren Beschriftungen der gestapelten Zellen stehen nicht im Namen (`layout.spec.ts`).
 - **Formular:** Felder mit Namen aus dem `label`, Hinweis und Fehler als Beschreibung, `invalid` am fehlerhaften Feld; Zusammenfassung als `alert` mit Links zu den Feldern; Fehlerseite des Servers gleich aufgebaut wie der Fehler mit JavaScript (Unterschied nur in den gemeldeten Fehlern); Statuszeile nach M-2 vorhanden.
@@ -252,3 +252,23 @@ Wortlaute der Website sind verbindlich; die Rahmenwörter des Screenreaders („
 - Windows Kontrastmodus („Kontrastdesigns“, z. B. „Wüste“ und „Nachthimmel“): Knöpfe, Felder, Fokus, Netzschema (ausgefallen und betroffen unterscheidbar), Belege.
 - Browserzoom 200 % und 400 % in Firefox und Safari auf echten Geräten; Textgröße „sehr groß“ auf iOS und Android.
 - Sprachsteuerung (Windows-Sprachzugriff oder macOS Sprachsteuerung): „Klicke 30 Tage testen“, „Klicke pdu-a“, „Klicke Beleg“ wirken (Beschriftung im Namen).
+
+## 8. Behoben in Phase 7
+
+Nach der Prüfung behoben (Zweig `claude/phase-7-qa`); Gestaltungsfragen (H-4 Unterstreichung) und Punkte für Screenreader-Tests
+(H-3, H-5, H-6) bleiben offen. Jede Änderung hat zuerst einen scheiternden Test bekommen.
+
+| Nr. | Behoben in Phase 7 | Umsetzung | Test | Rest |
+|---|---|---|---|---|
+| H-1 | `38e0d88` | Alle Scrollrahmen tragen `data-scroll-frame` und im HTML weiter `tabindex="0"` (ohne JavaScript bleiben sie per Tastatur scrollbar). Wo eine Insel ohnehin lädt (`impact`, `filter`, `copy`), setzt eine kleine gemeinsame Hilfe (`src/islands/frames.ts`, 408 Byte) `tabindex` nur, solange der Rahmen überläuft, und folgt der Fensterbreite (ResizeObserver, nach dem Laden der Schriften erneut); ein gerade fokussierter Rahmen behält den Halt. Budgets der Inseln eingehalten. | `tests/e2e/scroll-frames.spec.ts` (Geräte, Topologie, Verbindungsschema: kein Halt bei 1280 px, Halt bei 390 px und zurück; Code, der breit scrollt, bleibt Halt; ohne JavaScript immer Halt; jeder Rahmen markiert) | Seiten ohne Insel (Preise, Sicherheit, Produktseiten mit Tabelle oder Verbindungsschema) behalten den Halt auch ohne Überlauf: Eine neue Insel nur dafür bräuchte eine Entscheidung zu Spec §5 („JavaScript nur in Inseln“); kein Verstoß |
+| H-2 | `38e0d88` | Netzschema (`TopologyStage`) und Verbindungsschema (`ConnectionSchema`): `aria-labelledby` nur auf den Titel, `aria-describedby` auf `desc`. Barrierefreiheitsbäume (`docs/qa/a11y-snapshots/home-*.yml`, `produkt-topologie-impact-de.yml`, `product-topology-impact-en.yml`) neu geschrieben. | `tests/e2e/topology.spec.ts` „Name = Titel, Beschreibung = desc (H-2)“ (`toHaveAccessibleName`, `toHaveAccessibleDescription`); Baumvergleich | Anhören in Phase 8 |
+| H-9 | `38e0d88` | Erster CI-Lauf mit Firefox und WebKit (`1b1d518`) ausgewertet, siehe unten. Alle Fehlschläge gingen auf Annahmen der Tests zurück, keiner auf einen Mangel der Seite. | wie unten | Firefox und WebKit lassen sich in dieser Umgebung nicht installieren (Download-Host gesperrt); die Korrekturen sind lokal nur in Chromium gelaufen und in der CI zu bestätigen |
+
+**Auswertung des CI-Laufs `1b1d518` (48 Fehlschläge, 23 unbeständig):**
+
+- **Firefox, „Umschalt+Tab: rückwärts derselbe Weg“ auf jeder Seite (40 Fehlschläge, beide Breiten):** Dem Rückweg fehlte immer genau das letzte Ziel der Seite („English“ in der Fußzeile). Der Hinweg endet, wenn Tab die Seite verlässt. Wohin Umschalt+Tab dann führt, entscheidet der Browser: Chromium fokussiert das letzte Element, Firefox behält den Startpunkt der sequenziellen Navigation beim zuletzt fokussierten Element und geht von dort zum vorletzten. Für Tastaturnutzer kein Mangel (aus der Browserleiste zurück landet man auf dem letzten Element). Der Test legt den Startpunkt des Rückwegs jetzt an einen nicht per Tab erreichbaren Anker am Ende von `body`; der Vergleich mit dem Hinweg bleibt vollständig.
+- **WebKit, „Tab erreicht jedes Bedienelement“ und Umschalt+Tab auf den Kontaktseiten (6 Fehlschläge) und unbeständig auf weiteren Seiten:** Eingabefelder (in anderen Läufen auch Links) galten als „verdeckt (außerhalb des sichtbaren Bereichs)“, in jedem Versuch andere. WebKit (vereinzelt auch Firefox) scrollt ein per Tastatur fokussiertes Element erst beim nächsten Rendern in die Sicht. Der Test misst einen verdeckten Fokus nach zwei Bildern (`requestAnimationFrame`) erneut; bleibt er verdeckt, ist es weiter ein Mangel (die Gegenprobe mit wirklich verdecktem Fokus scheitert weiter wie gewollt). Ebenso im Test „400 % Zoom … jedes Menüziel erreichbar“.
+- **WebKit, `preise.spec.ts` „Pakettabelle“:** `innerText` der Zelle „–“ + optisch verborgenes „entfällt“ ergab in WebKit „–entfällt“, in Chromium und Firefox einen Umbruch dazwischen. Für Nutzer gleich (Strich `aria-hidden`, Wort für Screenreader). Der Test prüft die beiden Teile jetzt einzeln.
+- **Firefox, `page.goto` nach 30 s auf `/produkt/betrieb/`:** bekanntes, ungeklärtes Hängen beim Laden (README); unverändert, `retries: 1`.
+- Unbeständig und nicht geändert: WebKit „Kontrast im Druck“ (einmal Verhältnis 1,06 an einem Knopf des Netzschemas während des Umschaltens ins Druckthema), Firefox-Zeitlimits beim Laden (wie oben).
+

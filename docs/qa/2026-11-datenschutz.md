@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Stand | 2026-11-18 (Phase 7, Task 3) |
+| Stand | 2026-11-18 (Phase 7, Task 3); Behebung der Mängel am selben Tag, Abschnitt 10 (Spalte „Behoben in Phase 7“ je Mangel mit Commit) |
 | Gegenstand | die gebaute statische Website (`dist/`: alle 44 `index.html` beider Sprachen, dazu zwei unbekannte Adressen, die die 404-Seiten liefern) hinter dem Apache-Testserver, das PHP-Backend des Kontaktformulars (`backend/`) mit SQLite und mit MariaDB 10.11 und SMTP-Fänger (STARTTLS, Anmeldung), die CI-Workflows (`.github/workflows/`), der Deploy-Ablauf (`scripts/deploy/`, `docs/deploy.md`) und das Repository einschließlich Verlauf |
 | Nicht Gegenstand | die Anwendung Reticora (`www.reticora.cloud`) und die Demo (`www.demo.reticora.cloud`); das Hosting-Konto bei Hetzner selbst (Zugriffsprotokolle, Backups, PHP-Fehlerprotokoll, Cron); das Vertriebspostfach; Rechtstexte |
 | Prüfer | Claude (KI-Assistent), ohne Zugriff auf das Hosting-Konto und ohne juristische Prüfung |
@@ -331,22 +331,27 @@ Stand dieses Builds. Was offen ist, ist als offen markiert.
 7. **Speicherung der Anfragen:** Datenbank beim Hoster; automatische
    Löschung nach `retention_days` ab Eingang (Vorschlag 90 Tage, offen,
    Q-05); nicht zugestellte oder wegen sehr vieler Anfragen zurückgehaltene
-   Anfragen bleiben bis zur Zustellung oder Bearbeitung. Kopie im Postfach
+   Anfragen bleiben bis zur Zustellung oder Bearbeitung (ebenso eine
+   Anfrage, deren Versand abgebrochen ist, Spec Ä-41); höchstens
+   `rate_limit.held_max` zurückgehaltene Anfragen (Ä-38). Kopie im Postfach
    nach Regel des Vertriebs (Q-06). Backups des Hosters (Q-07).
 8. **Missbrauchsschutz:** Köderfeld; Zählung der Anfragen je Herkunft und
    Stunde über einen HMAC der IP-Adresse (IPv6 gekürzt auf /64, zusätzlich
-   /48) mit einem zufälligen, täglich überschriebenen Schlüssel; Zähler
-   nach höchstens etwa zwei Stunden gelöscht; mit dem Schlüssel des Tages
-   rückrechenbar, also pseudonymisiert (DS-03, Q-04). Obergrenze für alle
+   /48) mit einem zufälligen Schlüssel, der je Stundenfenster überschrieben
+   wird (Spec Ä-36, nach DS-03); Zähler und Schlüssel nach höchstens etwa
+   zwei Stunden gelöscht; solange sie bestehen, mit dem Schlüssel
+   rückrechenbar, also pseudonymisiert (Q-04). Obergrenze für alle
    Anfragen je Stunde.
 9. **Protokoll der Anwendung:** Ereignisse und Lead-IDs, keine
-   Formularinhalte, keine IP-Adressen; Frist offen (DS-04).
+   Formularinhalte, keine IP-Adressen; eine Datei je Tag, gelöscht nach
+   `retention_days` (Spec Ä-40, nach DS-04), ebenso die Ausgaben der
+   Cronjobs; die Frist selbst ist offen (Q-05).
 10. **Übermittlung in Drittländer:** durch die Website selbst keine;
     Mailpostfach offen (Q-08).
 11. **Links zur App und Demo** (`www.reticora.cloud`,
     `www.demo.reticora.cloud`): erst beim Klick, eigener Dienst (Q-11).
 12. **Rechte** nach Art. 15 bis 21 DSGVO und Beschwerderecht: Text liefert
-    der Auftraggeber; Verfahren siehe Abschnitt 7.
+    der Auftraggeber; Verfahren `docs/betrieb-anfragen.md` (aus Abschnitt 7).
 13. **Meldeadresse für Sicherheitslücken** (`/.well-known/security.txt`):
     entsteht erst, wenn `SITE.securityContact` gesetzt ist (Ä-25); derzeit
     keine Datei.
@@ -359,11 +364,31 @@ Stand dieses Builds. Was offen ist, ist als offen markiert.
 |---|---|---|
 | H-01 | Im Panel Format, Frist und Kürzung der Zugriffs- und Fehlerprotokolle ablesen, kürzeste Frist und IP-Kürzung einstellen, falls möglich; Bildschirmfoto ablegen | Q-03, Matrix D-12 |
 | H-02 | `log_path` in `config.php` setzen; prüfen, dass `lead.php` dorthin und nicht ins Fehlerprotokoll des Hosters schreibt | P-31 |
-| H-03 | Cron `purge.php` und `retry.php` eingerichtet; nach einer Stunde Zeile in `purge.log`; mit einem absichtlich alten `held`-Testlead prüfen, dass die Cron-Mail kommt und nur Anzahlen enthält; danach Testlead löschen (Abschnitt 7) | P-35, P-37 |
+| H-03 | Cron `purge.php` und `retry.php` eingerichtet; nach einer Stunde Zeile in `purge-JJJJ-MM-TT.log`; mit einem absichtlich alten `held`-Testlead prüfen, dass die Cron-Mail kommt und nur Anzahlen enthält; danach Testlead löschen (Abschnitt 7) | P-35, P-37 |
 | H-04 | `REMOTE_ADDR` ist die Besucheradresse (`docs/deploy.md` §6 Punkt 5) | P-27 |
 | H-05 | Testanfrage an das echte Vertriebspostfach: alle Kopfzeilen beim Empfang ablesen (`Received` enthält die Adresse des Webservers, nicht die des Besuchers), TLS zwischen Versandserver und Postfach, keine Weiterleitung | P-20, P-21, Q-08 |
 | H-06 | Netzwerkprüfung aus Abschnitt 2 gegen `https://www.reticora.de` wiederholen (alle Seiten, 404, Formular): keine fremden Hosts und vor allem **kein `Set-Cookie` des Hosters** (manche Hoster setzen Cookies für Lastverteilung oder Schutzfunktionen) | P-01, P-06 |
-| H-07 | `retention_days` ausdrücklich in `config.php` setzen, sobald Q-05 entschieden ist | P-34, DS-09 |
+| H-07 | `retention_days` in `config.php` setzen, sobald Q-05 entschieden ist (seit Ä-42 Pflicht: ohne Wert startet nichts) | P-34, DS-09 |
 | H-08 | `config.preview.php` mit eigener Datenbank und Test-Postfach anlegen, sonst landen Tests aus der Vorschau in der echten Datenbank (`docs/deploy.md` §2 Schritt 7) | Inventar Nr. 5 |
 | H-09 | Testanfragen der Abnahme nach ID löschen | Abschnitt 7 |
 | H-10 | Backup-Frist des Hosters für Webspace und Datenbank ablesen | Q-07 |
+
+## 10. Behoben in Phase 7
+
+Behoben im Zweig `claude/phase-7-qa` nach den Entscheidungen des Auftraggebers vom 2026-11-18 (DS-03 stündlicher Schlüssel,
+DS-04 Tagesprotokolle mit Löschung nach `retention_days`). Jede Verhaltensänderung hat zuerst einen scheiternden Test bekommen.
+Spec-Einträge: §14 Ä-36, Ä-40 bis Ä-43, Ä-46. Die offenen Fragen Q-01 bis Q-12 und die Prüfungen H-01 bis H-10 auf dem Hosting
+bleiben offen.
+
+| Nr. | Behoben in Phase 7 | Umsetzung | Nachweis | Rest |
+|---|---|---|---|---|
+| DS-01 | `0314714` | `tests/e2e/privacy.spec.ts` über jede gebaute Seite beider Sprachen (`ROUTES`, Status „gebaut“), `/gibt-es-nicht/`, `/en/does-not-exist/` und die 422-Seite (Absenden ohne JavaScript): fremde Hosts (`request` und `requestfailed`), `Set-Cookie` in jeder Antwort, `context.cookies()`, `localStorage`, `sessionStorage`, `indexedDB.databases()` (fehlt die Funktion, Vermerk statt Erfolg), `caches.keys()`, Service-Worker-Registrierungen und -Steuerung, CSP-Verstöße; nach `networkidle` und `document.fonts.ready`. Läuft in der CI in Chromium, Firefox und WebKit; `pages.spec.ts` prüft dort nur noch Konsolenfehler (keine doppelte Host-Prüfung). | lokal Chromium: 46 Tests bestanden (42 gebaute Seiten, 2 × 404, 422, dazu ein Zähltest); Firefox und WebKit nur in der CI (lokal nicht installierbar) | H-06 (Cookie des Hosters) |
+| DS-02 | `0314714` | Ein Test über `dist/` (`tests/unit/dist.test.ts`, übersprungen ohne `dist/` wie die anderen): kein `<link rel>` mit `preconnect`, `dns-prefetch`, `prefetch`, `prerender`; kein `speculationrules`; kein `src`, `srcset`, `poster`, `data`, `formaction` und kein `<link href>` (außer `canonical`/`alternate`) mit Schema oder `//`; kein `url(http…)`/`url(//…)` und kein `@import` in CSS; kein `sourceMappingURL`, keine `*.map`. Mit Gegenproben für jedes Muster. Ersetzt die Einzelsuchen beider Protokolle (Sicherheit B-01/B-02); das Paket prüft Source-Maps zusätzlich (`deploy-package.test.ts`). | `tests/unit/dist.test.ts` (12 Gegenproben, eine Positivprobe, Prüfung des Builds) | – |
+| DS-03 | `94a44c2` | Schlüssel je Stundenfenster: `rate_limit_key.window_start` statt `day`, Wechsel beim ersten Gebrauch eines neuen Fensters (Anfrage oder `purge.php`, nur wenn noch das alte Fenster drinsteht). `sql/002_rate_limit_key_hourly.sql` stellt bestehende MariaDB-Tabellen idempotent um; `Database::migrate` spielt alle `NNN_*.sql` der Reihe nach ein. | `AppTest::testRateLimitKeyIsRandomAndOverwrittenHourly`, `PurgerTest::testPurgeOverwritesTheKeyOncePerHourEvenWithoutTraffic`, Integration (MariaDB 10.11): `KeyRotationTest` (stündlich, zwei Verbindungen), `MigrationTest::testTableFromTheFirstSchemaGetsTheHourlyKeyColumn` | Einordnung als pseudonyme Daten und Rechtsgrundlage: Q-04 |
+| DS-04 | `94a44c2` (Code), `0314714` (Runbook) | `LogFiles::daily`: aus `log_path` `…/lead.log` wird `…/lead-JJJJ-MM-TT.log` (UTC), auch für das PHP-Fehlerprotokoll von `lead.php`. `purge.php` löscht Tagesdateien `lead-`, `purge-`, `retry-…` im Ordner von `log_path`, deren Tag vor `retention_days` liegt (`logs_deleted=` in der Ausgabe); andere Dateien bleiben. Runbook: Cron-Ausgaben als `purge-$(date -u +%F).log` und `retry-…`. | `LogFilesTest`, `PurgerTest::testPurgeScriptDeletesDailyLogFilesOlderThanTheRetention`, `EntryPointTest::testEventsAreWrittenToADailyLogFile` | Frist selbst offen (Q-05); Cron-Zeile im Panel des Hosters prüfen (H-03) |
+| DS-05 | `94a44c2` | `pending`, älter als 15 Minuten (`LeadRepository::STALE_PENDING`), zählt als nicht zugestellt: `undelivered()` nimmt es auf (`retry.php` stellt zu, bei Fehler `not_delivered`), `purge.php` löscht `pending` nie und meldet hängengebliebene mit Exit 1 (`pending=` in der Ausgabe). | `RetrierTest::testPendingOlderThan15MinutesIsDeliveredLikeNotDeliveredButFreshPendingIsLeftAlone`, `testStalePendingThatFailsBecomesNotDelivered`, `PurgerTest::testNeverDeletesHeldOrNotDeliveredLeadsHoweverOld`, `testFreshPendingIsNeitherDeletedNorAnAlarm`, `testPurgeScriptExitsWith1WhileUndeliveredLeadsExist`; Integration: `PurgeTest` (altes `pending` bleibt, Exit 1), `testStalePendingIsDeliveredByRetryAndFreshPendingIsLeftAlone` | – |
+| DS-06 | `0314714` | `docs/betrieb-anfragen.md` aus Abschnitt 7, angepasst an den stündlichen Schlüssel und die Tagesprotokolle; verlinkt aus `docs/deploy.md` §6 und `backend/README.md`. | Dokument | Zuständigkeit, Fristen, Identitätsprüfung: Q-12 |
+| DS-07 | `94a44c2` | `a@b.de` → `a@example.com`, `x.de` → `example.org`, `cdn.x` → `cdn.example.org` (Unit-Tests der Release-, `security.txt`- und Sitemap-Prüfung), `name@firma.de` → `name@example.com` (`design/…/ContactForm/preview.html`), `1.2.3.x` → `192.0.2.x` (`AppTest`). | `git grep` ohne Treffer | – |
+| DS-08 | `0314714` | Spec §6.2 und §6.3 tragen je einen Verweis auf den geltenden Stand, Spec §14 Ä-43 fasst ihn zusammen (keine Bestätigungsmail, stündlicher Schlüssel und Löschlauf, Zähler höchstens etwa zwei Stunden, Ausnahmen der Löschung, Tagesprotokolle); `content-plan.md` §9 verweist auf den Wegfall der Zeitfalle (Ä-07) und auf Abschnitt 8 dieses Protokolls. Die freigegebenen Abschnitte selbst sind nicht umgeschrieben. | Dokumente | – |
+| DS-09 | `94a44c2` | `Config::fromArray` verlangt `retention_days` als ganze Zahl 1–3650, sonst `InvalidArgumentException` mit „'retention_days' fehlt oder ist ungültig (ganze Zahl von Tagen, 1–3650)“: Formular 500, Cronjobs Exit 1. `purge.php` nutzt `Config::retentionDays()` (kein stiller Standard mehr). | `ConfigTest::testRetentionDaysIsRequiredAndBounded` (fehlt, 0, negativ, 3651, Text, Kommazahl, leer), `testRetentionDaysIsReadAsGiven`, `testRequiredKeysAndSections` | Frist: Q-05 |
+
