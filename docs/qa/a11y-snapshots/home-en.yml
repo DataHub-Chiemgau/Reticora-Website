@@ -37,7 +37,7 @@
     - paragraph: Offer for businesses only.
     - region "Outage simulation":
       - region "Schematic of a power chain with outage simulation":
-        - img "Schematic of a power chain with outage simulation usv-01 powers pdu-a and pdu-b. srv-01 and srv-02 hang off both PDUs, sw-access-01 only off pdu-a, nas-01 only off pdu-b. vm-app-01 runs on srv-01, vm-db-01 on srv-02.": powered_by powered_by powered_by powered_by powered_by powered_by powered_by hosted_on hosted_on usv-01 pdu-a pdu-b sw-access-01 srv-01 srv-02 nas-01 vm-app-01 vm-db-01
+        - img "Schematic of a power chain with outage simulation": powered_by powered_by powered_by powered_by powered_by powered_by powered_by hosted_on hosted_on usv-01 pdu-a pdu-b sw-access-01 srv-01 srv-02 nas-01 vm-app-01 vm-db-01
       - group "Simulate outage":
         - button "usv-01"
         - button "pdu-a" [pressed]
@@ -101,7 +101,7 @@
           - group: "Evidence : Manual values are kept"
     - 'figure "Fig. 1 · The collector connects outbound: HTTPS 443 and NATS with mTLS 4222. Schematic drawing."':
       - region "Connection direction of the collector":
-        - 'img "Connection direction of the collector On the left the area “Your network” with four devices and the collector, on the right the area “Reticora (EU)”. Two lines run from the collector to the right: HTTPS 443 and NATS mTLS 4222. There is no line from right to left."': Your network Reticora (EU) Devices Collector HTTPS 443 NATS mTLS 4222
+        - img "Connection direction of the collector": Your network Reticora (EU) Devices Collector HTTPS 443 NATS mTLS 4222
       - text: "Fig. 1 · The collector connects outbound: HTTPS 443 and NATS with mTLS 4222. Schematic drawing."
   - region "Data you can trust":
     - heading "Data you can trust" [level=2]

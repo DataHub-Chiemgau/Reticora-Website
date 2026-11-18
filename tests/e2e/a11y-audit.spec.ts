@@ -457,12 +457,25 @@ test.beforeEach(async ({ page }) => {
 
 interface Walk { stops: FocusStop[]; trapped: boolean }
 
+/**
+ * Fokus messen, nachdem der Browser ihn in den sichtbaren Bereich geholt hat. WebKit (und vereinzelt Firefox) scrollt ein per
+ * Tastatur fokussiertes Element erst beim nächsten Rendern in die Sicht, nicht schon beim Tastendruck (CI 1b1d518: Eingabefelder
+ * „außerhalb des sichtbaren Bereichs“, in jedem Versuch andere). Ist der Fokus beim ersten Messen verdeckt, wird nach zwei
+ * Bildern erneut gemessen; bleibt er verdeckt, zählt das wie bisher als Mangel (Gegenprobe im Test „Gegenprobe: verdeckter Fokus …“).
+ */
+async function focusInfoSettled(page: Page): Promise<FocusStop | null> {
+  const info = await page.evaluate(() => window.a11y.focusInfo());
+  if (!info?.covered) return info;
+  await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+  return page.evaluate(() => window.a11y.focusInfo());
+}
+
 async function walk(page: Page, key: 'Tab' | 'Shift+Tab', max = 400): Promise<Walk> {
   const stops: FocusStop[] = [];
   const seen = new Set<string>();
   for (let i = 0; i < max; i++) {
     await page.keyboard.press(key);
-    const info = await page.evaluate(() => window.a11y.focusInfo());
+    const info = await focusInfoSettled(page);
     if (!info) {
       if (stops.length > 0) return { stops, trapped: false };
       continue;
@@ -486,6 +499,23 @@ async function toTop(page: Page) {
     document.body.prepend(s);
     s.focus();
     s.remove();
+  });
+}
+
+/**
+ * Startpunkt der Rückwärtsfolge hinter das letzte Element legen. Nach dem Hinweg hat Tab die Seite verlassen; wohin Umschalt+Tab
+ * dann führt, ist Sache des Browsers: Chromium fokussiert das letzte Element, Firefox behält den Startpunkt der sequenziellen
+ * Navigation auf dem zuletzt fokussierten Element und fokussiert das vorletzte (CI 1b1d518: auf jeder Seite fehlte „English“,
+ * das letzte Ziel der Fußzeile). Ein nicht per Tab erreichbarer Anker am Ende von body gibt allen Browsern denselben Start.
+ */
+async function toBottom(page: Page) {
+  await page.evaluate(() => {
+    (document.activeElement as HTMLElement | null)?.blur();
+    const s = document.createElement('span');
+    s.tabIndex = -1;
+    s.dataset.a11yEnd = '';
+    document.body.append(s);
+    s.focus({ preventScroll: true });
   });
 }
 
@@ -543,6 +573,7 @@ for (const p of PAGES)
       await open(page, p);
       await toTop(page);
       const fwd = await walk(page, 'Tab');
+      await toBottom(page);
       const back = await walk(page, 'Shift+Tab');
       expect(back.trapped).toBe(false);
       expect(back.stops.map((s) => s.desc).reverse(), 'Rückweg ist nicht die Umkehr des Hinwegs').toEqual(fwd.stops.map((s) => s.desc));
@@ -634,7 +665,7 @@ for (const p of BASE)
       expect(n).toBeGreaterThan(8);
       for (let i = 0; i < n; i++) {
         await links.nth(i).focus();
-        const info = await page.evaluate(() => window.a11y.focusInfo());
+        const info = await focusInfoSettled(page);
         expect(info!.covered, info!.desc).toBe(false);
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
@@ -1059,7 +1090,8 @@ test('Gegenprobe: verdeckter Fokus, fehlender Umriss, überlaufender Text, klein
     document.body.insertAdjacentHTML('beforeend', '<div class="probe-bar"></div>');
   });
   await page.locator('a.rt-brand').focus();
-  const info = await page.evaluate(() => window.a11y.focusInfo());
+  // auch nach dem Abwarten des Renderns (focusInfoSettled) bleibt ein wirklich verdeckter Fokus verdeckt
+  const info = await focusInfoSettled(page);
   expect(info!.covered).toBe(true);
   expect(focusProblems([info!]).join(' ')).toMatch(/Umriss none.*verdeckt/);
   expect((await page.evaluate(() => window.a11y.spill())).join(' ')).toMatch(/probe-box/);

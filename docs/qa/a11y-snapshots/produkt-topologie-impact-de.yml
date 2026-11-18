@@ -63,7 +63,7 @@
           - /url: /produkt/api/
   - region "Ausfallsimulation":
     - region "Schema einer Stromkette mit Ausfallsimulation":
-      - img "Schema einer Stromkette mit Ausfallsimulation usv-01 versorgt pdu-a und pdu-b. srv-01 und srv-02 hängen an beiden PDUs, sw-access-01 nur an pdu-a, nas-01 nur an pdu-b. vm-app-01 läuft auf srv-01, vm-db-01 auf srv-02.": powered_by powered_by powered_by powered_by powered_by powered_by powered_by hosted_on hosted_on usv-01 pdu-a pdu-b sw-access-01 srv-01 srv-02 nas-01 vm-app-01 vm-db-01
+      - img "Schema einer Stromkette mit Ausfallsimulation": powered_by powered_by powered_by powered_by powered_by powered_by powered_by hosted_on hosted_on usv-01 pdu-a pdu-b sw-access-01 srv-01 srv-02 nas-01 vm-app-01 vm-db-01
     - group "Ausfall simulieren":
       - button "usv-01"
       - button "pdu-a" [pressed]

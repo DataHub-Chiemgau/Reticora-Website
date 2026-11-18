@@ -63,7 +63,7 @@
           - /url: /en/product/api/
   - region "Outage simulation":
     - region "Schematic of a power chain with outage simulation":
-      - img "Schematic of a power chain with outage simulation usv-01 powers pdu-a and pdu-b. srv-01 and srv-02 hang off both PDUs, sw-access-01 only off pdu-a, nas-01 only off pdu-b. vm-app-01 runs on srv-01, vm-db-01 on srv-02.": powered_by powered_by powered_by powered_by powered_by powered_by powered_by hosted_on hosted_on usv-01 pdu-a pdu-b sw-access-01 srv-01 srv-02 nas-01 vm-app-01 vm-db-01
+      - img "Schematic of a power chain with outage simulation": powered_by powered_by powered_by powered_by powered_by powered_by powered_by hosted_on hosted_on usv-01 pdu-a pdu-b sw-access-01 srv-01 srv-02 nas-01 vm-app-01 vm-db-01
     - group "Simulate outage":
       - button "usv-01"
       - button "pdu-a" [pressed]

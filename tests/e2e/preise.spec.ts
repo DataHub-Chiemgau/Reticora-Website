@@ -51,8 +51,17 @@ test('Pakettabelle: jede Zahl stammt aus PLANS', async ({ page }) => {
     const cell = async (c: string) => norm(await row.locator(`[data-col="${c}"]`).innerText());
     expect(await cell('monthly')).toBe(`${p.from ? 'ab ' : ''}${eur(p.monthly)}`);
     expect(await cell('yearly')).toBe(p.yearly === null ? 'auf Anfrage' : eur(p.yearly));
-    // ohne Beta-Preis: sichtbar ein Strich, für Screenreader das Wort (a11y-audit „Tabellenzelle nur mit Strich“)
-    expect(await cell('beta')).toBe(p.betaYearly === null ? `– ${ui('de').matrix.na}` : eur(p.betaYearly));
+    // ohne Beta-Preis: sichtbar ein Strich, für Screenreader das Wort (a11y-audit „Tabellenzelle nur mit Strich“). Die Teile
+    // einzeln prüfen: innerText setzt zwischen Strich und dem absolut positionierten sr-only-Text in Chromium und Firefox einen
+    // Umbruch, in WebKit nichts (CI 1b1d518: „–entfällt“); beides ist für Nutzer gleich.
+    if (p.betaYearly === null) {
+      const beta = row.locator('[data-col="beta"]');
+      await expect(beta.locator('[aria-hidden="true"]')).toHaveText('–');
+      await expect(beta.locator('.sr-only')).toHaveText(ui('de').matrix.na);
+      expect(norm((await beta.textContent()) ?? '')).toBe(`–${ui('de').matrix.na}`);
+    } else {
+      expect(await cell('beta')).toBe(eur(p.betaYearly));
+    }
     expect(await cell('cis')).toBe(`bis ${grouped(p.limits.cis)}`);
     expect(await cell('collectors')).toBe(p.limits.collectors === null ? 'unbegrenzt' : grouped(p.limits.collectors));
     expect(await cell('users')).toBe(p.limits.users === null ? 'unbegrenzt' : grouped(p.limits.users));

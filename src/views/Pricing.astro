@@ -38,7 +38,7 @@ const claimIds = [...new Set(JSON.stringify(C).match(/\bC-\d+\b/g) ?? [])].sort(
         <p class="home-b2b">{UI.b2b}</p>
       </div>
       <div class="rt-price">
-        <section class="rt-table-wrap" tabindex="0" aria-label={C.pakete.label}>
+        <section class="rt-table-wrap" tabindex="0" data-scroll-frame aria-label={C.pakete.label}>
           <table class="rt-table price-plans">
             <thead>
               <tr>
@@ -89,7 +89,7 @@ const claimIds = [...new Set(JSON.stringify(C).match(/\bC-\d+\b/g) ?? [])].sort(
     <div class="home-stack">
       <div class="price-matrix-box">
         <p class="rt-table-hint">{UI.tableHint}</p>
-        <section class="rt-table-wrap price-matrix-wrap" tabindex="0" aria-label={C.funktionen.label}>
+        <section class="rt-table-wrap price-matrix-wrap" tabindex="0" data-scroll-frame aria-label={C.funktionen.label}>
           <table class="rt-table price-matrix" aria-describedby="funktionen-beschreibung">
             <thead>
               <tr>

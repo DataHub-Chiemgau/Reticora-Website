@@ -1,3 +1,4 @@
+import { fitScrollFrames } from './frames';
 import { computeImpact, edgeIsDim, impactSentence } from '../lib/impact';
 import type { Lang } from '../data/types';
 
@@ -55,3 +56,5 @@ for (const root of document.querySelectorAll<HTMLElement>('[data-topo]')) {
   for (const n of nodes) n.addEventListener('click', () => toggle(attr(n, 'data-id')));
   if (group) group.hidden = false;
 }
+
+fitScrollFrames();

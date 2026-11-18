@@ -16,7 +16,7 @@ const none = ui(lang).matrix.none;
 ---
 
 {/* Eine Tabellenform für alle breiten Tabellen: im Scrollrahmen (fokussierbar, benannt); unter 48rem stehen die Zeilen untereinander (Beschriftung je Zelle), so dass nichts abgeschnitten wird und kein Hinweis nötig ist. */}
-<section class="rt-table-wrap" tabindex="0" aria-label={label}>
+<section class="rt-table-wrap" tabindex="0" data-scroll-frame aria-label={label}>
   <table class="rt-table rt-table--stack">
     <thead>
       <tr>{columns.map((c) => <th scope="col" class={c.numeric ? 'num' : undefined}>{c.head}</th>)}</tr>
