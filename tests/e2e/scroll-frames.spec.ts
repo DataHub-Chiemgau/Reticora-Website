@@ -26,12 +26,19 @@ for (const c of CASES)
     await expect(f).not.toHaveAttribute('tabindex');
   });
 
-test('Code, der auch breit scrollt, bleibt ein Tab-Halt', async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 900 });
+test('Codeblock: Tab-Halt genau dann, wenn er scrollt', async ({ page }) => {
+  // Ob die längste Codezeile bei 1280 px überläuft, hängt von der Schriftbreite ab (in der CI anders
+  // als lokal). Geprüft wird deshalb die Regel selbst, und bei 390 px läuft der Code sicher über.
   await page.goto('/produkt/api/');
   const pre = page.locator(frame('pre')).first();
-  expect(await pre.evaluate((e) => e.scrollWidth > e.clientWidth + 1)).toBe(true);
-  await expect(pre).toHaveAttribute('tabindex', '0');
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+    const scrolls = await pre.evaluate((e) => e.scrollWidth > e.clientWidth + 1);
+    if (width === 390) expect(scrolls, 'bei 390 px muss der Code überlaufen').toBe(true);
+    if (scrolls) await expect(pre, `${width} px`).toHaveAttribute('tabindex', '0');
+    else await expect(pre, `${width} px`).not.toHaveAttribute('tabindex');
+  }
 });
 
 test('ohne JavaScript bleibt jeder Scrollrahmen fokussierbar', async ({ browser }) => {
