@@ -1,0 +1,60 @@
+name: Integration
+
+# Zielumgebung (README „Zielumgebung“): Apache 2.4 + PHP 8.4 (mod_php), MariaDB 11.4, Mailpit mit STARTTLS und Anmeldung.
+# Backend-Integrationstests laufen IM Web-Container (gegen db und mail im Compose-Netz, mit der Test-CA im Systemspeicher
+# des Containers); die Browser-Tests laufen auf dem Runner gegen http://127.0.0.1:8088 und lesen Mailpit über :8025.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # dist/ (Webroot) und backend/templates/ (422-Seite) aus demselben Build
+      - run: npm run build
+      # PHPUnit für die Backend-Integrationstests (backend/ wird schreibgeschützt in den Web-Container eingehängt)
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_mysql
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+        working-directory: backend
+      - run: docker compose up -d --build --wait --wait-timeout 300
+      - name: Backend-Integrationstests im Web-Container (MariaDB, SMTP mit STARTTLS und Anmeldung)
+        run: >-
+          docker compose exec -T -w /opt/backend-src web
+          php vendor/bin/phpunit --testsuite integration --do-not-cache-result
+      - run: npx playwright install --with-deps chromium
+      - name: Browser-Integrationstests gegen den Container
+        run: npx playwright test -c playwright.integration.config.ts
+        env:
+          RETICORA_IT_BASE_URL: http://127.0.0.1:8088
+          RETICORA_IT_MAILPIT_URL: http://127.0.0.1:8025
+      - name: Protokolle des Stacks sichern
+        if: failure()
+        run: docker compose logs --no-color --timestamps > compose-logs.txt 2>&1 || true
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: integration-diagnose
+          path: |
+            compose-logs.txt
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Stack entfernen
+        if: always()
+        run: docker compose down -v

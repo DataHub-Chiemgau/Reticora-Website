@@ -25,7 +25,8 @@ Zweisprachige (Deutsch, Englisch) Marketing-Website für Reticora, B2B. Astro 7 
 | `npm run lhci` | Lighthouse (fünf Läufe, Mobilprofil) für sechs Seiten gegen den Apache-Testserver. Meldet Lighthouse einen Laufzeitfehler (`Runtime error encountered`, z. B. `NO_NAVSTART`) und ist kein Grenzwert verletzt, wiederholt `scripts/lhci.mjs` den Lauf einmal (deutlich ausgegeben); verletzte Grenzwerte scheitern sofort |
 | `npm run build:release` | Release-Build ohne Entwicklungsseiten, danach Release-Sperre |
 | `node scripts/check-security-txt.mjs` | Warnlauf für den Ablauf der `security.txt` (läuft wöchentlich in `.github/workflows/security-txt.yml`) |
-| `cd backend && vendor/bin/phpunit` | PHP-Tests des Backends |
+| `cd backend && vendor/bin/phpunit` | PHP-Tests des Backends (Suite `unit`, SQLite) |
+| `bash scripts/integration-local.sh [--browser]` | Integrationstests ohne Docker gegen MariaDB und SMTP mit STARTTLS (siehe „Zielumgebung“) |
 
 Die Prüfkette vor jedem Commit: `npm run check && npm run build && npm test && npm run validate && npm run test:e2e -- --trace off` (`--trace off` nur lokal; die CI lässt es weg), dazu `cd backend && vendor/bin/phpunit`.
 
@@ -61,6 +62,37 @@ Die Prüfkette vor jedem Commit: `npm run check && npm run build && npm test && 
 - `npm run dev` enthält das Backend nicht. Das Formular dort zu prüfen heißt: bauen und `npm run serve`.
 - Einrichtung auf dem Hosting (Konfiguration, Migration, stündlicher Löschlauf): `backend/README.md`.
 
+## Zielumgebung (Phase 7)
+
+Neben dem schnellen Testserver (`npm run serve`: SQLite, Mails als Datei, PHP-Entwicklungsserver per Proxy) gibt es eine Umgebung, die dem Hosting nahekommt. Sie prüft das Backend gegen MariaDB und einen SMTP-Server mit STARTTLS und Anmeldung und die gebaute Website gegen Apache mit PHP als Modul.
+
+**Was der Compose-Stack nachbildet** (`compose.yaml`, `docker/`):
+
+- `web`: `php:8.4-apache` (Apache 2.4, PHP als Modul) mit `rewrite`, `headers`, `expires`, `deflate`, `setenvif`, `filter`, `pdo_mysql`; `display_errors=Off`, `expose_php=Off`, `ServerTokens Prod`, Zeitzone `Europe/Berlin` (das Backend rechnet in UTC, eine andere Zeitzone deckt Fehler auf). Aufbau wie in `backend/README.md`: Webroot `/var/www/html` = Inhalt von `dist/` (beim Start aus dem schreibgeschützt eingehängten `dist/` kopiert) plus `api/lead.php` und `api/.htaccess`, `AllowOverride All`, die Regeln kommen aus den `.htaccess`-Dateien. Das Backend liegt außerhalb des Webroots unter `/var/www/reticora` (= `~/reticora`) mit `vendor/` aus `composer install --no-dev --classmap-authoritative`, `templates/` aus demselben Build und einer beim Start erzeugten `config.php` (Rechte 640, `docker/config.integration.php`). `lead.php` findet es wie im Betrieb über `../../reticora`.
+- `db`: `mariadb:11.4`, Schema aus `backend/sql/001_init.sql`, eigener Benutzer `reticora` mit beim ersten Start erzeugtem Zufallspasswort, Root-Passwort zufällig und unbekannt.
+- `mail`: Mailpit (`axllent/mailpit:v1.33.1`), SMTP nur nach STARTTLS und nur mit Anmeldung; Serverzertifikat von einer beim Start erzeugten Test-CA. Der Web-Container trägt die Test-CA in seinen Zertifikatsspeicher ein; die Zertifikatsprüfung bleibt an (ein Test schickt an einen zweiten Namen desselben Servers, der nicht im Zertifikat steht, und erwartet `not_delivered`).
+- Alle Zugangsdaten erzeugt `docker/web/gen-secrets.sh` beim ersten Start im Volume `secrets`; im Repository steht kein Passwort. `docker compose down -v` verwirft alles.
+
+**Was anders ist als bei Hetzner** (nicht prüfbar, bleibt für die Abnahme auf dem Hosting):
+
+- PHP-Anbindung: im Container `mod_php`, beim Hoster vermutlich FastCGI/CGI. Ob `Header always set` aus `.htaccess` dort die von PHP gesetzten Kopfzeilen ersetzt oder ergänzt, `LimitRequestBody` greift und welche `php.ini`-Werte gelten (`expose_php`, `display_errors`), ist auf dem Hosting zu prüfen.
+- Vorgeschalteter Proxy des Hosters: hier gibt es keinen. Ob `REMOTE_ADDR` beim Hoster die Adresse des Besuchers ist, prüft dieser Stack nicht (siehe `backend/README.md`).
+- Echte DNS-Namen und TLS der Website (HSTS, Umleitung auf `https://www`) fehlen; der Stack spricht HTTP auf `127.0.0.1:8088`.
+- Mailanbieter: Mailpit nimmt jede Mail an. Anmeldeverfahren, Zertifikatskette, Zustellung in fremde Postfächer und Spam-Bewertung des echten Anbieters sind nicht geprüft.
+- MariaDB-Version und Servereinstellungen (`sql_mode`, Zeichensatz-Standard) des Hosters können abweichen; lokal läuft MariaDB 10.11 aus Ubuntu, im Container 11.4.
+- Cronjobs laufen nicht von selbst; die Tests rufen `bin/purge.php` und `bin/retry.php` direkt auf und prüfen Exit-Codes und Ausgabe.
+
+**Tests:**
+
+- `backend/tests/Integration/` (PHPUnit-Testsuite `integration`, nur mit `RETICORA_INTEGRATION=1`, sonst übersprungen; `vendor/bin/phpunit` ohne Angabe führt nur die schnelle Suite `unit` aus): Migration idempotent und `utf8mb4`, Umlaute und Emoji in allen Textfeldern byteweise unverändert, Zustellung über STARTTLS mit Anmeldung (genau eine Mail an das Vertriebspostfach, `Reply-To` die eingegebene Adresse, keine Mail an sie), falsches SMTP-Passwort → `not_delivered` → `purge.php` Exit 1 → `retry.php` nach Korrektur Exit 0, Zertifikatsprüfung, Zeitlimit bei stummem Server, Rate-Limit je Herkunft (IPv4, IPv6-/64 und /48, nur `REMOTE_ADDR`, auch über echtes HTTP mit `X-Forwarded-For`), Obergrenze für alle (`held`, harte Grenze 429, Nachversand), täglicher Schlüsselwechsel, Löschlauf. Konfiguration nur über Umgebungsvariablen (`RETICORA_IT_*`, siehe `IntegrationTestCase.php`).
+- `tests/e2e-integration/` mit `playwright.integration.config.ts` (nur Chromium, startet keinen Server, `RETICORA_IT_BASE_URL`, Standard `http://127.0.0.1:8088`): Formular Deutsch und Englisch mit und ohne JavaScript bis zur Dankeseite mit genau einer Mail an den Vertrieb, 422-Seite ohne JavaScript, Sicherheits-Kopfzeilen auf 200, 301, 404, 403, 405, 413 und 422 (auch `/api/lead.php`), gesperrte Pfade (`/backend/`, Punktdateien, `.htaccess`, Backend außerhalb des Webroots), englische 404-Seite. Doppelte Kopfzeilen werden als Hinweis im Bericht vermerkt, nicht als Fehler.
+
+**In der CI** (`.github/workflows/integration.yml`, bei Push, Pull Request und von Hand): `npm ci`, `npm run build`, `composer install` (für PHPUnit), `docker compose up -d --build --wait`, die Backend-Integrationstests **im Web-Container** (`docker compose exec -T -w /opt/backend-src web php vendor/bin/phpunit --testsuite integration`; dort gelten die PHP-Version, die `php.ini` und der Zertifikatsspeicher des Containers, Datenbank und Mailserver werden über das Compose-Netz erreicht), dann Playwright gegen `127.0.0.1:8088` mit Mailpit-API auf `127.0.0.1:8025`. Bei einem Fehlschlag: `docker compose logs` und `test-results/` als Artefakt `integration-diagnose` (7 Tage). Am Ende immer `docker compose down -v`.
+
+**Lokal mit Docker:** `npm run build && (cd backend && composer install) && docker compose up -d --build --wait`, dann die beiden Testbefehle wie in der CI, zum Schluss `docker compose down -v`.
+
+**Lokal ohne Docker:** `scripts/integration-local.sh` startet als aktueller Benutzer in einem eigenen Verzeichnis MariaDB (`apt-get install -y mariadb-server`, Port 3307, eigener Socket) und einen SMTP-Fänger mit STARTTLS und Anmeldung (Python-Paket `aiosmtpd`, Interpreter über `RETICORA_IT_PYTHON`; jede Mail als JSON-Datei) und führt die Backend-Integrationstests aus. Mit `--browser` zusätzlich Apache auf Port 8088 nach `tests/server/httpd.conf.tmpl` mit dem PHP-Entwicklungsserver dahinter und die Browser-Integrationstests. Einschränkung dort: `/api/lead.php` läuft über den Proxy, die `.htaccess`-Dateien greifen dafür nicht; die Kopfzeilen von `/api/` prüft nur der Container (die Tests vermerken das als „nicht geprüft“).
+
 ## Release-Sperre
 
 `npm run build:release` bricht heute mit Exit-Code 1 ab, und zwar absichtlich. Die Prüfung listet offene Claims, fehlende Screenshots, Platzhalter in gebauten Seiten, fehlende Anbieterangaben (E-Mail, Telefon, Meldeadresse für Sicherheitslücken) und Entwicklungsseiten in `dist/`. Geplante Seiten und tote interne Links gibt es nicht mehr. Die Seite darf nicht online gehen, bevor diese Liste leer ist und die Rechtsprüfung abgeschlossen ist.
@@ -72,8 +104,8 @@ Die Prüfkette vor jedem Commit: `npm run check && npm run build && npm test && 
 ## Bekannte Einschränkungen und Ungeprüftes
 
 - **Abschnittsanker englischer Seiten sind deutsch** (zum Beispiel `#kategorie-network`, `#abschluss`, `#quelle-gewinnt`). Die Ansichten sind für beide Sprachen gemeinsam; Adressen und Anker bleiben unverändert, sichtbar ist davon nur das Fragment in der Adresszeile.
-- **MariaDB** ist nicht getestet: Backend-Tests und E2E laufen mit SQLite. Das MariaDB-Schema (`backend/sql/001_init.sql`) ist erst auf dem Zielsystem zu prüfen. Ein Container mit Apache, PHP, MariaDB und SMTP-Fänger ist für Phase 7 vorgesehen (Spec §14 Ä-31).
-- **Echter SMTP-Versand und TLS** über PHPMailer sind nicht getestet (Tests nutzen Dateitransport und Fälschungen).
+- **MariaDB und SMTP mit STARTTLS** sind gegen die Zielumgebung geprüft (Abschnitt „Zielumgebung“), nicht gegen das Hosting selbst. Die schnellen Suiten (`vendor/bin/phpunit`, `npm run test:e2e`) laufen weiter mit SQLite und Dateitransport.
+- **Echter Mailanbieter** (Anmeldeverfahren, Zertifikatskette, Zustellung, Spam-Bewertung) ist nicht geprüft.
 - **Client-IP hinter dem Proxy des Hosters:** Das Rate-Limit nutzt `REMOTE_ADDR`. Verbirgt ein Proxy die Adresse, zählen alle Besucher als eine Herkunft. Auf dem Hosting zu prüfen.
 - **`.htaccess` und Apache-Verhalten** (`LimitRequestBody`, Schutzdateien, doppelte Kopfzeilen von PHP und Apache auf der 422-Seite) sind nur gegen den lokalen Apache geprüft, nicht gegen Hetzner.
 - **Firefox:** In der CI hing das Laden einer Seite vereinzelt (ein Test von rund 250, `goto`). Die Ursache ist **ungeklärt**. `KeepAlive Off` im Testserver ist eine Vermutung, kein Beleg (mit `KeepAlive Off` lief der E2E-Schritt zuletzt durch). Die CI wiederholt fehlgeschlagene Tests einmal (`retries: 1`), zeichnet beim Wiederholen einen Trace auf und lädt bei einem Fehlschlag das Zugriffsprotokoll des Apache-Testservers (`%D` Antwortzeit, `%X` Verbindungsstatus) und `test-results/` als Artefakt `e2e-diagnose` hoch (7 Tage). Lokal bleibt `--trace off` ratsam. Firefox und WebKit laufen nur in der CI, lokal nicht.

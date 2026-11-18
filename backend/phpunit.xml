@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Standard: nur die schnelle Unit-Suite (SQLite, ohne Netz). Integrationstests gegen MariaDB und SMTP:
+     RETICORA_INTEGRATION=1 vendor/bin/phpunit, Testsuite integration (README „Zielumgebung“). -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="tests/bootstrap.php"
+         defaultTestSuite="unit"
          colors="false"
          failOnWarning="true"
          failOnRisky="true">
     <testsuites>
-        <testsuite name="backend">
+        <testsuite name="unit">
             <directory>tests</directory>
+            <exclude>tests/Integration</exclude>
+        </testsuite>
+        <testsuite name="integration">
+            <directory>tests/Integration</directory>
         </testsuite>
     </testsuites>
 </phpunit>

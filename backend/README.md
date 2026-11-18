@@ -88,6 +88,8 @@ composer install
 vendor/bin/phpunit
 ```
 
+`vendor/bin/phpunit` führt die Suite `unit` aus (SQLite, ohne Netz). Die Suite `integration` (`tests/Integration/`) läuft gegen MariaDB und einen SMTP-Server mit STARTTLS und Anmeldung und nur mit `RETICORA_INTEGRATION=1` (sonst übersprungen): im Compose-Stack oder mit `scripts/integration-local.sh`, siehe README „Zielumgebung (Phase 7)“.
+
 `tests/fixtures/templates/` enthält eine verkürzte Vorlage mit denselben Marken wie die gebaute Seite; liegt eine gebaute Vorlage in `templates/`, prüft ein weiterer Test auch diese.
 
 Lokaler Lauf mit SQLite und Datei-Transport: `npm run serve` (siehe `tests/server/start.sh`). Das startet Apache auf `127.0.0.1:8080` und zwei PHP-Instanzen mit jeweils frischer Datenbank: `/api/lead.php` (Limits an der oberen Grenze) und `/api-limit/lead.php` (Standardlimits, nur für den Test des Rate-Limits). Die Testinstanzen reichen Anfragen per Proxy an den PHP-Entwicklungsserver weiter; die Kopfzeilen der 422-Seite stammen dort allein aus PHP.
@@ -99,8 +101,8 @@ Lokaler Lauf mit SQLite und Datei-Transport: `npm run serve` (siehe `tests/serve
 
 ## Noch nicht geprüft
 
-- Betrieb gegen **MariaDB** auf dem echten Hosting: getestet wird nur mit SQLite (gleiche PDO-Schnittstelle, portables SQL). `sql/001_init.sql` ist nicht gegen eine MariaDB-Instanz ausgeführt worden.
-- **Echter SMTP-Versand** über PHPMailer (TLS-Zertifikatsprüfung, STARTTLS/SMTPS, Anmeldeverfahren beim konkreten Anbieter, Zustellung, Spam-Bewertung): getestet wird nur gegen einen lokalen Fake-Server ohne TLS.
+- **MariaDB** ist gegen MariaDB 11.4 (Container) und 10.11 (lokal) geprüft (Suite `integration`: Schema, `utf8mb4`, Rate-Limit, Schlüsselwechsel, Löschlauf, Nachversand), nicht gegen die Instanz des Hosters (Version, `sql_mode`).
+- **SMTP** ist mit STARTTLS, Anmeldung und Zertifikatsprüfung gegen Mailpit und einen lokalen Fänger geprüft. Nicht geprüft: implizites TLS (`ssl`, Port 465), das Anmeldeverfahren und die Zertifikatskette des konkreten Anbieters, Zustellung, Spam-Bewertung.
 - **Client-IP hinter dem Proxy des Hosters:** `REMOTE_ADDR` muss die Adresse des Besuchers sein. Steht dort die Adresse eines vorgeschalteten Proxys, zählen alle Besucher als eine Herkunft (dann greift nach 5 Anfragen das Limit für alle). Auf dem Hosting mit zwei Anschlüssen prüfen. `X-Forwarded-For` wird bewusst nicht gelesen.
 - **Kopfzeilen auf dem Hosting:** ob PHP über FastCGI/CGI läuft und ob `Header always set` aus `.htaccess` die von PHP gesetzte CSP ersetzt oder ergänzt (beides ist unschädlich, da gleich).
 - Die Aufbewahrungsfrist von 90 Tagen ist ein Vorschlag und vom Auftraggeber zu bestätigen.
