@@ -227,7 +227,7 @@ zur Klärung gilt die Annahme in der dritten Spalte.
 | 4 | **Freigabe Design-System** | **freigegeben am 2026-11-12:** `design-system.md` und `specs/2026-11-12-website-spec.md` |
 | 5 | Startseite | **umgesetzt** (Startseite deutsch, Bausteine, Tests) |
 | 6 | Übrige Seiten, Englisch, Formular und Backend | **umgesetzt** (2026-11-12): je 22 deutsche und englische Seiten (jeweils mit 404-Seite) sowie die Entwicklungsseite, Lead-Backend nach Spec §14 Ä-07 bis Ä-25, Budgets je Seite, Lighthouse für sechs Seiten, wöchentlicher `security.txt`-Lauf. Inhalte je Seite warten auf Freigabe durch den Auftraggeber |
-| 7 | QA, Sicherheit, Datenschutz, Barrierefreiheit | offen: manuelle Barrierefreiheitsprüfung, Sicherheits- und Datenschutzprüfung mit Protokoll, Container mit Apache, PHP, MariaDB und SMTP-Fänger (Spec Ä-31) |
+| 7 | QA, Sicherheit, Datenschutz, Barrierefreiheit | **umgesetzt** (2026-11-18): Protokolle `docs/qa/2026-11-sicherheit.md`, `docs/qa/2026-11-datenschutz.md`, `docs/qa/2026-11-barrierefreiheit.md` mit allen Befunden und ihrer Behebung; Zielumgebung als Container (Apache, PHP 8.4, MariaDB, Mailpit mit TLS) mit Integrationstests im CI; Deploy-Ablauf mit Vorschau, Freigabe und Rückweg (`docs/deploy.md`). Offen und nur auf dem Hoster prüfbar: Sicherheits-Prüfpunkte P-01 bis P-14, Datenschutz §9, Screenreader-Prüfung (Anleitung im Barrierefreiheitsprotokoll), Firefox-Ladehänger in der CI (Ursache ungeklärt, Server antwortet unauffällig) |
 | 8 | Menschliche Freigabe, Deploy | gesperrt: Rechtstexte und Anbieterangaben vom Auftraggeber, geprüfte Claims, Screenshots, Deploy auf Hetzner (Datenbank, `config.php`, Cronjob für `purge.php`); der Deploy-Workflow fehlt noch |
 
 ## 10. Entscheidungen
