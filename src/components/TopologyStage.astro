@@ -1,0 +1,117 @@
+---
+import type { Lang } from '../data/types';
+import { TOPO_EDGES, TOPO_INITIAL_FAILED, TOPO_NODES } from '../data/topology';
+import { computeImpact, edgeIsDim, impactSentence } from '../lib/impact';
+import { UI } from '../i18n/de';
+
+interface Props { lang: Lang; id?: string }
+const { lang, id = `topo-${lang}` } = Astro.props;
+
+const T = lang === 'de'
+  ? UI.topo
+  : {
+      section: 'Outage simulation',
+      title: 'Schematic of a power chain with outage simulation',
+      desc: 'usv-01 powers pdu-a and pdu-b. srv-01 and srv-02 hang off both PDUs, sw-access-01 only off pdu-a, nas-01 only off pdu-b. vm-app-01 runs on srv-01, vm-db-01 on srv-02.',
+      group: 'Simulate outage',
+      legendActive: 'CI, status “Active”',
+      legendFailed: 'failed',
+      legendAffected: 'affected (shown in grey)',
+      legendNote: 'Schematic, not a screenshot',
+    };
+
+const ids = TOPO_NODES.map((n) => n.id);
+const result = computeImpact(ids, TOPO_EDGES, TOPO_INITIAL_FAILED);
+const sentence = impactSentence(lang, result);
+const byId = new Map(TOPO_NODES.map((n) => [n.id, n]));
+const GAP = 14;
+const f1 = (v: number) => v.toFixed(1);
+
+const edges = TOPO_EDGES.map((e) => {
+  const a = byId.get(e.from)!; // abhängig
+  const b = byId.get(e.to)!; // Versorger
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const len = Math.hypot(dx, dy);
+  const ux = dx / len;
+  const uy = dy / len;
+  let angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+  if (angle > 90 || angle < -90) angle += 180;
+  angle = ((angle % 360) + 360) % 360;
+  const mx = a.x + dx * e.labelAt;
+  const my = a.y + dy * e.labelAt;
+  const dim = edgeIsDim(result.affected, e);
+  return {
+    ...e,
+    x1: f1(b.x - ux * GAP), y1: f1(b.y - uy * GAP),
+    x2: f1(a.x + ux * GAP), y2: f1(a.y + uy * GAP),
+    tf: `translate(${f1(mx)} ${f1(my)}) rotate(${f1(angle)})`,
+    dim,
+  };
+});
+
+const LABEL = {
+  top: { x: undefined, y: -26, cls: undefined },
+  left: { x: -24, y: 4, cls: 'lbl-end' },
+  right: { x: 24, y: 4, cls: 'lbl-start' },
+  side: { x: 18, y: 24, cls: 'lbl-start' },
+  below: { x: undefined, y: 34, cls: undefined },
+} as const;
+---
+
+<section class="rt-topo" data-topo data-lang={lang} aria-label={T.section}>
+  <section class="rt-topo-frame" tabindex="0" aria-label={T.title}>
+    <svg viewBox="0 0 1100 420" role="img" aria-labelledby={`${id}-t ${id}-d`}>
+      <title id={`${id}-t`}>{T.title}</title>
+      <desc id={`${id}-d`}>{T.desc}</desc>
+      <g>
+        {edges.map((e) => (
+          <g class:list={['e', { 'is-dim': e.dim }]} data-from={e.from} data-to={e.to} data-rel={e.rel}>
+            <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} />
+            <text transform={e.tf} dy="-5">{e.rel}</text>
+          </g>
+        ))}
+      </g>
+      <g>
+        {TOPO_NODES.map((n) => {
+          const l = LABEL[n.label];
+          return (
+            <g
+              class:list={['n', { 'is-failed': result.failed.includes(n.id), 'is-affected': result.affected.includes(n.id) }]}
+              data-id={n.id}
+              transform={`translate(${n.x} ${n.y})`}
+            >
+              <circle class="hit" r="22" />
+              <g class="focus"><circle r="14" /><path d="M0-14v-4" /><path d="M0 14v4" /><path d="M-14 0h-4" /><path d="M14 0h4" /></g>
+              <circle class="dot" r="8" />
+              <text class={l.cls} x={l.x} y={l.y}>{n.id}</text>
+            </g>
+          );
+        })}
+      </g>
+    </svg>
+  </section>
+  <p class="rt-scroll-hint">{lang === 'de' ? UI.scrollHint : 'Schematic scrolls sideways.'}</p>
+  <div class="rt-topo-controls" role="group" aria-label={T.group} hidden>
+    <span aria-hidden="true">{T.group}</span>
+    {TOPO_NODES.map((n) => (
+      <button
+        type="button"
+        class:list={['rt-chip', { 'is-affected': result.affected.includes(n.id) }]}
+        aria-pressed={result.failed.includes(n.id) ? 'true' : 'false'}
+        data-ci={n.id}
+      >{n.id}</button>
+    ))}
+  </div>
+  <p class="rt-topo-result" role="status" aria-live="polite">{sentence.main}{sentence.guarded && <Fragment>{' '}<span>{sentence.guarded}</span></Fragment>}</p>
+  <p class="rt-topo-legend">
+    <span><i aria-hidden="true"></i>{T.legendActive}</span>
+    <span><i class="is-failed" aria-hidden="true"></i>{T.legendFailed}</span>
+    <span><i class="is-affected" aria-hidden="true"></i>{T.legendAffected}</span>
+    <span>{T.legendNote}</span>
+  </p>
+</section>
+
+<script>
+  import '../islands/impact';
+</script>

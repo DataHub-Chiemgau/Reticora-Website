@@ -1,0 +1,6 @@
+---
+interface Props { tone?: 'ok' | 'signal' | 'danger' | 'neutral' }
+const { tone = 'neutral' } = Astro.props;
+---
+
+<span class:list={['rt-status', tone !== 'neutral' && `rt-status--${tone}`]}><slot /></span>

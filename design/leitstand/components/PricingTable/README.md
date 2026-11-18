@@ -6,7 +6,7 @@ Die Preistabelle stellt alle Pakete in Zeilen untereinander, mit Monatspreis, Ja
 
 - Zeilen statt Karten: Die Pakete werden verglichen, nicht einzeln beworben. Kein Paket ist als „beliebt“ oder „empfohlen“ markiert.
 - Die Stufen heißen „Paket“, wie in der App; englisch „plan“.
-- Unter der Tabelle stehen immer drei Dinge: die Bedingungen des Beta-Rabatts als Hinweisband, der Satz „Angebot nur für Unternehmen. Alle Preise zzgl. USt.“ und die Zusatzkosten.
+- Unter der Tabelle stehen immer drei Dinge: die Bedingungen des Beta-Rabatts als Hinweisband, der Satz „Angebot nur für Unternehmen. Alle Preise zzgl. MwSt.“ und die Zusatzkosten.
 - Beta-Preise stehen in `accent-strong`, nie durchgestrichen neben dem Normalpreis.
 - „ab“ und „auf Anfrage“ stehen ausgeschrieben; die Enterprise-Zeilen führen zum Kontaktformular.
 - Die Funktionen je Paket stehen in einer zweiten `DataTable` darunter, nicht in dieser Tabelle.

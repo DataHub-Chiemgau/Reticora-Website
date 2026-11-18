@@ -1,0 +1,197 @@
+---
+import Leitstand from '../layouts/Leitstand.astro';
+import Section from '../components/Section.astro';
+import Button from '../components/Button.astro';
+import Beleg from '../components/Beleg.astro';
+import StatusStrip from '../components/StatusStrip.astro';
+import ScreenshotSlot from '../components/ScreenshotSlot.astro';
+import SpecList from '../components/SpecList.astro';
+import Steps from '../components/Steps.astro';
+import DataTable from '../components/DataTable.astro';
+import CodeSample from '../components/CodeSample.astro';
+import Notice from '../components/Notice.astro';
+import TopologyStage from '../components/TopologyStage.astro';
+import ConnectionSchema from '../components/ConnectionSchema.astro';
+import { HOME } from '../content/de/home';
+import { LINKS } from '../data/links';
+import { PLANS, BETA } from '../data/pricing';
+import { UI } from '../i18n/de';
+
+const lang = 'de';
+const H = HOME;
+const grouped = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const planRows = PLANS.map((p) => ({
+  plan: p.name,
+  summary: p.summary.de,
+  cis: grouped(p.limits.cis),
+  price: `${p.from ? 'ab ' : ''}${grouped(p.monthly)} €`,
+}));
+const planColumns = [
+  { key: 'plan', head: H.pakete.heads.plan, sub: 'summary' },
+  { key: 'cis', head: H.pakete.heads.cis, numeric: true },
+  { key: 'price', head: H.pakete.heads.price, numeric: true },
+];
+---
+
+<Leitstand title={H.meta.title} description={H.meta.description} lang={lang} path="/">
+  <section class="rt-section home-hero" aria-labelledby="start-titel">
+    <div class="rt-container">
+      <h1 class="display-xl" id="start-titel">{H.hero.h1}</h1>
+      <div class="home-hero-grid">
+        <p class="lead">{H.hero.lead}</p>
+        <div class="home-actions">
+          <div class="home-actions-row">
+            <Button variant="primary" size="lg" href={LINKS.signup}>{UI.actions.trial}</Button>
+            <Button variant="secondary" size="lg" href={UI.footer.demoHref}>{UI.actions.demo}</Button>
+          </div>
+          <p class="home-b2b">{UI.b2b}</p>
+        </div>
+      </div>
+    </div>
+    <div class="rt-container home-stage">
+      <TopologyStage lang={lang} />
+      <StatusStrip items={H.hero.strip} lang={lang} />
+    </div>
+  </section>
+
+  <Section id="ablauf" title={H.ablauf.title} lead={H.ablauf.lead}>
+    <div class="home-split">
+      <Steps steps={H.ablauf.steps} lang={lang} />
+      <figure class="rt-figure">
+        <ConnectionSchema lang={lang} />
+        <figcaption><b>{UI.figure} 1 ·</b>{' '}{H.ablauf.schemaCaption}</figcaption>
+      </figure>
+    </div>
+  </Section>
+
+  <Section id="vertrauen" title={H.vertrauen.title} lead={H.vertrauen.lead}>
+    <div class="home-rows">
+      <div class="home-split home-split--figure">
+        <div class="home-block">
+          <h3>{H.vertrauen.herkunft.title}</h3>
+          <div class="rt-para" role="paragraph">{H.vertrauen.herkunft.text}{' '}<Beleg claim={H.vertrauen.herkunft.claim} lang={lang} />{' '}<details class="rt-beleg" data-claim={H.vertrauen.herkunft.claim}><summary>{H.vertrauen.rang.title}</summary><div class="rt-beleg-body"><b>{H.vertrauen.rang.title}</b><br />{H.vertrauen.rang.text}</div></details></div>
+        </div>
+        <ScreenshotSlot id="S-02" figure={2} caption={H.vertrauen.herkunft.caption} lang={lang} />
+      </div>
+      <div class="home-block">
+        <h3>{H.vertrauen.manuell.title}</h3>
+        <div class="rt-para" role="paragraph">{H.vertrauen.manuell.text}{' '}<Beleg claim={H.vertrauen.manuell.claim} lang={lang} /></div>
+      </div>
+      <div class="home-split home-split--figure">
+        <div class="home-block">
+          <h3>{H.vertrauen.review.title}</h3>
+          <div class="rt-para" role="paragraph">{H.vertrauen.review.text}{' '}<Beleg claim={H.vertrauen.review.claim} lang={lang} /></div>
+        </div>
+        <ScreenshotSlot id="S-03" figure={3} caption={H.vertrauen.review.caption} lang={lang} />
+      </div>
+    </div>
+  </Section>
+
+  <Section id="zusammenhang" title={H.zusammenhang.title} lead={H.zusammenhang.lead}>
+    <div class="home-rows">
+      <div class="home-stack">
+        <div class="home-block">
+          <h3>{H.zusammenhang.topologie.title}</h3>
+          <div class="rt-para" role="paragraph">{H.zusammenhang.topologie.text}{' '}<Beleg claim={H.zusammenhang.topologie.claim} lang={lang} /></div>
+        </div>
+        <ScreenshotSlot id="S-04" figure={4} caption={H.zusammenhang.topologie.caption} lang={lang} />
+      </div>
+      <div class="home-split home-split--duo">
+        <div class="home-stack">
+          <div class="home-block">
+            <h3>{H.zusammenhang.racks.title}</h3>
+            <div class="rt-para" role="paragraph">{H.zusammenhang.racks.text}{' '}<Beleg claim={H.zusammenhang.racks.claim} lang={lang} /></div>
+          </div>
+          <ScreenshotSlot id="S-05" figure={5} caption={H.zusammenhang.racks.caption} ratio="4x5" lang={lang} />
+        </div>
+        <div class="home-stack">
+          <div class="home-block">
+            <h3>{H.zusammenhang.ausfall.title}</h3>
+            <div class="rt-para" role="paragraph">{H.zusammenhang.ausfall.text}{' '}<Beleg claim={H.zusammenhang.ausfall.claim} lang={lang} /></div>
+          </div>
+          <ScreenshotSlot id="S-06" figure={6} caption={H.zusammenhang.ausfall.caption} lang={lang} />
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <Section id="mehrere-kunden" title={H.kunden.title} lead={H.kunden.lead}>
+    <div class="home-split">
+      <SpecList items={H.kunden.specs.map((s) => ({ ...s }))} lang={lang} />
+      <ScreenshotSlot id="S-18" figure={7} caption={H.kunden.caption} lang={lang} />
+    </div>
+  </Section>
+
+  <Section id="mehr-als-inventar" title={H.mehr.title} lead={H.mehr.lead}>
+    <dl class="home-defs home-defs--two">
+      {H.mehr.items.map((i) => (
+        <div>
+          <dt>{i.term}</dt>
+          <dd>{i.value}{i.claims.map((c) => <>{' '}<Beleg claim={c} lang={lang} /></>)}</dd>
+        </div>
+      ))}
+    </dl>
+  </Section>
+
+  <Section id="schnittstellen" title={H.api.title}>
+    <Fragment slot="lead">{H.api.lead}{' '}<Beleg claim={H.api.leadClaim} lang={lang} /></Fragment>
+    <div class="home-split">
+      <CodeSample title={H.api.codeTitle} copyLabel={UI.copy} copiedLabel={UI.copied}><span class="c"># Alle CIs, deren Name „core“ enthält</span>
+curl <span class="k">"https://www.reticora.cloud/api/v1/cis?q=core&amp;limit=50"</span> \
+  -H <span class="k">"X-API-Key: rk_live_…"</span></CodeSample>
+      <SpecList items={H.api.specs.map((s) => ({ ...s }))} lang={lang} />
+    </div>
+  </Section>
+
+  <Section id="sicherheit-pruefbar" title={H.sicherheit.title} lead={H.sicherheit.lead}>
+    <div class="home-stack">
+      <dl class="home-defs home-defs--narrow">
+        {H.sicherheit.items.map((i) => (
+          <div>
+            <dt>{i.term}</dt>
+            <dd>{i.value}{' '}<Beleg claim={i.claim} lang={lang} /></dd>
+          </div>
+        ))}
+      </dl>
+      <Button class="home-link" variant="secondary" href="/sicherheit/">{H.sicherheit.link}</Button>
+    </div>
+  </Section>
+
+  <Section id="geraete-erkennung" title={H.geraete.title}>
+    <Fragment slot="lead">{H.geraete.lead}{' '}<Beleg claim={H.geraete.leadClaim} lang={lang} /></Fragment>
+    <div class="home-stack">
+      <dl class="home-defs">
+        {H.geraete.list.map((i) => <div><dt>{i.term}</dt><dd>{i.value}</dd></div>)}
+      </dl>
+      <p class="home-caption">{H.geraete.note}</p>
+      <Button class="home-link" variant="secondary" href="/geraete/">{H.geraete.link}</Button>
+    </div>
+  </Section>
+
+  <Section id="pakete" title={H.pakete.title} lead={H.pakete.lead}>
+    <div class="home-stack">
+      <div class="rt-price">
+        <DataTable label={H.pakete.label} columns={planColumns} rows={planRows} rowHeader="plan" />
+      </div>
+      <Notice lead={H.pakete.betaLead}>{H.pakete.beta(Math.round(BETA.firstSixMonths * 100), Math.round(BETA.nextSixMonths * 100))}</Notice>
+      <p class="home-b2b">{UI.b2b}</p>
+      <Button class="home-link" variant="secondary" href="/preise/">{H.pakete.link}</Button>
+    </div>
+  </Section>
+
+  <Section id="testen" title={H.abschluss.title}>
+    <div class="home-stack">
+      <div class="home-block">
+        <div class="rt-para" role="paragraph">{H.abschluss.text}{' '}<Beleg claim={H.abschluss.claim} lang={lang} /></div>
+      </div>
+      <div class="home-actions">
+        <div class="home-actions-row">
+          <Button variant="primary" size="lg" href={LINKS.signup}>{UI.actions.trial}</Button>
+          <Button variant="secondary" size="lg" href={UI.footer.demoHref}>{UI.actions.demo}</Button>
+          <Button variant="quiet" size="lg" href="/kontakt/">{UI.actions.contact}</Button>
+        </div>
+        <p class="home-b2b">{UI.b2b}</p>
+      </div>
+    </div>
+  </Section>
+</Leitstand>

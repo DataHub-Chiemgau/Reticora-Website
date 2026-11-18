@@ -1,0 +1,20 @@
+---
+import Beleg from './Beleg.astro';
+import type { ClaimId, Lang } from '../data/types';
+
+interface Props { steps: { title: string; text: string; claim?: ClaimId }[]; lang?: Lang }
+const { steps, lang = 'de' } = Astro.props;
+---
+
+<ol class="rt-steps">
+  {steps.map((s) => (
+    <li>
+      <div>
+        <h3>{s.title}</h3>
+        {s.claim
+          ? <div class="rt-para" role="paragraph">{s.text}{' '}<Beleg claim={s.claim} lang={lang} /></div>
+          : <p>{s.text}</p>}
+      </div>
+    </li>
+  ))}
+</ol>

@@ -263,7 +263,8 @@ Simulationsmodus (eine USV, zwei PDUs, Server mit zwei Netzteilen).
 ## 9. Barrierefreiheit
 
 - Ziel WCAG 2.2 AA; die Kontraste stehen in §3.1.
-- Jedes Bedienelement mindestens 44 × 44 px.
+- Jedes Bedienelement mindestens 44 × 44 px. Einzige Ausnahme ist die
+  Beleg-Marke, weil sie im Fließtext steht: mindestens 24 px hoch.
 - Eine `h1` je Seite, Landmarken, Sprunglink zum Inhalt, `lang` je Seite und
   an fremdsprachigen Links.
 - Farbe trägt nie allein Bedeutung: Zustände haben ein Wort, das Netzschema
