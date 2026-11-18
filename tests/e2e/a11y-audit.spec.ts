@@ -765,7 +765,11 @@ for (const p of PAGES)
 test('Kontrast im Druck (helles Thema auf jeder Seite): Startseite und Preise', async ({ page }) => {
   for (const path of ['/', '/preise/']) {
     await page.goto(path);
-    // ohne Übergänge: sonst misst die Prüfung Zwischenfarben des Wechsels von dunkel nach hell
+    // Ohne Übergänge: sonst misst die Prüfung Zwischenfarben des Wechsels von dunkel nach hell. Erst die
+    // Bewegung abschalten, dann auf Druck wechseln: WebKit startet Übergänge sonst noch mit den Regeln des
+    // Zustands davor (gemessen: Knopf „pdu-a“ mitten im Wechsel, 1,06 : 1). Ein echter Druck rendert keinen
+    // Übergang, daher betrifft das nur die Messung.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.emulateMedia({ media: 'print', reducedMotion: 'reduce' });
     const r = await page.evaluate(() => window.a11y.contrast());
     expect(r.fails, path).toEqual([]);
