@@ -6,6 +6,7 @@ import { CLAIMS } from '../src/data/claims.ts';
 import { SCREENSHOTS } from '../src/data/screenshots.ts';
 import { SITE } from '../src/data/site.ts';
 import { ROUTES } from '../src/i18n/routes.ts';
+import { writeReleaseMarker } from './lib/release-marker.mjs';
 import { checkClaims, checkDevPages, checkDistHtml, checkInternalLinks, checkNotEmpty, checkRoutes, checkRoutesBuilt, checkScreenshotFiles, checkScreenshots, checkSecurityContact, checkSite } from './lib/release-checks.mjs';
 
 const dist = join(process.cwd(), 'dist');
@@ -44,3 +45,4 @@ if (total) {
   process.exit(1);
 }
 console.log('Release-Prüfung bestanden.');
+if (writeReleaseMarker(dist)) console.log('Marke dist/.release geschrieben (Voraussetzung für scripts/deploy/package.mjs).');

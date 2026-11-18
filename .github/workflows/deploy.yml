@@ -1,0 +1,191 @@
+name: Deploy
+
+# Nur manuell. Ablauf: build -> preview (Vorschau mit Zugangsschutz) -> production (Umschalten, nach Freigabe der Umgebung).
+# `rollback` schaltet auf das vorige Release zurück. Siehe docs/deploy.md.
+#
+# Sperre: Der Build-Job ruft `npm run build:release` auf. Solange die Release-Prüfung offene Mängel meldet
+# (Claims, Bilder, Anbieterangaben, Platzhalter), scheitert der Lauf dort, und es wird nichts hochgeladen.
+# Zusätzlich verweigert scripts/deploy/package.mjs jedes dist/ ohne die Marke dist/.release.
+#
+# Secrets (Umgebungen "preview" und "production", nur Namen hier):
+#   HETZNER_SSH_HOST, HETZNER_SSH_USER, HETZNER_SSH_KEY, HETZNER_KNOWN_HOSTS (festgelegter Hostschlüssel, Zeile für Port 222),
+#   PREVIEW_HTPASSWD (Format "benutzer:passwort"; der Hash entsteht im Lauf)
+# Variablen der Umgebungen: PREVIEW_URL (Vorschau-Adresse), LIVE_URL (Standard https://www.reticora.de),
+#   RETICORA_SWITCH (symlink oder rsync, Standard symlink)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Ziel: preview (nur Vorschau), production (Vorschau, dann Freigabe und Umschalten) oder rollback (auf das vorige Release zurück)'
+        type: choice
+        required: true
+        default: preview
+        options:
+          - preview
+          - production
+          - rollback
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  SHA: ${{ github.sha }}
+
+jobs:
+  build:
+    if: inputs.target != 'rollback'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # Muss bestehen. Scheitert heute absichtlich an offenen Release-Mängeln; dann endet der Lauf hier.
+      - run: npm run build:release
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring
+          tools: composer
+          coverage: none
+      - run: composer audit --locked --no-dev
+        working-directory: backend
+      # Das Paket führt `composer install --no-dev --optimize-autoloader` im Paketordner aus (kein vendor/ mit Entwicklungswerkzeugen).
+      - run: node scripts/deploy/package.mjs --out release --sha "$SHA"
+      - name: Paket prüfen
+        run: |
+          set -euo pipefail
+          short="${SHA::12}"
+          test -f "release/reticora-${short}/MANIFEST.txt"
+          test -f "release/reticora-${short}/www/api/lead.php"
+          if find "release/reticora-${short}" -name config.php -o -name '*.map' | grep -q .; then echo "Unzulässige Dateien im Paket" >&2; exit 1; fi
+          head -5 "release/reticora-${short}/MANIFEST.txt"
+      # Tarball statt Ordner: upload-artifact lässt Punktdateien (.htaccess) in Ordnern standardmäßig weg.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-package
+          path: release/*.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+
+  preview:
+    if: inputs.target != 'rollback'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: preview
+    env:
+      HETZNER_SSH_HOST: ${{ secrets.HETZNER_SSH_HOST }}
+      HETZNER_SSH_USER: ${{ secrets.HETZNER_SSH_USER }}
+      HETZNER_SSH_KEY: ${{ secrets.HETZNER_SSH_KEY }}
+      HETZNER_KNOWN_HOSTS: ${{ secrets.HETZNER_KNOWN_HOSTS }}
+      PREVIEW_HTPASSWD: ${{ secrets.PREVIEW_HTPASSWD }}
+      PREVIEW_URL: ${{ vars.PREVIEW_URL }}
+      SWITCH: ${{ vars.RETICORA_SWITCH || 'symlink' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-package
+          path: release
+      - name: Paket entpacken
+        run: |
+          set -euo pipefail
+          tar -xzf "release/reticora-${SHA::12}.tar.gz" -C release
+          test -f "release/reticora-${SHA::12}/remote.sh"
+      - name: SSH einrichten (Port 222, festgelegter Hostschlüssel)
+        run: bash scripts/deploy/ssh-setup.sh
+      - name: Release hochladen und prüfen
+        run: |
+          set -euo pipefail
+          rel="${SHA::12}"
+          # legt ~/releases an (nur dieser Ordner) und kopiert das Release in ein neues, versioniertes Verzeichnis
+          rsync -a --delete --rsync-path="mkdir -p releases && rsync" "release/reticora-${rel}/" "hetzner:releases/${rel}/"
+          # shellcheck disable=SC2029
+          ssh hetzner "RETICORA_SWITCH=${SWITCH} bash releases/${rel}/remote.sh verify ${rel}"
+      - name: Vorschau mit Zugangsschutz einrichten
+        run: |
+          set -euo pipefail
+          rel="${SHA::12}"
+          case "${PREVIEW_HTPASSWD}" in *:*) ;; *) echo "PREVIEW_HTPASSWD muss 'benutzer:passwort' sein" >&2; exit 1 ;; esac
+          user="${PREVIEW_HTPASSWD%%:*}"
+          pass="${PREVIEW_HTPASSWD#*:}"
+          # shellcheck disable=SC2029
+          printf '%s:%s\n' "$user" "$(printf '%s' "$pass" | openssl passwd -apr1 -stdin)" \
+            | ssh hetzner "RETICORA_SWITCH=${SWITCH} bash releases/${rel}/remote.sh preview ${rel}"
+      - name: Rauchtest der Vorschau
+        run: |
+          test -n "${PREVIEW_URL}" || { echo "Variable PREVIEW_URL fehlt" >&2; exit 1; }
+          bash scripts/deploy/smoke.sh "${PREVIEW_URL}" "${PREVIEW_HTPASSWD}"
+
+  production:
+    if: inputs.target == 'production'
+    needs: [build, preview]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Geschützte Umgebung mit erforderlichen Prüfern: zweite Freigabe nach Sichtprüfung der Vorschau.
+    environment: production
+    env:
+      HETZNER_SSH_HOST: ${{ secrets.HETZNER_SSH_HOST }}
+      HETZNER_SSH_USER: ${{ secrets.HETZNER_SSH_USER }}
+      HETZNER_SSH_KEY: ${{ secrets.HETZNER_SSH_KEY }}
+      HETZNER_KNOWN_HOSTS: ${{ secrets.HETZNER_KNOWN_HOSTS }}
+      LIVE_URL: ${{ vars.LIVE_URL || 'https://www.reticora.de' }}
+      SWITCH: ${{ vars.RETICORA_SWITCH || 'symlink' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: SSH einrichten (Port 222, festgelegter Hostschlüssel)
+        run: bash scripts/deploy/ssh-setup.sh
+      - name: Auf das Release umschalten (voriges bleibt für den Rückweg)
+        id: activate
+        run: |
+          # Ausdehnung auf dem Client ist gewollt
+          # shellcheck disable=SC2029
+          ssh hetzner "RETICORA_SWITCH=${SWITCH} bash releases/${SHA::12}/remote.sh activate ${SHA::12}"
+      - name: Rauchtest des Betriebs
+        id: smoke
+        run: bash scripts/deploy/smoke.sh "${LIVE_URL}"
+      - name: Automatisch zurückschalten, weil der Rauchtest scheiterte
+        if: failure() && steps.activate.outcome == 'success'
+        run: |
+          # Ausdehnung auf dem Client ist gewollt
+          # shellcheck disable=SC2029
+          ssh hetzner "RETICORA_SWITCH=${SWITCH} bash releases/${SHA::12}/remote.sh rollback"
+      - name: Alte Releases aufräumen (current, previous und preview bleiben)
+        run: |
+          # Ausdehnung auf dem Client ist gewollt
+          # shellcheck disable=SC2029
+          ssh hetzner "RETICORA_SWITCH=${SWITCH} bash releases/${SHA::12}/remote.sh prune 5"
+
+  rollback:
+    if: inputs.target == 'rollback'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    env:
+      HETZNER_SSH_HOST: ${{ secrets.HETZNER_SSH_HOST }}
+      HETZNER_SSH_USER: ${{ secrets.HETZNER_SSH_USER }}
+      HETZNER_SSH_KEY: ${{ secrets.HETZNER_SSH_KEY }}
+      HETZNER_KNOWN_HOSTS: ${{ secrets.HETZNER_KNOWN_HOSTS }}
+      LIVE_URL: ${{ vars.LIVE_URL || 'https://www.reticora.de' }}
+      SWITCH: ${{ vars.RETICORA_SWITCH || 'symlink' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: SSH einrichten (Port 222, festgelegter Hostschlüssel)
+        run: bash scripts/deploy/ssh-setup.sh
+      # remote.sh kommt aus dem ausgecheckten Stand und wird über STDIN ausgeführt; es ist kein neues Paket nötig.
+      - name: Auf das vorige Release zurückschalten
+        run: |
+          # Ausdehnung auf dem Client ist gewollt
+          # shellcheck disable=SC2029
+          ssh hetzner "RETICORA_SWITCH=${SWITCH} bash -s -- rollback" < scripts/deploy/remote.sh
+      - name: Rauchtest des Betriebs
+        run: bash scripts/deploy/smoke.sh "${LIVE_URL}"

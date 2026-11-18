@@ -1,0 +1,148 @@
+# Deploy-Runbook (Hetzner Webhosting L)
+
+Stand: Vorbereitung in Phase 7. **Nichts davon wurde gegen das echte Hosting-Konto ausgeführt.** Spec §11, Ä-12, Ä-16. Abschnitt 8 listet, was der Auftraggeber im Konto bestätigen muss, bevor der Ablauf zum ersten Mal läuft.
+
+Das Hosting: Apache mit `.htaccess`, PHP, MariaDB, SSH auf Port 222 mit dem Schlüssel des Hauptbenutzers (SFTP als Rückweg). Die Seite besteht aus statischem `dist/` und dem PHP-Backend für das Kontaktformular (`backend/`, siehe `backend/README.md`).
+
+## 1. Überblick
+
+```
+GitHub Actions  ──rsync/SSH, Port 222──▶  ~/releases/<sha>/      jedes Release in einem eigenen Ordner
+                                          ~/preview/             Kopie mit Zugangsschutz (.htpasswd aus Secret)
+                                          ~/live                 Betrieb: Symlink auf ~/releases/<sha> (oder Ordner, Strategie rsync)
+                                          ~/reticora-config/     config.php (von Hand, nie vom Deploy angefasst)
+```
+
+Aufbau eines Release (`scripts/deploy/package.mjs`, Beispiel `~/releases/1a2b3c4d5e6f/`):
+
+| Pfad | Inhalt |
+|---|---|
+| `www/` | Inhalt von `dist/` plus `www/api/lead.php` und `www/api/.htaccess` (aus `backend/public/`). Das ist die Dokumentenwurzel. Kein weiteres PHP, keine Source-Maps. |
+| `reticora/` | `src/`, `bin/`, `sql/`, `templates/` (vom Build erzeugt, passend zu `www/`), `vendor/` (`composer install --no-dev --optimize-autoloader`), `config.example.php`, `composer.json`/`composer.lock`; in `reticora/` und jedem Unterordner eine `.htaccess` mit `Require all denied`. |
+| `remote.sh` | die einzigen Befehle, die der Ablauf auf dem Host ausführt |
+| `MANIFEST.txt` | Git-Stand, Bauzeit, Liste aller Dateien mit SHA-256 (`remote.sh` prüft sie vor jedem Umschalten) |
+
+Nicht im Paket: Tests, PHPUnit, Entwicklungsabhängigkeiten, `.superpowers`, Source-Maps, `config.php`, Beispieldateien (außer `reticora/config.example.php`), die Freigabe-Marke `dist/.release`.
+
+`lead.php` braucht keine Anpassung: Es sucht `vendor/autoload.php` unter `../../reticora` (von `www/api/` aus also `<Release>/reticora`) oder in `RETICORA_HOME`; `config.php` liegt als Symlink in `reticora/` und zeigt auf `~/reticora-config/config.php`. Ein Test (`tests/unit/deploy-package.test.ts`) startet das Paket mit dem PHP-Server und prüft, dass `GET /api/lead.php` 405 liefert.
+
+Die Datenbank und `config.php` fasst der Ablauf nie an.
+
+## 2. Einmalige Einrichtung auf dem Hosting
+
+Reihenfolge einhalten; jeder Schritt ist ohne den Ablauf von Hand zu erledigen.
+
+1. **PHP 8.4** im Hosting-Konto für die Domain einstellen (Zielversion laut Ä-11; `composer.json` verlangt mindestens 8.3). Prüfen: `php -v` per SSH und `phpinfo()`-freier Test, z. B. die Seite des Panels.
+2. **Komprimierung und HTTP/2** im Konto je Domain einschalten (Ä-12). Ohne Schalter bleibt `AddOutputFilterByType DEFLATE` in `.htaccess` die einzige Komprimierung.
+3. **DNS:** `www.reticora.de` auf das Hosting; die Adresse ohne `www` (Apex) zeigt ebenfalls auf das Hosting oder wird beim DNS-Anbieter weitergeleitet. Die `.htaccess` leitet `http` und die Adresse ohne `www` in einem Schritt auf `https://www.reticora.de` um, das gelingt nur, wenn beide Namen beim Hosting ankommen und für beide ein Zertifikat gilt.
+4. **TLS-Zertifikat** für `www.reticora.de` und die Adresse ohne `www` im Panel ausstellen. Erst danach `Strict-Transport-Security` (steht schon in `.htaccess`) verantworten: Ein fehlendes Zertifikat sperrt Besucher aus.
+5. **MariaDB:** im Panel eine Datenbank anlegen und einen **eigenen Datenbankbenutzer** nur für diese Datenbank mit einem **zufälligen Passwort** (mindestens 24 Zeichen, z. B. `openssl rand -base64 24`). Der Datenbankserver des Hosters ist von außen erreichbar (Ä-11); das Passwort steht nur in `config.php`. Zeichensatz `utf8mb4`.
+6. **Verzeichnisse** per SSH anlegen:
+   ```
+   mkdir -p ~/releases ~/reticora-config
+   chmod 700 ~/reticora-config
+   ```
+7. **`config.php`:** `reticora/config.example.php` aus einem Release (oder `backend/config.example.php`) nach `~/reticora-config/config.php` kopieren, jeden Wert `AENDERN` ersetzen (sonst lehnt das Backend die Datei ab) und `chmod 600`. Schlüssel:
+
+   | Schlüssel | Bedeutung |
+   |---|---|
+   | `site_url` | `https://www.reticora.de`. Die Origin-Prüfung lässt nur diese Herkunft zu; ein falscher Wert sperrt das Formular. |
+   | `contact_email` | Adresse, die auf der Hinweisseite bei Serverfehler oder zu vielen Anfragen steht. |
+   | `retention_days` | Aufbewahrungsfrist der Anfragen in Tagen; `purge.php` löscht danach. Vorschlag 90. **Der Auftraggeber muss die Frist bestätigen** (Spec §6.3). |
+   | `rate_limit.max` | gültige Anfragen je Herkunft und Stunde (Standard 5, erlaubt 1 bis 100). |
+   | `rate_limit.global_max` | gültige Anfragen insgesamt je Stunde, die normal zugestellt werden (Standard 60, erlaubt 1 bis 1000); darüber werden sie gespeichert (`held`) und von `retry.php` später zugestellt. |
+   | `templates_dir` | nur setzen, wenn die Vorlagen nicht neben `vendor/` liegen. Standard ist richtig. |
+   | `db.dsn`, `db.user`, `db.pass` | Zugang zur Datenbank aus Schritt 5, DSN `mysql:host=localhost;dbname=<Name>;charset=utf8mb4` (Hostname laut Panel). |
+   | `mail.transport` | `smtp`. `file` nur für lokale Tests. |
+   | `mail.host`, `mail.port`, `mail.encryption` | SMTP des Hosters oder Mailanbieters: 465 mit `ssl` oder 587 mit `starttls`. Zertifikatsprüfung ist Pflicht. |
+   | `mail.user`, `mail.pass` | **SMTP-Postfach** mit Anmeldung (eigenes Postfach nur für den Versand anlegen, Passwort zufällig). |
+   | `mail.helo_name` | Rechnername im SMTP-Gruß, üblich `www.reticora.de`. |
+   | `mail.timeout`, `mail.deadline` | Sekunden je Verbindungs- bzw. Lesevorgang (10) und Gesamtfrist je Versand (15). |
+   | `mail.from_address`, `mail.from_name` | Absender; die Adresse sollte zum SMTP-Postfach gehören (SPF/DKIM des Absenderdomains prüfen). |
+   | `mail.to_address` | Vertriebspostfach, einziger Empfänger. Eine Mail an die eingegebene Adresse gibt es nie. |
+   | `mail.allow_insecure` | **muss `false` bleiben bzw. fehlen.** `true` erlaubt Versand ohne TLS und Anmeldung und ist nur für lokale Tests. |
+   | `log_path` | Protokolldatei außerhalb des Webroots, z. B. `/<Heimat>/reticora-config/lead.log`. Enthält Ereignisnamen und Lead-IDs, keine Formularinhalte, keine IP-Adressen. |
+
+   Optional `~/reticora-config/config.preview.php` mit eigener Datenbank und einem Test-Postfach als Empfänger: Die Vorschau nimmt diese Datei, sonst `config.php`. Ohne eigene Vorschau-Konfiguration landen Testanfragen aus der Vorschau in der echten Datenbank und im echten Postfach.
+8. **Tabellen anlegen** nach dem ersten Upload eines Release (Abschnitt 4, Schritt 1): `php ~/releases/<sha>/reticora/bin/migrate.php ~/reticora-config/config.php` (idempotent; legt auch `rate_limit_key` an). Bei späteren Releases nur, wenn `sql/` sich ändert; das steht dann in den Release-Hinweisen.
+9. **Cronjobs** im Panel (Pfad `~/live/reticora/bin/…` gilt für beide Umschaltstrategien, siehe Abschnitt 7):
+   ```
+   17 * * * *    php ~/live/reticora/bin/purge.php >> ~/reticora-config/purge.log 2>&1
+   */15 * * * *  php ~/live/reticora/bin/retry.php >> ~/reticora-config/retry.log 2>&1
+   ```
+   Beide **mit Mail bei Fehler**: Den Absender/Empfänger der Cron-Mails im Panel auf eine gelesene Adresse stellen (oder `MAILTO=` setzen). `purge.php` endet mit Exit-Code 1, solange Anfragen `held` oder `not_delivered` sind; das ist der Alarm (siehe `backend/README.md`, „Was tun, wenn `purge.php` meldet“). Ob das Panel den Exit-Code in eine Mail umsetzt, im Test mit einem absichtlich scheiternden Aufruf prüfen.
+10. **Domain-Verzeichnisse im Panel:** Betrieb: Dokumentenwurzel von `www.reticora.de` auf `live/www`. Vorschau: Subdomain nur für die Vorschau (Name nach Wahl des Auftraggebers) auf `preview/www`. Beides erst nach dem ersten Deploy (Abschnitt 4), weil die Ordner vorher nicht existieren.
+11. **GitHub-Umgebungen** (Repository, Settings, Environments):
+    - `preview`: ohne Prüfer (oder mit), Secrets `HETZNER_SSH_HOST`, `HETZNER_SSH_USER`, `HETZNER_SSH_KEY`, `HETZNER_KNOWN_HOSTS`, `PREVIEW_HTPASSWD`; Variable `PREVIEW_URL` (Adresse der Vorschau mit `https://`).
+    - `production`: **Required reviewers** (mindestens eine Person, nicht die auslösende), Secrets `HETZNER_SSH_HOST`, `HETZNER_SSH_USER`, `HETZNER_SSH_KEY`, `HETZNER_KNOWN_HOSTS`; Variablen `LIVE_URL` (`https://www.reticora.de`) und bei Bedarf `RETICORA_SWITCH` (siehe Abschnitt 7). Deployment branches auf den Hauptzweig beschränken.
+    - Zugangsdaten stehen nie im Repository, nie in Variablen und nie in Logs; im Workflow nur als Namen.
+    - `PREVIEW_HTPASSWD` hat das Format `benutzer:passwort` (Klartext, zufälliges Passwort). Der Hash entsteht im Lauf (`openssl passwd -apr1`) und liegt nur auf dem Host.
+12. **SSH-Schlüssel:** ein eigenes Schlüsselpaar für den Deploy erzeugen (`ssh-keygen -t ed25519 -C reticora-deploy`), den öffentlichen Teil im Hosting-Konto für den Hauptbenutzer hinterlegen, den privaten Teil als `HETZNER_SSH_KEY` eintragen. Zugriff einmal von Hand mit `ssh -p 222 <Benutzer>@<Host>` prüfen.
+13. **Hostschlüssel festlegen:** Den Schlüssel des Hosts über einen zweiten Weg prüfen, nicht blind übernehmen: `ssh-keyscan -p 222 -t ed25519 <Host>` ausführen, den Fingerabdruck (`ssh-keygen -lf -`) mit dem vergleichen, den das Hosting-Konto oder die Hoster-Dokumentation nennt, und die Zeile (`[<Host>]:222 ssh-ed25519 AAAA…`) als `HETZNER_KNOWN_HOSTS` eintragen. Der Ablauf nutzt `StrictHostKeyChecking yes` mit genau dieser Datei; ändert sich der Schlüssel, bricht der Lauf ab, und der Auftraggeber prüft den Grund, bevor er die Zeile ersetzt.
+14. **Branch-Schutz** für den Hauptzweig und Pflicht-CI (`ci.yml`, `integration.yml`) vor dem Deploy.
+
+## 3. Was vor dem ersten Deploy bestanden sein muss (Release-Sperre)
+
+- `npm run build:release` endet mit Exit-Code 0. Das ist die Sperre: Der Workflow ruft es im Build-Job auf, und `scripts/deploy/package.mjs` verweigert jedes `dist/` ohne die Marke `dist/.release`, die nur `scripts/check-release.mjs` nach bestandener Prüfung schreibt. **Zum Stand dieses Textes scheitert der Befehl mit 226 Mängeln** (offene Claims, fehlende Bilder, Platzhalter in Rechtstexten, fehlende Anbieterangaben, fehlende Meldeadresse für `security.txt`); das ist gewollt.
+- Die Prüfprotokolle unter `docs/qa/` (Sicherheit, Datenschutz, Barrierefreiheit, Zielumgebung) liegen vor und haben keine offenen Mängel ohne Entscheidung des Auftraggebers.
+- `ci.yml` und `integration.yml` sind grün (Tests, Lighthouse, `composer audit`, Integrationstests gegen MariaDB und SMTP mit Anmeldung).
+- Rechtstexte, geprüfte Claims und Screenshots sind freigegeben (Phase 8).
+- Die offenen Fragen in Abschnitt 8 sind beantwortet.
+- Aufbewahrungsfrist (`retention_days`) ist vom Auftraggeber bestätigt.
+
+## 4. Ablauf eines Deploys
+
+Actions, Workflow **Deploy**, „Run workflow“, Zweig auswählen, Ziel wählen.
+
+1. **Ziel `preview`:** `build` führt `npm ci`, `npm run build:release`, `composer audit` und `scripts/deploy/package.mjs` aus und lädt das Paket als Artefakt hoch. `preview` lädt es per rsync nach `~/releases/<sha>/` (`<sha>` = erste 12 Stellen des Commits), `remote.sh verify` prüft die Prüfsummen, `remote.sh preview` kopiert es nach `~/preview/` und schützt es mit `.htpasswd` (auch `/api/lead.php`; zusätzlich `X-Robots-Tag: noindex`). Der Rauchtest prüft: ohne Anmeldung 401 (Seite und API), mit Anmeldung Startseite 200, `/en/` 200, `GET /api/lead.php` 405 mit `Allow: POST`, 404 deutsch und englisch, die Kopfzeilen (HSTS, CSP, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, COOP), und dass `/.release`, `/reticora/config.php`, `/MANIFEST.txt`, `/backend/` nicht ausgeliefert werden.
+2. **Sichtprüfung der Vorschau** durch den Auftraggeber (Seiten, Formular nur mit der Vorschau-Konfiguration, siehe Abschnitt 2 Schritt 7).
+3. **Ziel `production`:** Der Lauf wiederholt Schritt 1, hält dann an der geschützten Umgebung `production` an. Nach der Freigabe durch einen Prüfer schaltet `remote.sh activate <sha>` den Betrieb auf das Release um (Abschnitt 7), das vorige Release bleibt unter `~/releases/` liegen (`current`/`previous` in `~/releases/.current` und `.previous`). Danach der Rauchtest gegen `LIVE_URL`. **Scheitert er, schaltet der Lauf automatisch auf das vorige Release zurück** und endet rot. Zuletzt bleiben die neuesten fünf Releases (plus `current`, `previous`, `preview`).
+4. **Danach** die Checkliste in Abschnitt 6.
+
+Beim allerersten Deploy gibt es kein voriges Release; ein Fehler ist dann nur durch Korrektur und neuen Lauf zu beheben.
+
+Parallele Läufe gibt es nicht (`concurrency: deploy`).
+
+## 5. Rückweg
+
+- **Normal:** Workflow **Deploy**, Ziel `rollback`. Die Umgebung `production` verlangt Freigabe. `remote.sh rollback` prüft die Prüfsummen des vorigen Releases, schaltet um und tauscht `current` und `previous`; ein zweiter Rollback führt wieder vor. Danach Rauchtest.
+- **Ohne GitHub:** Per SSH `bash ~/releases/<sha>/remote.sh rollback` (mit `RETICORA_SWITCH`, falls nicht `symlink`), oder von Hand bei Strategie `symlink`: `ln -sfn ~/releases/<voriger-sha> ~/live.new && mv -T ~/live.new ~/live`.
+- **Ohne SSH:** über SFTP den Inhalt von `releases/<voriger-sha>/www` und `…/reticora` in die Zielordner kopieren (Strategie rsync) bzw. im Panel die Dokumentenwurzel auf `releases/<voriger-sha>/www` stellen.
+- **Datenbank:** Der Ablauf migriert nichts. Ändert ein Release das Schema, muss die Änderung rückwärtskompatibel sein, sonst gibt es keinen sauberen Rückweg; das steht in den Release-Hinweisen.
+
+## 6. Checkliste nach dem Deploy (auf dem Betrieb)
+
+1. **Kopfzeilen:** `curl -sI https://www.reticora.de/`, `…/en/`, `…/api/lead.php`, eine 404-Adresse, `http://www.reticora.de/` (301 auf https) und `http://reticora.de/` (301 auf `https://www.…`): überall HSTS, CSP, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, COOP, **nicht doppelt**.
+2. **404 deutsch und englisch:** `/gibt-es-nicht/` und `/en/gibt-es-nicht/` zeigen die jeweilige Fehlerseite mit Status 404.
+3. **Formular mit echtem Postfach:** Anfrage senden (deutsch und englisch), Mail im Vertriebspostfach prüfen (Absender, `Reply-To` = eingegebene Adresse, Umlaute, Eingangszeit), keine Mail an die eingegebene Adresse. In der Datenbank steht der Eintrag mit Status `delivered`. Danach den Testeintrag nach Absprache löschen. Fehlerfall mit leerem Feld ohne JavaScript: 422-Seite mit Fehlertext.
+4. **`security.txt`:** erst wenn eine Meldeadresse feststeht (`SITE.securityContact`): `https://www.reticora.de/.well-known/security.txt` mit `Contact` und `Expires`; der Workflow `security-txt.yml` warnt vor dem Ablauf.
+5. **Besucher-IP hinter dem Proxy:** Das Rate-Limit nutzt `REMOTE_ADDR`. Steht dort die Adresse eines vorgeschalteten Proxys, zählen alle Besucher als eine Herkunft. Prüfen mit einer Einmaldatei im Betriebs-Webroot (bei Strategie `symlink` unter `~/releases/<sha>/www/`; sie verschwindet beim nächsten Release ohnehin, wird aber sofort gelöscht): Datei `ip-<zufällige-Zeichen>.php` mit
+   ```php
+   <?php header('Content-Type: text/plain'); echo $_SERVER['REMOTE_ADDR'], "\n";
+   ```
+   anlegen, von einem Gerät mit bekannter öffentlicher Adresse (z. B. Mobilfunk) aufrufen, mit der eigenen Adresse (aus einem Dienst, der sie anzeigt) vergleichen, **danach die Datei sofort löschen** und mit `curl -I` prüfen, dass sie 404 liefert. Stimmen die Adressen nicht, nicht ausliefern, Hoster fragen (Ergebnis in `docs/qa/` festhalten); `X-Forwarded-For` wird bewusst nicht gelesen.
+6. **Lighthouse** auf dem Betrieb (Startseite, Preise, Kontakt, Discovery, `/en/`, `/en/pricing/`) mit den Grenzen aus `lighthouserc.json`, zusätzlich mit echter Komprimierung und HTTP/2 vom Hoster; Ergebnis festhalten.
+7. **Cron:** nach spätestens einer Stunde steht ein Lauf von `purge.php` in `~/reticora-config/purge.log`, ohne Fehler.
+8. Vorschau abschalten oder leeren, wenn sie nicht mehr gebraucht wird (Subdomain im Panel entfernen).
+
+## 7. Umschaltstrategie: Symlink oder rsync
+
+`remote.sh` kapselt das Umschalten in einer Funktion (`switch_live`); die Variable `RETICORA_SWITCH` (GitHub-Variable der Umgebung `production`, Standard `symlink`) wählt:
+
+- **`symlink`:** `~/live` ist ein Symlink auf `~/releases/<sha>`. Umschalten ist ein atomarer Austausch (`ln -sfn` und `mv -T`). Die Dokumentenwurzel der Domain ist `live/www`. Voraussetzung: Das Panel akzeptiert einen Pfad hinter einem Symlink, Apache folgt ihm (`FollowSymLinks`), PHP löst `__DIR__` zum echten Pfad auf (dann trifft `../../reticora` das Release; sonst `RETICORA_HOME` setzen).
+- **`rsync`:** `~/live` ist ein echter Ordner mit `www/` und `reticora/`. Umschalten kopiert das Release mit `rsync -a --delay-updates --delete-after` (nicht ganz atomar; `reticora/` zuerst, dann `www/`), `config.php` bleibt ausgenommen. Das vorige Release bleibt in `~/releases/`. Voraussetzung: `rsync` auf dem Host.
+
+Der Cron-Pfad `~/live/reticora/bin/…` und die Dokumentenwurzel `live/www` gelten in beiden Fällen. Die Vorschau ist immer eine Kopie (keine Symlinks nötig).
+
+## 8. Offene Fragen an den Auftraggeber (im Hosting-Konto zu bestätigen)
+
+1. Erlaubt das Panel als Domain-Verzeichnis einen Pfad hinter einem Symlink, und folgt Apache dem Symlink? Falls nein, `RETICORA_SWITCH=rsync` setzen.
+2. Gibt es `rsync`, `bash`, `sha256sum`, `mv -T` und `openssl` in der SSH-Umgebung (Port 222)? Sind lange SSH-Befehle und rsync über SSH erlaubt?
+3. Welcher Pfad ist `$HOME` (für `AuthUserFile`), und läuft Apache unter demselben Benutzer, der die Dateien liest?
+4. Zulässt der Tarif eine eigene Subdomain für die Vorschau mit eigenem Verzeichnis und `AllowOverride AuthConfig` (Basic-Auth per `.htaccess`)?
+5. Läuft PHP als FastCGI/CGI oder als Modul, und ersetzt oder ergänzt `Header always set` die von PHP gesetzte CSP (unschädlich, aber zu dokumentieren)?
+6. Cron: Mail bei Ausgabe oder Fehler, Absender, kürzestes Intervall (15 Minuten nötig).
+7. Ist `REMOTE_ADDR` die Adresse des Besuchers (Abschnitt 6, Punkt 5)?
+8. SMTP-Zugang, Port und Verschlüsselung des Versandpostfachs; SPF/DKIM der Absenderdomain.
+9. Aufbewahrungsfrist `retention_days` bestätigen.
+10. Vorschau-Adresse (Name der Subdomain).
