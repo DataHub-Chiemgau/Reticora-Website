@@ -267,7 +267,7 @@ genannte Annahme; alle Punkte erscheinen auch in den Berichten der Phase.
 9. **Indexierung von `/demo/`:** Die Seite trägt `noindex` und fehlt in der Sitemap (Spec Ä-26), bis entschieden ist, ob Zugangsdaten öffentlich suchbar sein sollen.
 10. **Aufbau der Preisseite:** Tabelle ohne Umschalter Monat/Jahr, Fragen immer geöffnet (Spec Ä-27, Ä-28), abweichend vom Layouthinweis im Textdokument. Bestätigen oder anders wünschen.
 11. **Entfallene Sätze zum gleichen Umfang:** Entfernt wurden „denselben Umfang“ (Enterprise Shared und Local) und „Der Funktionsumfang ist gleich.“ in der FAQ. Bestätigen, dass sie nicht wiederkehren sollen.
-12. **„Scope“ oder „Workspace“** für „Arbeitsbereich“ in der englischen Fassung: Die Seite folgt der englischen Beschriftung der App („Scope“); das kollidiert mit den Discovery-Scopes.
+12. **„Workspace“ oder „Scope“** für „Arbeitsbereich“ in der englischen Fassung: Die Seiten schreiben „workspace“, weil die App-Beschriftung „Scope“ mit den Discovery-Scopes kollidiert. Bestätigen oder die App-Beschriftung angleichen.
 13. **Selbst gebildete englische Begriffe** (`content-plan.md` §6.3, „vorgeschlagen, Freigabe ausstehend“) und die drei nur englischen Erläuterungen zu DATEV, DIN 66399 und KRITIS.
 14. **Aufbewahrung der Kontaktanfragen:** Vorschlag 90 Tage (`retention_days`); Auftraggeber legt die Frist fest (Spec §6.3).
 15. **Eigene Microcopy:** Texte, die in keiner Vorlage standen und von der Umsetzung formuliert wurden (zum Beispiel „Zurück zum Formular“, Hinweise zu Sprungmarken in der Geräteliste, Fehlertexte, die die App nicht kennt). Soweit festgehalten, stehen sie in den Textdokumenten unter `docs/copy` (teils als „eigene Formulierung“ gekennzeichnet); alle brauchen Freigabe.
