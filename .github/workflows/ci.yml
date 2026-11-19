@@ -24,7 +24,7 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y apache2
       - run: npm run check
       - run: npm run build
-      - run: npm test
+      # PHP und das Backend vor den Unit-Tests: einige prüfen erzeugte PHP-Dateien gegen das Backend.
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2.40.0
         with:
           php-version: '8.4'
@@ -32,6 +32,7 @@ jobs:
           coverage: none
       - run: composer install --no-interaction --prefer-dist
         working-directory: backend
+      - run: npm test
       - run: composer audit
         working-directory: backend
       - run: vendor/bin/phpunit

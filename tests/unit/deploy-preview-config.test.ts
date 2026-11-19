@@ -4,7 +4,7 @@
  */
 import { afterAll, describe, expect, test } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -106,7 +106,8 @@ describe.skipIf(!hasPhp)('preview-config.mjs', () => {
     }
   });
 
-  test('die Ausgabe nimmt das Backend an (Config::fromArray), und die Platzhalter-Sperre greift nicht', () => {
+  // Braucht das installierte Backend (`composer install` in backend/); die CI installiert es vor den Unit-Tests.
+  test.skipIf(!existsSync('backend/vendor/autoload.php'))('die Ausgabe nimmt das Backend an (Config::fromArray), und die Platzhalter-Sperre greift nicht', () => {
     const f = join(tmp, 'backend-check.php');
     writeFileSync(f, gen().stdout);
     const code = `require 'backend/vendor/autoload.php'; $c = Reticora\\Lead\\Config::load($argv[1]); echo $c->retentionDays();`;
