@@ -2,32 +2,39 @@
 import { LINKS } from '../data/links';
 import { SITE } from '../data/site';
 import type { Lang } from '../data/types';
-import { UI } from '../i18n/de';
+import { ui } from '../i18n';
+import { counterpart, homeSwitchTarget, localize, switchTarget } from '../i18n/routes';
 
-interface Props { lang: Lang }
-const { lang } = Astro.props;
-const f = UI.footer;
-const other = lang === 'de' ? { href: UI.lang.enHref, code: 'en' } : { href: UI.lang.deHref, code: 'de' };
+interface Props { lang: Lang; path: string }
+const { lang, path } = Astro.props;
+const T = ui(lang);
+const f = T.footer;
+const pending = counterpart(path);
+const target = pending !== null ? switchTarget(path) : homeSwitchTarget(lang);
+const otherLang: Lang = lang === 'de' ? 'en' : 'de';
+const L = (href: string) => localize(href, lang);
 ---
 
 <footer class="rt-footer">
   <div class="rt-container rt-footer-inner">
   <div class="rt-footer-cols">
     {f.columns.map((c) => (
-      <div><h2>{c.title}</h2>{c.links.map((l) => <a href={l.href}>{l.label}</a>)}</div>
+      <div><h2>{c.title}</h2>{c.links.map((l) => <a href={L(l.href)}>{l.label}</a>)}</div>
     ))}
     <div>
       <h2>{f.contactTitle}</h2>
-      <a href={f.contactHref}>{UI.actions.contact}</a>
-      <a href={f.demoHref}>{UI.actions.demo}</a>
-      <a href={LINKS.login}>{UI.actions.login}</a>
+      <a href={L(f.contactHref)}>{T.actions.contact}</a>
+      <a href={L(f.demoHref)}>{T.actions.demo}</a>
+      <a href={LINKS.login}>{T.actions.login}</a>
     </div>
   </div>
   <div class="rt-footer-legal">
     <span>{SITE.company}</span>
-    {f.legal.map((l) => <a href={l.href}>{l.label}</a>)}
-    <span>{UI.b2bShort}</span>
-    <a href={other.href} lang={other.code} hreflang={other.code}>{lang === 'de' ? f.english : 'Deutsch'}</a>
+    {f.legal.map((l) => <a href={L(l.href)}>{l.label}</a>)}
+    <span>{T.b2bShort}</span>
+    {target !== null
+      ? <a href={target} lang={otherLang} hreflang={otherLang}>{f.switch}</a>
+      : pending !== null && <span class="is-off" title={T.lang.soon}><span lang={otherLang}>{otherLang === 'en' ? T.lang.enName : T.lang.deName}</span> ({T.lang.soon})</span>}
   </div>
   </div>
 </footer>

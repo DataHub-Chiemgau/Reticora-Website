@@ -6,7 +6,7 @@ import { CLAIMS } from '../src/data/claims.ts';
 import { SCREENSHOTS } from '../src/data/screenshots.ts';
 import { SITE } from '../src/data/site.ts';
 import { ROUTES } from '../src/i18n/routes.ts';
-import { checkClaims, checkDevPages, checkDistHtml, checkInternalLinks, checkNotEmpty, checkRoutes, checkRoutesBuilt, checkScreenshotFiles, checkScreenshots, checkSite } from './lib/release-checks.mjs';
+import { checkClaims, checkDevPages, checkDistHtml, checkInternalLinks, checkNotEmpty, checkRoutes, checkRoutesBuilt, checkScreenshotFiles, checkScreenshots, checkSecurityContact, checkSite } from './lib/release-checks.mjs';
 
 const dist = join(process.cwd(), 'dist');
 const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => {
@@ -28,7 +28,7 @@ const groups = [
   ['Geplante Seiten', checkRoutes(ROUTES)],
   ['Gebaute Routen fehlen in dist', hasDist ? checkRoutesBuilt(ROUTES, distExists) : []],
   ['Tote interne Links', checkInternalLinks(pages, distExists)],
-  ['Fehlende Anbieterangaben', checkSite(SITE)],
+  ['Fehlende Anbieterangaben', [...checkSite(SITE), ...checkSecurityContact(SITE)]],
   ['Entwicklungsseiten im Build', checkDevPages(dev)],
 ];
 

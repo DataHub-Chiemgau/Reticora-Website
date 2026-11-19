@@ -1,15 +1,20 @@
 ---
+import Rich from './Rich.astro';
+import type { Lang } from '../data/types';
+
 interface Props {
   label: string;
   columns: { key: string; head: string; numeric?: boolean; sub?: string }[];
   rows: Record<string, string>[];
   rowHeader: string;
+  lang: Lang;
 }
-const { label, columns, rows, rowHeader } = Astro.props;
+const { label, columns, rows, rowHeader, lang } = Astro.props;
 ---
 
+{/* Eine Tabellenform für alle breiten Tabellen: im Scrollrahmen (fokussierbar, benannt); unter 48rem stehen die Zeilen untereinander (Beschriftung je Zelle), so dass nichts abgeschnitten wird und kein Hinweis nötig ist. */}
 <section class="rt-table-wrap" tabindex="0" aria-label={label}>
-  <table class="rt-table">
+  <table class="rt-table rt-table--stack">
     <thead>
       <tr>{columns.map((c) => <th scope="col" class={c.numeric ? 'num' : undefined}>{c.head}</th>)}</tr>
     </thead>
@@ -17,8 +22,8 @@ const { label, columns, rows, rowHeader } = Astro.props;
       {rows.map((r) => (
         <tr>
           {columns.map((c) => c.key === rowHeader
-            ? <th scope="row">{c.sub && r[c.sub] ? <span class="rt-tarif">{r[c.key]}<small>{r[c.sub]}</small></span> : r[c.key]}</th>
-            : <td class={c.numeric ? 'num' : undefined}>{r[c.key]}</td>)}
+            ? <th scope="row">{c.sub && r[c.sub] ? <span class="rt-tarif">{r[c.key]}<small>{r[c.sub]}</small></span> : <Rich text={r[c.key]} lang={lang} />}</th>
+            : <td class={c.numeric ? 'num' : undefined} data-label={c.head}><Rich text={r[c.key]} lang={lang} /></td>)}
         </tr>
       ))}
     </tbody>

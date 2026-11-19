@@ -1,0 +1,23 @@
+---
+import Button from './Button.astro';
+import Section from './Section.astro';
+import { LINKS } from '../data/links';
+import type { Lang } from '../data/types';
+import { ui } from '../i18n';
+import { localize } from '../i18n/routes';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const T = ui(lang);
+---
+
+<Section id="abschluss" title={T.cta.title}>
+  <div class="home-actions">
+    <div class="home-actions-row">
+      <Button variant="primary" size="lg" href={LINKS.signup}>{T.actions.trial}</Button>
+      <Button variant="secondary" size="lg" href={localize(T.footer.demoHref, lang)}>{T.actions.demo}</Button>
+      <Button variant="quiet" size="lg" href={localize(T.footer.contactHref, lang)}>{T.actions.contact}</Button>
+    </div>
+    <p class="home-b2b">{T.b2b}</p>
+  </div>
+</Section>

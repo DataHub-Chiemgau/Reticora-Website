@@ -1,0 +1,100 @@
+---
+import Leitstand from '../layouts/Leitstand.astro';
+import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
+import ActionRow from '../components/ActionRow.astro';
+import PageClosing from '../components/PageClosing.astro';
+import Button from '../components/Button.astro';
+import Para from '../components/Para.astro';
+import DataTable from '../components/DataTable.astro';
+import SpecList from '../components/SpecList.astro';
+import ScreenshotSlot from '../components/ScreenshotSlot.astro';
+import ConnectionSchema from '../components/ConnectionSchema.astro';
+import type { Lang } from '../data/types';
+import { content } from '../content';
+import { nbsp } from '../content/rich';
+import { ui } from '../i18n';
+import { localize } from '../i18n/routes';
+
+/** Seite „Sicherheit“: Abschnitte nach docs/copy/sicherheit-de.md; Platzhalter tragen `data-placeholder` (Release-Prüfung). */
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const C = content(lang).sicherheit;
+const UI = ui(lang);
+---
+
+<Leitstand title={C.meta.title} description={C.meta.description} lang={lang} path={localize('/sicherheit/', lang)}>
+  <PageHero title={nbsp(C.hero.title)} lead={C.hero.lead}>
+    <div class="page-actions"><ActionRow actions={C.hero.actions} lang={lang} topic={C.hero.topic} /></div>
+  </PageHero>
+
+  <Section id={C.modelle.id} title={C.modelle.title}>
+    <DataTable label={C.modelle.label} columns={C.modelle.columns} rows={C.modelle.rows} rowHeader="model" lang={lang} />
+  </Section>
+
+  <Section id={C.ports.id} title={C.ports.title}>
+    <div class="home-stack">
+      <div class="home-block"><Para text={C.ports.text} lang={lang} /></div>
+      <DataTable label={C.ports.label} columns={C.ports.columns} rows={C.ports.rows} rowHeader="direction" lang={lang} />
+      <div class="home-split">
+        <figure class="rt-figure">
+          <ConnectionSchema lang={lang} />
+          <figcaption><b>{UI.figure} 1 ·</b>{' '}{nbsp(C.ports.schemaCaption)}</figcaption>
+        </figure>
+        <div class="home-block">
+          <p class="data-label">{C.ports.collectorTitle}</p>
+          <SpecList items={C.ports.collector} lang={lang} />
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <Section id={C.trennung.id} title={C.trennung.title}>
+    <div class="home-block"><Para text={C.trennung.text} lang={lang} /></div>
+  </Section>
+
+  <Section id={C.schluessel.id} title={C.schluessel.title}>
+    <div class="home-split">
+      <div class="home-block"><Para text={C.schluessel.text} lang={lang} /></div>
+      <SpecList items={C.schluessel.specs} lang={lang} />
+    </div>
+  </Section>
+
+  <Section id={C.anmeldung.id} title={C.anmeldung.title}>
+    <div class="home-split home-split--figure">
+      <div class="home-block"><Para text={C.anmeldung.text} lang={lang} /></div>
+      <ScreenshotSlot id={C.anmeldung.shot.id} figure={2} caption={C.anmeldung.shot.caption} lang={lang} />
+    </div>
+  </Section>
+
+  <Section id={C.protokoll.id} title={C.protokoll.title}>
+    <div class="home-split home-split--figure sol-flip">
+      <div class="home-block"><Para text={C.protokoll.text} lang={lang} /></div>
+      <ScreenshotSlot id={C.protokoll.shot.id} figure={3} caption={C.protokoll.shot.caption} lang={lang} />
+    </div>
+  </Section>
+
+  <Section id={C.datenschutz.id} title={C.datenschutz.title}>
+    <div class="home-stack">
+      <div class="home-block">
+        <Para text={C.datenschutz.text} lang={lang} />
+        <p class="rt-para"><span class="page-placeholder" data-placeholder={C.datenschutz.placeholder.key}>{C.datenschutz.placeholder.text}</span></p>
+      </div>
+      <div class="home-actions-row">
+        {C.datenschutz.links.map((l) => <Button variant="secondary" href={localize(l.href, lang)}>{l.label}</Button>)}
+      </div>
+    </div>
+  </Section>
+
+  <Section id={C.lieferkette.id} title={C.lieferkette.title}>
+    <div class="home-block"><Para text={C.lieferkette.text} lang={lang} /></div>
+  </Section>
+
+  <Section id={C.melden.id} title={C.melden.title}>
+    <div class="home-block">
+      <p class="rt-para">{C.melden.before}<span class="page-placeholder" data-placeholder={C.melden.placeholder.key}>{C.melden.placeholder.text}</span>{C.melden.after}</p>
+    </div>
+  </Section>
+
+  <PageClosing lang={lang} id={C.closing.id} title={C.closing.title} text={C.closing.text} actions={C.closing.actions} topic={C.closing.topic} />
+</Leitstand>

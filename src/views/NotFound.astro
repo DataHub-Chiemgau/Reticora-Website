@@ -1,0 +1,26 @@
+---
+import Leitstand from '../layouts/Leitstand.astro';
+import PageHero from '../components/PageHero.astro';
+import type { Lang } from '../data/types';
+import { ui } from '../i18n';
+import { localize } from '../i18n/routes';
+
+/** Fehlerseite 404 in beiden Sprachen; Texte aus `ui(lang).notFound`. Immer noindex. */
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const N = ui(lang).notFound;
+---
+
+<Leitstand title={N.title} description={N.description} lang={lang} path={lang === 'de' ? '/404/' : '/en/404/'} noindex>
+  <PageHero eyebrow={N.eyebrow} title={N.h1} lead={N.text} />
+  <div class="rt-section">
+    <div class="rt-container">
+      <nav aria-label={N.navLabel}>
+        <ul class="notfound-links">
+          {N.links.map((l) => <li><a href={localize(l.href, lang)}>{l.label}</a></li>)}
+        </ul>
+      </nav>
+      <p class="home-b2b notfound-hint">{N.hint}</p>
+    </div>
+  </div>
+</Leitstand>

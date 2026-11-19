@@ -1,0 +1,14 @@
+---
+import Rich from './Rich.astro';
+import { hasClaims } from '../content/rich';
+import type { Lang } from '../data/types';
+
+/** Absatz aus einem `Rich`-Text; mit Beleg als `div role="paragraph"` (ein <details> darf nicht in <p> stehen). */
+interface Props { text: string; lang: Lang; class?: string }
+const { text, lang, class: extra } = Astro.props;
+const cls = ['rt-para', extra].filter(Boolean).join(' ');
+---
+
+{hasClaims(text)
+  ? <div class={cls} role="paragraph"><Rich text={text} lang={lang} /></div>
+  : <p class={cls}><Rich text={text} lang={lang} /></p>}

@@ -1,5 +1,6 @@
 ---
 import Beleg from './Beleg.astro';
+import Rich from './Rich.astro';
 import type { ClaimId, Lang } from '../data/types';
 
 interface Props { items: { term: string; value: string; claim?: ClaimId }[]; lang: Lang }
@@ -7,5 +8,5 @@ const { items, lang } = Astro.props;
 ---
 
 <dl class="rt-spec">
-  {items.map((i) => <div><dt>{i.term}</dt><dd>{i.value}{i.claim && <>{' '}<Beleg claim={i.claim} lang={lang} /></>}</dd></div>)}
+  {items.map((i) => <div><dt>{i.term}</dt><dd><Rich text={i.value} lang={lang} />{i.claim && <>{' '}<Beleg claim={i.claim} lang={lang} /></>}</dd></div>)}
 </dl>

@@ -12,7 +12,9 @@ import CodeSample from '../components/CodeSample.astro';
 import Notice from '../components/Notice.astro';
 import TopologyStage from '../components/TopologyStage.astro';
 import StatusTag from '../components/StatusTag.astro';
-import { UI } from '../i18n/de';
+import { ui } from '../i18n';
+
+const UI = ui('de');
 
 const columns = [
   { key: 'source', head: 'Quelle' },
@@ -67,7 +69,7 @@ const steps = [
         { label: 'Poll', value: 'alle 15 min' },
         { label: 'Verbindung', value: 'nur ausgehend · 443, 4222' },
         { label: 'Hosting', value: 'EU' },
-      ]} />
+      ]} lang="de" />
       <div class="dev-narrow">
         <SpecList lang="de" items={[
           { term: 'Sweep', value: 'alle 24 h' },
@@ -76,14 +78,14 @@ const steps = [
         ]} />
       </div>
       <div class="rt-para dev-measure" role="paragraph" id="beleg-absatz">Der Collector baut ausschließlich ausgehende Verbindungen auf. Die Datenhaltung liegt in der EU. <Beleg claim="C-07" lang="de" /></div>
-      <DataTable label="Rangfolge der Quellen" columns={columns} rows={rows} rowHeader="source" />
+      <DataTable label="Rangfolge der Quellen" columns={columns} rows={rows} rowHeader="source" lang="de" />
     </div>
   </Section>
 
   <Section id="inhalt-bausteine" title="Ablauf, Code, Abbildungen">
     <div class="dev-stack">
-      <div class="dev-narrow"><Steps steps={steps} /></div>
-      <CodeSample title="GET /api/v1/cis" copyLabel={UI.copy} copiedLabel={UI.copied}><span class="c"># Alle CIs, deren Name „core“ enthält</span>
+      <div class="dev-narrow"><Steps steps={steps} lang="de" /></div>
+      <CodeSample title="GET /api/v1/cis" copyLabel={UI.copy} copiedLabel={UI.copied} lang="de"><span class="c"># Alle CIs, deren Name „core“ enthält</span>
 curl <span class="k">"https://www.reticora.cloud/api/v1/cis?q=core&amp;limit=50"</span> \
   -H <span class="k">"X-API-Key: rk_live_…"</span></CodeSample>
       <TopologyStage lang="de" />
@@ -104,7 +106,7 @@ curl <span class="k">"https://www.reticora.cloud/api/v1/cis?q=core&amp;limit=50"
           <Button variant="quiet" href="#dokument">Datenschutzerklärung</Button>
         </div>
         <Notice lead="Nur für Unternehmen.">Reticora richtet sich ausschließlich an Unternehmen.</Notice>
-        <DataTable label="Rangfolge der Quellen im Thema Dokument" columns={columns} rows={rows} rowHeader="source" />
+        <DataTable label="Rangfolge der Quellen im Thema Dokument" columns={columns} rows={rows} rowHeader="source" lang="de" />
         <div class="dev-row">
           <StatusTag tone="ok">Aktiv</StatusTag>
           <StatusTag tone="danger">Außer Betrieb</StatusTag>

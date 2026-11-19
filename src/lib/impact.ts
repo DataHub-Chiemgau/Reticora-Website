@@ -70,10 +70,10 @@ export function impactSentence(lang: Lang, r: ImpactResult): { main: string; gua
       : n === 1 ? 'ist 1 weiteres CI betroffen (grau dargestellt).'
       : `sind ${n} weitere CIs betroffen (grau dargestellt).`
     : n === 0 ? 'no other CI is affected.'
-      : n === 1 ? '1 more CI is affected (shown in grey).'
-      : `${n} more CIs are affected (shown in grey).`;
+      : n === 1 ? '1 more CI is affected (shown in gray).'
+      : `${n} more CIs are affected (shown in gray).`;
   const head = r.failed.length === 1
-    ? de ? `Fällt „${r.failed[0]}“ aus,` : `If "${r.failed[0]}" fails,`
+    ? de ? `Fällt „${r.failed[0]}“ aus,` : `If “${r.failed[0]}” fails,`
     : de ? `Fallen ${r.failed.length} CIs (${r.failed.join(', ')}) gemeinsam aus,` : `If ${r.failed.length} CIs (${r.failed.join(', ')}) fail together,`;
   const names = r.guarded.join(', ');
   return {

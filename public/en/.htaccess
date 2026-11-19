@@ -1,0 +1,7 @@
+# Englische Fehlerseiten. Astro schreibt src/pages/en/404.astro nach en/404/index.html (nur die 404 der Wurzel wird zu 404.html),
+# daher zeigt ErrorDocument auf das Verzeichnis. Eine .htaccess im Unterordner ersetzt die Rewrite-Regeln der Wurzel;
+# Inherit übernimmt sie (Hostwechsel, index.html). Kopfzeilen und Cache-Regeln erbt der Ordner ohnehin.
+RewriteEngine On
+RewriteOptions Inherit
+ErrorDocument 404 /en/404/
+ErrorDocument 403 /en/404/

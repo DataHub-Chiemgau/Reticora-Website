@@ -1,0 +1,27 @@
+---
+import { SITE } from '../data/site';
+import type { Lang } from '../data/types';
+import { alternates } from '../i18n/routes';
+
+interface Props { title: string; description: string; lang: Lang; path: string; noindex: boolean }
+const { title, description, lang, path, noindex } = Astro.props;
+const canonical = SITE.url + path;
+const alt = alternates(path);
+---
+
+<link rel="canonical" href={canonical} />
+{alt && (
+  <Fragment>
+    <link rel="alternate" hreflang="de" href={SITE.url + alt.de} />
+    <link rel="alternate" hreflang="en" href={SITE.url + alt.en} />
+    <link rel="alternate" hreflang="x-default" href={SITE.url + alt.xDefault} />
+  </Fragment>
+)}
+{noindex && <meta name="robots" content="noindex" />}
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Reticora" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:locale" content={lang === 'de' ? 'de_DE' : 'en_US'} />
+{alt && <meta property="og:locale:alternate" content={lang === 'de' ? 'en_US' : 'de_DE'} />}

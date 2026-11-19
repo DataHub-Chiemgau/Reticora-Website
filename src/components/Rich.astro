@@ -1,0 +1,11 @@
+---
+import Beleg from './Beleg.astro';
+import { parseRich } from '../content/rich';
+import type { Lang } from '../data/types';
+
+interface Props { text: string; lang: Lang }
+const { text, lang } = Astro.props;
+const parts = parseRich(text);
+---
+
+{parts.map((p) => p.t === 'text' ? p.v : p.t === 'code' ? <code>{p.v}</code> : p.t === 'bold' ? <b>{p.v}</b> : <>{' '}<Beleg claim={p.id} lang={lang} /></>)}

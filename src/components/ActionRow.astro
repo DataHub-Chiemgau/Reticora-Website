@@ -1,0 +1,24 @@
+---
+import Button from './Button.astro';
+import { LINKS } from '../data/links';
+import type { Lang } from '../data/types';
+import { ui } from '../i18n';
+import { localize } from '../i18n/routes';
+
+type Action = 'trial' | 'demo' | 'contact';
+/** Knöpfe in der gegebenen Reihenfolge; der erste ist der Hauptknopf (primary), der zweite secondary, weitere quiet. */
+/** `topic`: Anliegen für das Kontaktformular (`/kontakt/?topic=enterprise`), nur für den Knopf „Kontakt“. */
+interface Props { actions: Action[]; lang: Lang; topic?: string }
+const { actions, lang, topic } = Astro.props;
+const T = ui(lang);
+const href = (a: Action) => (a === 'trial' ? LINKS.signup : localize(a === 'demo' ? T.footer.demoHref : T.footer.contactHref + (a === 'contact' && topic ? `?topic=${topic}` : ''), lang));
+const label = (a: Action) => T.actions[a];
+const variants = ['primary', 'secondary', 'quiet'] as const;
+---
+
+<div class="home-actions">
+  <div class="home-actions-row">
+    {actions.map((a, i) => <Button variant={variants[Math.min(i, 2)]} size="lg" href={href(a)}>{label(a)}</Button>)}
+  </div>
+  <p class="home-b2b">{T.b2b}</p>
+</div>

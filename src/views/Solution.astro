@@ -1,0 +1,61 @@
+---
+import Leitstand from '../layouts/Leitstand.astro';
+import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
+import ActionRow from '../components/ActionRow.astro';
+import PageClosing from '../components/PageClosing.astro';
+import Button from '../components/Button.astro';
+import Rich from '../components/Rich.astro';
+import Para from '../components/Para.astro';
+import ScreenshotSlot from '../components/ScreenshotSlot.astro';
+import type { Lang } from '../data/types';
+import { content } from '../content';
+import { nbsp } from '../content/rich';
+import { ui } from '../i18n';
+import { localize } from '../i18n/routes';
+
+/** Lösungsseiten für ISPs und MSPs: vier Situationen, je Text, Kennzeile der Funktionen und optional eine Abbildung. */
+interface Props { lang: Lang; kind: 'isp' | 'msp' }
+const { lang, kind } = Astro.props;
+const C = content(lang)[kind];
+const UI = ui(lang);
+const path = localize(kind === 'isp' ? '/loesungen/isp/' : '/loesungen/msp/', lang);
+
+// Abbildungen fortlaufend nummeriert; jede zweite steht links vom Text.
+let figureNo = 0;
+const rows = C.situations.map((s) => ({ s, no: s.shot ? ++figureNo : 0, flip: s.shot ? figureNo % 2 === 0 : false }));
+---
+
+<Leitstand title={C.meta.title} description={C.meta.description} lang={lang} path={path}>
+  <PageHero title={nbsp(C.hero.title)}>
+    <Fragment slot="lead"><Rich text={C.hero.lead} lang={lang} /></Fragment>
+    <div class="page-actions"><ActionRow actions={C.hero.actions} lang={lang} topic={C.hero.topic} /></div>
+  </PageHero>
+
+  {rows.map(({ s, no, flip }) => (
+    <Section id={s.id} title={nbsp(s.title)}>
+      <div class:list={['home-split', s.shot && 'home-split--figure', flip && 'sol-flip']}>
+        <div class="home-block sol-text">
+          {s.text.map((t) => <Para text={t} lang={lang} />)}
+          {s.shot && (
+            <div class="sol-features">
+              <p class="data-label">{UI.featuresLabel}</p>
+              <ul>{s.features.map((f) => <li>{f}</li>)}</ul>
+            </div>
+          )}
+          {s.link && <Button class="home-link" variant="secondary" href={localize(s.link.href, lang)}>{s.link.label}</Button>}
+        </div>
+        {s.shot
+          ? <ScreenshotSlot id={s.shot.id} figure={no} caption={nbsp(s.shot.caption)} lang={lang} />
+          : (
+            <div class="sol-features sol-features--panel">
+              <p class="data-label">{UI.featuresLabel}</p>
+              <ul>{s.features.map((f) => <li>{f}</li>)}</ul>
+            </div>
+          )}
+      </div>
+    </Section>
+  ))}
+
+  <PageClosing lang={lang} id={C.closing.id} title={C.closing.title} text={C.closing.text} actions={C.closing.actions} topic={C.closing.topic} />
+</Leitstand>

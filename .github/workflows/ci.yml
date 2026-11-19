@@ -22,9 +22,31 @@ jobs:
       - run: npm run check
       - run: npm run build
       - run: npm test
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_sqlite, mbstring
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+        working-directory: backend
+      - run: composer audit
+        working-directory: backend
+      - run: vendor/bin/phpunit
+        working-directory: backend
       - run: npm run validate
       - run: npx playwright install --with-deps
-      - run: npm run test:e2e -- --trace off
+      - run: npm run test:e2e
+        env:
+          RETICORA_ACCESS_LOG: ${{ runner.temp }}/apache-access.log
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-diagnose
+          path: |
+            ${{ runner.temp }}/apache-access.log
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
       - run: npm run lhci
       # Alle Pakete sind devDependencies (nichts davon läuft im ausgelieferten Build), daher wird der ganze Baum geprüft.
       # Stand: 9 high, 0 critical; alle 9 stammen aus der Kette @lhci/cli (basic-ftp über proxy-agent). Kritische Funde sperren.

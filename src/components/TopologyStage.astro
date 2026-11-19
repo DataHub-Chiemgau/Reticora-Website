@@ -2,23 +2,13 @@
 import type { Lang } from '../data/types';
 import { TOPO_EDGES, TOPO_INITIAL_FAILED, TOPO_NODES } from '../data/topology';
 import { computeImpact, edgeIsDim, impactSentence } from '../lib/impact';
-import { UI } from '../i18n/de';
+import { ui } from '../i18n';
 
 interface Props { lang: Lang; id?: string }
 const { lang, id = `topo-${lang}` } = Astro.props;
 
-const T = lang === 'de'
-  ? UI.topo
-  : {
-      section: 'Outage simulation',
-      title: 'Schematic of a power chain with outage simulation',
-      desc: 'usv-01 powers pdu-a and pdu-b. srv-01 and srv-02 hang off both PDUs, sw-access-01 only off pdu-a, nas-01 only off pdu-b. vm-app-01 runs on srv-01, vm-db-01 on srv-02.',
-      group: 'Simulate outage',
-      legendActive: 'CI, status “Active”',
-      legendFailed: 'failed',
-      legendAffected: 'affected (shown in grey)',
-      legendNote: 'Schematic, not a screenshot',
-    };
+const U = ui(lang);
+const T = U.topo;
 
 const ids = TOPO_NODES.map((n) => n.id);
 const result = computeImpact(ids, TOPO_EDGES, TOPO_INITIAL_FAILED);
@@ -91,7 +81,7 @@ const LABEL = {
       </g>
     </svg>
   </section>
-  <p class="rt-scroll-hint">{lang === 'de' ? UI.scrollHint : 'Schematic scrolls sideways.'}</p>
+  <p class="rt-scroll-hint">{U.scrollHint}</p>
   <div class="rt-topo-controls" role="group" aria-label={T.group} hidden>
     <span aria-hidden="true">{T.group}</span>
     {TOPO_NODES.map((n) => (

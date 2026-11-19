@@ -38,12 +38,13 @@ describe('claims', () => {
   it('eindeutig, vollständig, offen', () => {
     const ids = CLAIMS.map((c) => c.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids).toEqual(Array.from({ length: 38 }, (_, i) => `C-${String(i + 1).padStart(2, '0')}`));
+    expect(ids).toEqual(Array.from({ length: 99 }, (_, i) => `C-${String(i + 1).padStart(2, '0')}`));
     for (const c of CLAIMS) {
       expect(c.title.de).not.toBe(''); expect(c.evidence.de).not.toBe('');
       expect(c.title.en).not.toBe(''); expect(c.evidence.en).not.toBe('');
       expect(c.status).toBe('offen');
-      expect(c.asOf).toBe('2026-11');
+      expect(c.asOf).toBe(Number(c.id.slice(2)) <= 38 ? '2026-11' : '2026-11-12');
+      if (Number(c.id.slice(2)) > 38) expect(c.note ?? '').toMatch(/README|\.md|\.go|\.sql|backend\/|collector\/|docs\//);
       expect(c.evidence.de).not.toMatch(/README|\.md|\.go|docs\/|backend\/|frontend\/|§/);
       for (const t of [c.title.de, c.title.en, c.evidence.de, c.evidence.en])
         expect(t).not.toMatch(/Nur mit Nachweis|Freigabe|noch zu|Auftraggeber|Betreiber|Launch|F-\d\d|to be confirmed|approval/i);
@@ -54,7 +55,7 @@ describe('claims', () => {
   });
   it('claim() wirft bei unbekannter ID', () => {
     expect(claim('C-01').id).toBe('C-01');
-    expect(() => claim('C-99')).toThrow();
+    expect(() => claim('C-199')).toThrow();
   });
 });
 
@@ -69,7 +70,10 @@ describe('screenshots', () => {
 
 describe('links, site, topology', () => {
   it('Links beginnen mit https://', () => {
-    for (const [k, v] of Object.entries(LINKS)) if (k !== 'demoUser' && k !== 'demoPassword') expect(v.startsWith('https://')).toBe(true);
+    for (const [k, v] of Object.entries(LINKS)) {
+      if (k === 'lead') expect(v).toBe('/api/lead.php');
+      else if (k !== 'demoUser' && k !== 'demoPassword') expect(v.startsWith('https://')).toBe(true);
+    }
   });
   it('Site', () => {
     expect(SITE.email).toBeNull(); expect(SITE.phone).toBeNull();

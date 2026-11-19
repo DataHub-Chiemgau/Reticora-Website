@@ -2,8 +2,8 @@
 import Beleg from './Beleg.astro';
 import type { ClaimId, Lang } from '../data/types';
 
-interface Props { items: { label: string; value: string; claim?: ClaimId }[]; lang?: Lang }
-const { items, lang = 'de' } = Astro.props;
+interface Props { items: { label: string; value: string; claim?: ClaimId }[]; lang: Lang }
+const { items, lang } = Astro.props;
 ---
 
 <dl class="rt-strip">

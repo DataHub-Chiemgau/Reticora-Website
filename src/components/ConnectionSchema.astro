@@ -1,12 +1,13 @@
 ---
 import type { Lang } from '../data/types';
 import { SCHEMA } from '../content/schema';
-import { UI } from '../i18n/de';
+import { ui } from '../i18n';
 
 interface Props { lang: Lang; id?: string }
 const { lang, id = `verbindung-${lang}` } = Astro.props;
 
 const T = SCHEMA[lang];
+const U = ui(lang);
 const devices = [76, 116, 156, 196];
 ---
 
@@ -39,5 +40,5 @@ const devices = [76, 116, 156, 196];
     <text class="s-wire-label" x="298" y="182">NATS mTLS 4222</text>
   </svg>
 </section>
-<p class="rt-scroll-hint">{lang === 'de' ? UI.scrollHint : 'Schematic scrolls sideways.'}</p>
+<p class="rt-scroll-hint">{U.scrollHint}</p>
 </div>

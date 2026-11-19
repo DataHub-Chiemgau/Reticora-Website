@@ -1,22 +1,5 @@
 ---
-import Leitstand from '../layouts/Leitstand.astro';
+import NotFound from '../views/NotFound.astro';
 ---
 
-<Leitstand
-  title="Seite nicht gefunden – Reticora"
-  description="Diese Seite gibt es nicht."
-  lang="de"
-  path="/404/"
-  noindex
->
-  <h1>Diese Seite gibt es nicht</h1>
-  <p>Die Adresse stimmt nicht oder die Seite wurde verschoben. Von hier aus geht es weiter:</p>
-  <nav aria-label="Weiterführende Links">
-    <ul>
-      <li><a href="/">Zur Startseite</a></li>
-      <li><a href="/kontakt/">Kontakt</a></li>
-      <li><a href="/impressum/">Impressum</a></li>
-      <li><a href="/datenschutz/">Datenschutz</a></li>
-    </ul>
-  </nav>
-</Leitstand>
+<NotFound lang="de" />

@@ -1,0 +1,29 @@
+---
+import type { Lang } from '../data/types';
+import { counterpart, homeSwitchTarget, switchTarget } from '../i18n/routes';
+import { ui } from '../i18n';
+
+interface Props { lang: Lang; path: string }
+const { lang, path } = Astro.props;
+const T = ui(lang);
+const otherLang: Lang = lang === 'de' ? 'en' : 'de';
+// Seiten ohne Gegenstück (404): Link zur Startseite der anderen Sprache, wenn gebaut, sonst gar kein Eintrag.
+const hasPair = counterpart(path) !== null;
+const other = hasPair ? switchTarget(path) : homeSwitchTarget(lang);
+const live = other !== null;
+const cur = { code: lang === 'de' ? T.lang.de : T.lang.en };
+const oth = { code: otherLang === 'de' ? T.lang.de : T.lang.en, name: otherLang === 'de' ? T.lang.deName : T.lang.enName };
+const order: Lang[] = ['de', 'en'];
+---
+
+<div class="rt-lang" role="group" aria-label={T.lang.label}>
+  {order.map((l) =>
+    l === lang ? (
+      <span aria-current="true">{cur.code}</span>
+    ) : live ? (
+      <a href={other} lang={l} hreflang={l} aria-label={`${oth.code} – ${oth.name}`}>{oth.code}</a>
+    ) : !hasPair ? null : (
+      <span class="is-off" title={T.lang.soon}>{oth.code}<span class="sr-only"> ({T.lang.soon})</span></span>
+    ),
+  )}
+</div>
