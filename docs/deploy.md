@@ -2,6 +2,8 @@
 
 Stand: Vorbereitung in Phase 7, nach der Behebung der Prüfprotokolle (`docs/qa/2026-11-*.md`). **Nichts davon wurde gegen das echte Hosting-Konto ausgeführt.** Spec §11, Ä-12, Ä-16. Abschnitt 8 listet, was der Auftraggeber im Konto bestätigen muss, bevor der Ablauf zum ersten Mal läuft.
 
+**Erster Test auf dem echten Server, ohne Release-Sperre:** Abschnitt 9 (Vorschau). Go-live der Website ist der 2027-01-01 (W-E17); bis dahin wird nur die Vorschau genutzt.
+
 Das Hosting: Apache mit `.htaccess`, PHP, MariaDB, SSH auf Port 222 mit dem Schlüssel des Hauptbenutzers (SFTP als Rückweg). Die Seite besteht aus statischem `dist/` und dem PHP-Backend für das Kontaktformular (`backend/`, siehe `backend/README.md`).
 
 ## 1. Überblick
@@ -21,7 +23,7 @@ Aufbau eines Release (`scripts/deploy/package.mjs`, Beispiel `~/releases/1a2b3c4
 | `www/` | Inhalt von `dist/` plus `www/api/lead.php` und `www/api/.htaccess` (aus `backend/public/`). Das ist die Dokumentenwurzel. Kein weiteres PHP, keine Source-Maps. |
 | `reticora/` | `src/`, `bin/`, `sql/`, `templates/` (vom Build erzeugt, passend zu `www/`), `vendor/` (`composer install --no-dev --prefer-dist --no-plugins --optimize-autoloader`, danach je Paket nur Autoload-Pfade, Lizenz und `composer.json`; kein `.git`, keine Punktordner), `config.example.php`, `composer.json`/`composer.lock`; in `reticora/` und jedem Unterordner eine `.htaccess` mit `Require all denied`. |
 | `remote.sh` | die einzigen Befehle, die der Ablauf auf dem Host ausführt |
-| `MANIFEST.txt` | Git-Stand, Bauzeit, Art des Builds, Liste aller Dateien mit SHA-256. `remote.sh` prüft vor jedem Umschalten die Prüfsummen, den Git-Stand und die Zeile `build: release`; ein mit `--allow-dev` gebautes Paket wird auf dem Host nie aktiv (Sicherheitsprüfung S-13). |
+| `MANIFEST.txt` | Git-Stand, Bauzeit, Art des Builds, Liste aller Dateien mit SHA-256. `remote.sh` prüft vor jedem Umschalten die Prüfsummen, den Git-Stand und die Zeile `build: release`. Ein mit `--allow-dev` gebautes Paket (nur Ziel `preview`, Zeile `build: dev`) darf installiert und in der Vorschau gezeigt werden, wird aber nie aktiv: `activate` und `rollback` verweigern es (Sicherheitsprüfung S-13). |
 
 Nicht im Paket: Tests, PHPUnit, Entwicklungsabhängigkeiten, `.superpowers`, Source-Maps, `config.php`, Beispieldateien (außer `reticora/config.example.php`), die Freigabe-Marke `dist/.release`.
 
@@ -49,7 +51,7 @@ Reihenfolge einhalten; jeder Schritt ist ohne den Ablauf von Hand zu erledigen.
    |---|---|
    | `site_url` | `https://www.reticora.de`. Die Origin-Prüfung lässt nur diese Herkunft zu; ein falscher Wert sperrt das Formular. |
    | `contact_email` | Adresse, die auf der Hinweisseite bei Serverfehler oder zu vielen Anfragen steht. |
-   | `retention_days` | **Pflicht**, ganze Zahl von 1 bis 3650: Aufbewahrungsfrist der Anfragen und der Tagesprotokolle in Tagen; `purge.php` löscht danach. Fehlt der Wert oder ist er ungültig, startet weder das Formular noch ein Cronjob (Spec Ä-42). Vorschlag 90. **Der Auftraggeber muss die Frist bestätigen** (Spec §6.3). |
+   | `retention_days` | **Pflicht**, ganze Zahl von 1 bis 3650: Aufbewahrungsfrist der Anfragen und der Tagesprotokolle in Tagen; `purge.php` löscht danach. Fehlt der Wert oder ist er ungültig, startet weder das Formular noch ein Cronjob (Spec Ä-42). Entschieden: **30** (30 Tage nach Eingang, Auftraggeber 2026-11-19, W-E18). |
    | `rate_limit.max` | gültige Anfragen je Herkunft und Stunde (Standard 5, erlaubt 1 bis 100). |
    | `rate_limit.global_max` | gültige Anfragen insgesamt je Stunde, die normal zugestellt werden (Standard 60, erlaubt 1 bis 1000); darüber werden sie gespeichert (`held`) und von `retry.php` später zugestellt. |
    | `rate_limit.held_max` | höchstens so viele gespeicherte `held`-Anfragen (Standard 500, erlaubt 50 bis 5000, Spec Ä-38). Ist der Bestand voll, antwortet das Formular mit der neutralen 429-Seite und speichert nichts; **in diesem Zustand gehen auch echte Anfragen verloren** (die Hinweisseite nennt die direkte Kontaktadresse). Gelöscht wird `held` nie automatisch; `retry.php` stellt zu, `purge.php` meldet. |
@@ -65,7 +67,7 @@ Reihenfolge einhalten; jeder Schritt ist ohne den Ablauf von Hand zu erledigen.
    | `mail.allow_insecure` | **muss `false` bleiben bzw. fehlen.** `true` erlaubt Versand ohne TLS und Anmeldung und ist nur für lokale Tests. |
    | `log_path` | Name des Protokolls außerhalb des Webroots, z. B. `/<Heimat>/reticora-config/lead.log`. Geschrieben wird je UTC-Tag eine Datei `lead-JJJJ-MM-TT.log` daneben; `purge.php` löscht Tagesdateien (`lead-`, `purge-`, `retry-…`) nach `retention_days` (Spec Ä-40). Enthält Ereignisnamen und Lead-IDs, keine Formularinhalte, keine IP-Adressen. |
 
-   Optional `~/reticora-config/config.preview.php` mit eigener Datenbank und einem Test-Postfach als Empfänger: Die Vorschau nimmt diese Datei, sonst `config.php`. Ohne eigene Vorschau-Konfiguration landen Testanfragen aus der Vorschau in der echten Datenbank und im echten Postfach.
+   Optional `~/reticora-config/config.preview.php` mit eigener Datenbank und einem Test-Postfach als Empfänger. Sie entsteht entweder von Hand oder im Deploy-Lauf aus den `PREVIEW_*`-Secrets (Abschnitt 9). Eine Vorschau mit Entwicklungs-Build (`build: dev`) nimmt **nur** diese Datei und scheitert, wenn sie fehlt; sie liest nie `config.php`. Eine Vorschau mit Release-Build nimmt sie, falls vorhanden, sonst `config.php` (dann landen Testanfragen in der echten Datenbank und im echten Postfach). Der Betrieb liest ausschließlich `config.php`.
 8. **Tabellen anlegen** nach dem ersten Upload eines Release (Abschnitt 4, Schritt 1): `php ~/releases/<sha>/reticora/bin/migrate.php ~/reticora-config/config.php` (idempotent; spielt alle Dateien `sql/NNN_*.sql` der Reihe nach ein und legt auch `rate_limit_key` an). Bei späteren Releases nur, wenn `sql/` sich ändert; das steht dann in den Release-Hinweisen. Eine mit dem ersten Schema angelegte Datenbank (Spalte `rate_limit_key.day`) stellt `002_rate_limit_key_hourly.sql` auf den stündlichen Schlüssel um (Spec Ä-36); der laufende Schlüssel wird dabei neu erzeugt.
 9. **Cronjobs** im Panel (Pfad `~/live/reticora/bin/…` gilt für beide Umschaltstrategien, siehe Abschnitt 7):
    ```
@@ -77,7 +79,7 @@ Reihenfolge einhalten; jeder Schritt ist ohne den Ablauf von Hand zu erledigen.
 11. **GitHub-Umgebungen** (Repository, Settings, Environments). **Beide** Umgebungen tragen den SSH-Schlüssel und damit Zugriff auf das ganze Hosting-Konto; beide brauchen deshalb dieselben Schutzregeln (Sicherheitsprüfung S-02):
     - **Deployment branches and tags:** „Selected branches and tags“, nur der Hauptzweig (`main`). Zusätzlich laufen die Jobs `preview`, `production` und `rollback` im Workflow nur auf `refs/heads/main` (`if:`); beides zusammen verhindert, dass ein Lauf auf einem anderen Zweig dessen geänderte Skripte mit dem Schlüssel ausführt.
     - **Required reviewers:** in `preview` mindestens eine Person, in `production` mindestens eine Person, nicht die auslösende („Prevent self-review“). Ohne Prüfer in `preview` wäre die zweite Freigabe von `production` umgehbar.
-    - `preview`: Secrets `HETZNER_SSH_HOST`, `HETZNER_SSH_USER`, `HETZNER_SSH_KEY`, `HETZNER_KNOWN_HOSTS`, `PREVIEW_HTPASSWD`; Variable `PREVIEW_URL` (Adresse der Vorschau mit `https://`).
+    - `preview`: Secrets `HETZNER_SSH_HOST`, `HETZNER_SSH_USER`, `HETZNER_SSH_KEY`, `HETZNER_KNOWN_HOSTS`, `PREVIEW_HTPASSWD`; optional für die Vorschau-Konfiguration (alle neun oder keins, Abschnitt 9) `PREVIEW_DB_DSN`, `PREVIEW_DB_USER`, `PREVIEW_DB_PASSWORD`, `PREVIEW_SMTP_HOST`, `PREVIEW_SMTP_PORT`, `PREVIEW_SMTP_USER`, `PREVIEW_SMTP_PASSWORD`, `PREVIEW_MAIL_FROM`, `PREVIEW_MAIL_TO`; Variable `PREVIEW_URL` (Adresse der Vorschau mit `https://`), optional `PREVIEW_PHP_BIN` (Name des PHP-Programms auf dem Host, Standard `php`).
     - `production`: Secrets `HETZNER_SSH_HOST`, `HETZNER_SSH_USER`, `HETZNER_SSH_KEY`, `HETZNER_KNOWN_HOSTS`; Variablen `LIVE_URL` (`https://www.reticora.de`) und bei Bedarf `RETICORA_SWITCH` (siehe Abschnitt 7).
     - Zugangsdaten stehen nie im Repository, nie in Variablen und nie in Logs; im Workflow nur als Namen.
     - `PREVIEW_HTPASSWD` hat das Format `benutzer:passwort` (Klartext, zufälliges Passwort). Der Hash entsteht im Lauf als bcrypt (`htpasswd -B`, Passwort über STDIN, S-09) und liegt nur auf dem Host.
@@ -87,20 +89,20 @@ Reihenfolge einhalten; jeder Schritt ist ohne den Ablauf von Hand zu erledigen.
 
 ## 3. Was vor dem ersten Deploy bestanden sein muss (Release-Sperre)
 
-- `npm run build:release` endet mit Exit-Code 0. Das ist die Sperre: Der Workflow ruft es im Build-Job auf, und `scripts/deploy/package.mjs` verweigert jedes `dist/` ohne die Marke `dist/.release`, die nur `scripts/check-release.mjs` nach bestandener Prüfung schreibt. **Zum Stand dieses Textes scheitert der Befehl mit 226 Mängeln** (offene Claims, fehlende Bilder, Platzhalter in Rechtstexten, fehlende Anbieterangaben, fehlende Meldeadresse für `security.txt`); das ist gewollt.
+- Gilt für den Betrieb (Ziel `production`); die Vorschau (Ziel `preview`, Abschnitt 9) baut ohne diese Sperre. `npm run build:release` endet mit Exit-Code 0. Das ist die Sperre: Der Workflow ruft es im Build-Job auf, und `scripts/deploy/package.mjs` verweigert jedes `dist/` ohne die Marke `dist/.release`, die nur `scripts/check-release.mjs` nach bestandener Prüfung schreibt. **Zum Stand dieses Textes scheitert der Befehl mit 226 Mängeln** (offene Claims, fehlende Bilder, Platzhalter in Rechtstexten, fehlende Anbieterangaben, fehlende Meldeadresse für `security.txt`); das ist gewollt.
 - Die Prüfprotokolle unter `docs/qa/` (Sicherheit, Datenschutz, Barrierefreiheit, Zielumgebung) liegen vor und haben keine offenen Mängel ohne Entscheidung des Auftraggebers.
 - `ci.yml` und `integration.yml` sind grün (Tests, Lighthouse, `composer audit`, Integrationstests gegen MariaDB und SMTP mit Anmeldung).
 - Rechtstexte, geprüfte Claims und Screenshots sind freigegeben (Phase 8).
 - Die offenen Fragen in Abschnitt 8 sind beantwortet.
-- Aufbewahrungsfrist (`retention_days`) ist vom Auftraggeber bestätigt.
+- Aufbewahrungsfrist (`retention_days`): entschieden, 30 Tage nach Eingang (2026-11-19, W-E18).
 
 ## 4. Ablauf eines Deploys
 
 Actions, Workflow **Deploy**, „Run workflow“, Zweig auswählen, Ziel wählen.
 
-1. **Ziel `preview`:** `build` führt `npm ci`, `npm run build:release`, `composer audit` und `scripts/deploy/package.mjs` aus und lädt das Paket als Artefakt hoch. `preview` fragt zuerst `remote.sh exists <sha>` (`<sha>` = erste 12 Stellen des Commits). Liegt der Stand schon auf dem Host (z. B. ein zweiter Lauf desselben Commits, auch wenn er gerade in Betrieb ist), wird nichts hochgeladen. Sonst lädt rsync das Paket in einen **neuen** Ordner `~/releases/.incoming-<sha>-<Lauf>-<Versuch>/` (ohne `reticora/config.php`), und `remote.sh install` prüft ihn und benennt ihn atomar in `~/releases/<sha>/` um. Ein vorhandenes, womöglich laufendes Release wird nie überschrieben (S-03; früher löschte `rsync --delete` dort den Symlink auf `config.php`). `remote.sh verify` prüft die Prüfsummen, `remote.sh preview` kopiert es nach `~/preview/` und schützt es mit `.htpasswd` (auch `/api/lead.php`; zusätzlich `X-Robots-Tag: noindex`). Der Rauchtest prüft: ohne Anmeldung 401 (Seite und API), mit Anmeldung Startseite 200, `/en/` 200, `GET /api/lead.php` 405 mit `Allow: POST`, 404 deutsch und englisch, die Kopfzeilen (HSTS, CSP, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, COOP), und dass `/.release`, `/reticora/config.php`, `/MANIFEST.txt`, `/backend/` nicht ausgeliefert werden.
+1. **Ziel `preview`:** `build` führt `npm ci`, `npm run build` (Entwicklungs-Build: noindex, Platzhalter erlaubt, Hinweis „Vorschau – Testsystem, nicht öffentlich“), `composer audit` und `scripts/deploy/package.mjs --allow-dev` aus (beim Ziel `production`: `npm run build:release` und das Paket ohne `--allow-dev`) und lädt das Paket als Artefakt hoch. `preview` fragt zuerst `remote.sh exists <sha>` (`<sha>` = erste 12 Stellen des Commits). Liegt der Stand schon auf dem Host (z. B. ein zweiter Lauf desselben Commits, auch wenn er gerade in Betrieb ist), wird nichts hochgeladen. Sonst lädt rsync das Paket in einen **neuen** Ordner `~/releases/.incoming-<sha>-<Lauf>-<Versuch>/` (ohne `reticora/config.php`), und `remote.sh install` prüft ihn und benennt ihn atomar in `~/releases/<sha>/` um. Ein vorhandenes, womöglich laufendes Release wird nie überschrieben (S-03; früher löschte `rsync --delete` dort den Symlink auf `config.php`). `remote.sh verify` prüft die Prüfsummen, der optionale Schritt „Vorschau-Konfiguration“ schreibt `config.preview.php` und legt die Tabellen an (Abschnitt 9), `remote.sh preview` kopiert es nach `~/preview/` und schützt es mit `.htpasswd` (auch `/api/lead.php`; zusätzlich `X-Robots-Tag: noindex`). Der Rauchtest prüft: ohne Anmeldung 401 (Seite und API), mit Anmeldung Startseite 200, `/en/` 200, `GET /api/lead.php` 405 mit `Allow: POST`, 404 deutsch und englisch, die Kopfzeilen (HSTS, CSP, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, COOP), und dass `/.release`, `/reticora/config.php`, `/MANIFEST.txt`, `/backend/` nicht ausgeliefert werden.
 2. **Sichtprüfung der Vorschau** durch den Auftraggeber (Seiten, Formular nur mit der Vorschau-Konfiguration, siehe Abschnitt 2 Schritt 7).
-3. **Ziel `production`:** Der Lauf wiederholt Schritt 1, hält dann an der geschützten Umgebung `production` an. Nach der Freigabe durch einen Prüfer schaltet `remote.sh activate <sha>` den Betrieb auf das Release um (Abschnitt 7), das vorige Release bleibt unter `~/releases/` liegen (`current`/`previous` in `~/releases/.current` und `.previous`). Danach der Rauchtest gegen `LIVE_URL`. **Scheitert er, schaltet der Lauf automatisch auf das vorige Release zurück** und endet rot. Zuletzt bleiben die neuesten fünf Releases (plus `current`, `previous`, `preview`).
+3. **Ziel `production`:** Der Lauf wiederholt Schritt 1 (mit Release-Build; ein dev-Stand gleicher Kennung auf dem Host wird ersetzt), hält dann an der geschützten Umgebung `production` an. Nach der Freigabe durch einen Prüfer prüft der Job zuerst, dass `MANIFEST.txt` auf dem Host `build: release` sagt, dann schaltet `remote.sh activate <sha>` den Betrieb auf das Release um (Abschnitt 7), das vorige Release bleibt unter `~/releases/` liegen (`current`/`previous` in `~/releases/.current` und `.previous`). Danach der Rauchtest gegen `LIVE_URL`. **Scheitert er, schaltet der Lauf automatisch auf das vorige Release zurück** und endet rot. Zuletzt bleiben die neuesten fünf Releases (plus `current`, `previous`, `preview`).
 4. **Danach** die Checkliste in Abschnitt 6.
 
 Beim allerersten Deploy gibt es kein voriges Release; ein Fehler ist dann nur durch Korrektur und neuen Lauf zu beheben.
@@ -155,3 +157,32 @@ Der Cron-Pfad `~/live/reticora/bin/…` und die Dokumentenwurzel `live/www` gelt
 10. Vorschau-Adresse (Name der Subdomain).
 11. Erlaubt das Konto mehrere SSH-Schlüssel oder weitere SSH-Benutzer und Optionen in `authorized_keys` (`restrict`, `command=`)? Dann eigener, eingeschränkter Schlüssel für die Vorschau (Abschnitt 2, Schritt 12).
 12. Datenbank-Kontingent des Tarifs (Grundlage für `rate_limit.held_max`, Abschnitt 6, Punkt 8).
+
+## 9. Erster Test auf dem Server (Vorschau)
+
+Für den Auftraggeber. Ziel: Die Website und das Kontaktformular laufen zum ersten Mal auf dem echten Hosting-Konto, **ohne** dass die Release-Sperre erfüllt sein muss. Der Betrieb (`www.reticora.de`) bleibt unberührt und gesperrt. Dieser Weg erzeugt nur die Vorschau mit Zugangsschutz, `noindex` und dem Hinweis „Vorschau – Testsystem, nicht öffentlich“ am Seitenrand. In den folgenden Schritten stehen `HOST` für den Servernamen und `USER` für den Benutzer des Hosting-Kontos (beide aus dem Panel; nie in Dateien des Repositorys schreiben).
+
+1. **Schlüsselpaar erzeugen** (auf dem eigenen Rechner, nicht im Repository):
+   ```
+   ssh-keygen -t ed25519 -f reticora-deploy -C github-actions-deploy
+   ```
+   Es entstehen `reticora-deploy` (privat) und `reticora-deploy.pub` (öffentlich). Ohne Passphrase, weil GitHub Actions keine eingeben kann; der Schlüssel gehört deshalb nur in das GitHub-Secret.
+2. **Öffentlichen Schlüssel auf dem Konto installieren:**
+   ```
+   ssh-copy-id -p 222 -i reticora-deploy.pub USER@HOST
+   ssh -p 222 -i reticora-deploy USER@HOST true
+   ```
+   Der zweite Befehl muss ohne Passwortfrage durchlaufen.
+3. **Hostschlüssel festlegen:** `ssh-keyscan -p 222 -t ed25519 HOST` liefert die Zeile (`[HOST]:222 ssh-ed25519 AAAA…`). Den Fingerabdruck (`ssh-keygen -lf -`) über einen zweiten Weg prüfen (Hoster-Dokumentation oder Panel), dann die Zeile als Secret `HETZNER_KNOWN_HOSTS` eintragen.
+4. **Subdomain und Verzeichnis im Hosting-Panel:** eine Subdomain nur für die Vorschau anlegen (Name nach Wahl), ihr Verzeichnis (Dokumentenwurzel) auf `preview/www` setzen, **TLS-Zertifikat** für die Subdomain ausstellen und **PHP 8.4** für sie einstellen. Der Ordner `preview/` entsteht beim ersten Lauf; legt das Panel die Wurzel vorher an, ist ein leerer Ordner richtig.
+5. **Datenbank und Postfach:** im Panel eine **eigene Datenbank** mit eigenem Benutzer (zufälliges Passwort, `utf8mb4`) nur für die Vorschau anlegen sowie ein Postfach für den Versand (SMTP mit Anmeldung) und ein Test-Postfach als Empfänger. Die Frist der Anfragen ist 30 Tage nach Eingang.
+6. **GitHub-Umgebung `preview`** (Settings, Environments; Regeln aus Abschnitt 2 Schritt 11: nur Zweig `main`, Prüfer):
+   - Secrets (vorhanden): `HETZNER_SSH_HOST`, `HETZNER_SSH_USER`, `HETZNER_SSH_KEY` (Inhalt der privaten Datei `reticora-deploy`), `HETZNER_KNOWN_HOSTS`, `PREVIEW_HTPASSWD` (`benutzer:passwort`).
+   - Secrets für die Vorschau-Konfiguration (alle neun oder keins): `PREVIEW_DB_DSN` (z. B. `mysql:host=<Datenbankserver laut Panel>;dbname=<Name>;charset=utf8mb4`), `PREVIEW_DB_USER`, `PREVIEW_DB_PASSWORD`, `PREVIEW_SMTP_HOST`, `PREVIEW_SMTP_PORT` (587 oder 465), `PREVIEW_SMTP_USER`, `PREVIEW_SMTP_PASSWORD`, `PREVIEW_MAIL_FROM`, `PREVIEW_MAIL_TO`. Sind nur einige gesetzt, bricht der Lauf mit der Liste der fehlenden Namen ab; sind keine gesetzt, entfällt der Schritt, und `~/reticora-config/config.preview.php` muss von Hand liegen.
+   - Variablen: `PREVIEW_URL` (`https://` plus Subdomain), optional `PREVIEW_PHP_BIN`, wenn das PHP-Programm auf dem Host nicht `php` heißt (SSH-Sitzung prüfen: `php -v` muss 8.4 melden), optional `RETICORA_SWITCH` (nur für den Betrieb wichtig).
+7. **Workflow starten:** Actions, **Deploy**, „Run workflow“, Zweig `main`, Ziel **`preview`**, Freigabe in der Umgebung `preview` erteilen. Der Lauf baut den Entwicklungs-Build, lädt das Paket hoch, schreibt (mit den Secrets aus Schritt 6) `~/reticora-config/config.preview.php` mit Modus 600, legt mit `bin/migrate.php` die Tabellen an, richtet die Vorschau mit Zugangsschutz ein und führt den Rauchtest aus. Er prüft: ohne Anmeldung 401 (Seite und API), mit Anmeldung Startseite und `/en/` 200, `GET /api/lead.php` 405 mit `Allow: POST`, 404-Seiten, die Sicherheitskopfzeilen, und dass `/.release`, `/reticora/config.php`, `/MANIFEST.txt` und `/backend/` nicht ausgeliefert werden.
+8. **Von Hand ausprobieren:** die Vorschau mit dem Zugang aus `PREVIEW_HTPASSWD` öffnen, eine Testanfrage über das Kontaktformular senden und prüfen, dass die Mail im Test-Postfach ankommt und die Zeile in der Datenbank der Vorschau steht. Testanfragen nach der Abnahme löschen (`docs/betrieb-anfragen.md`). Die Cronjobs für `purge.php` und `retry.php` aus Abschnitt 2 Schritt 9 für die Vorschau nur einrichten, wenn gewünscht (Pfad `~/preview/reticora/bin/…` mit `~/reticora-config/config.preview.php` als Argument).
+
+**Hinweis:** Passwörter, die in Chats oder E-Mails geteilt wurden, nach der Einrichtung ändern (Hosting-Konto, Datenbank, Postfach); ein Schlüssel, der einmal im Klartext verschickt wurde, gehört ersetzt.
+
+Was dieser Weg **nicht** tut: Er schaltet nichts auf `www.reticora.de`, schreibt nie `config.php` und fasst die Betriebsdatenbank nicht an. Ein Lauf mit Ziel `production` baut immer den Release-Build und scheitert an der Release-Sperre, solange Mängel offen sind. Der Go-live ist für den 2027-01-01 vorgesehen (W-E17).

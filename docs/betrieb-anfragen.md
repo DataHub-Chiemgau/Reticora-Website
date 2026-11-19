@@ -62,6 +62,8 @@ UPDATE lead SET email = 'neu@example.com' WHERE id = 17;
 
 ## Löschung (Art. 17)
 
+Von selbst löscht `bin/purge.php` Anfragen **30 Tage nach Eingang** (`retention_days` = 30, Entscheidung des Auftraggebers vom 2026-11-19, W-E18); `held` und `not_delivered` bleiben bis zur Erledigung. Die Schritte unten gelten für das vorzeitige Löschen auf Anfrage einer Person.
+
 Zuerst prüfen, dann löschen, dann prüfen:
 
 ```sql

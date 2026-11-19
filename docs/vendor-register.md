@@ -67,7 +67,7 @@ steht im Datenfluss-Inventar der Datenschutzprüfung (`docs/qa/2026-11-datenschu
 
 | Daten | Ort | Vorschlag | Verfahren und Stand |
 |---|---|---|---|
-| Kontaktanfragen | MariaDB beim Hoster | Löschung 90 Tage nach Eingang (`retention_days`), Frist offen | stündlicher Cronjob `bin/purge.php` löscht nach Frist ab `created_at`, unabhängig davon, ob ein Vertragsverhältnis entsteht (die Anfrage liegt dann im Postfach bzw. beim Vertrieb); `held` und `not_delivered` werden nie automatisch gelöscht, bis zugestellt oder von Hand erledigt; `pending` wird nach Frist gelöscht, auch wenn nie zugestellt (DS-05); fehlt `retention_days` in `config.php`, gelten still 90 Tage (DS-09) |
+| Kontaktanfragen | MariaDB beim Hoster | Löschung 30 Tage nach Eingang (`retention_days` = 30, entschieden 2026-11-19) | stündlicher Cronjob `bin/purge.php` löscht nach Frist ab `created_at`, unabhängig davon, ob ein Vertragsverhältnis entsteht (die Anfrage liegt dann im Postfach bzw. beim Vertrieb); `held` und `not_delivered` werden nie automatisch gelöscht, bis zugestellt oder von Hand erledigt; `pending` wird nach Frist gelöscht, auch wenn nie zugestellt (DS-05); fehlt `retention_days` in `config.php`, lehnt `Config` die Datei ab (DS-09, Ä-42) |
 | Rate-Limit-Zähler | MariaDB | HMAC der Herkunftsadresse (IPv6 auf /64, zusätzlich /48); Zähler gelten eine Stunde | gelöscht bei jedem POST und im stündlichen Cronjob, sobald das Fenster vorbei ist: höchstens etwa 2 h 17 min nach Fensterbeginn, wenn der Cron läuft |
 | Rate-Limit-Schlüssel | MariaDB (`rate_limit_key`) | überschrieben einmal je UTC-Tag; Vorschlag der Prüfung: je Stundenfenster (DS-03) | beim ersten Gebrauch eines neuen Tages (Anfrage oder Cronjob), mit Cron bis 00:17 UTC |
 | Anwendungsprotokoll (`log_path`), `purge.log`, `retry.log` | Dateien außerhalb des Webroots | Frist offen; Vorschlag wie Kontaktanfragen | keine Rotation (DS-04); enthalten nur Ereignisse, Lead-IDs und Anzahlen |
@@ -104,8 +104,8 @@ F-15).
   Zugriffslogs im Hetzner-Konto bestätigen (F-09).
 - Frage an den Auftraggeber: Bewertung von GitHub (Actions) als Werkzeug des
   Baus; es gelangen keine Besucherdaten dorthin.
-- Aufbewahrungsfrist der Anfragen (90 Tage) bestätigen oder ändern; dazu
-  die Frist der Protokolldateien und den Umgang mit `held`/`not_delivered`
+- Aufbewahrungsfrist der Anfragen: entschieden, 30 Tage ab Eingang (2026-11-19). Offen bleibt
+  die Frist der Protokolldateien (gilt derzeit ebenfalls 30 Tage) und den Umgang mit `held`/`not_delivered`
   (Datenschutzprüfung Q-05).
 - Frage an den Auftraggeber: Backup-Frist des Hosters für Webspace und
   Datenbank (Q-07).
