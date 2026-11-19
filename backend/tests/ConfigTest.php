@@ -29,7 +29,7 @@ final class ConfigTest extends TestCase
     public function testExampleLoadsOnceThePlaceholdersAreReplaced(): void
     {
         $c = Config::fromArray($this->filledExample());
-        self::assertSame(90, $c->int('retention_days'));
+        self::assertSame(30, $c->int('retention_days'));
         self::assertSame('https://www.reticora.de', $c->siteOrigin());
         self::assertSame(5, $c->rateLimitMax());
         self::assertSame(60, $c->globalMax());

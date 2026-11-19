@@ -7,7 +7,7 @@ import { SCREENSHOTS } from '../src/data/screenshots.ts';
 import { SITE } from '../src/data/site.ts';
 import { ROUTES } from '../src/i18n/routes.ts';
 import { writeReleaseMarker } from './lib/release-marker.mjs';
-import { checkClaims, checkDevPages, checkDistHtml, checkInternalLinks, checkNotEmpty, checkRoutes, checkRoutesBuilt, checkScreenshotFiles, checkScreenshots, checkSecurityContact, checkSite } from './lib/release-checks.mjs';
+import { checkClaims, checkDevPages, checkDistHtml, checkInternalLinks, checkNotEmpty, checkPreviewNotice, checkRoutes, checkRoutesBuilt, checkScreenshotFiles, checkScreenshots, checkSecurityContact, checkSite } from './lib/release-checks.mjs';
 
 const dist = join(process.cwd(), 'dist');
 const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => {
@@ -31,6 +31,7 @@ const groups = [
   ['Tote interne Links', checkInternalLinks(pages, distExists)],
   ['Fehlende Anbieterangaben', [...checkSite(SITE), ...checkSecurityContact(SITE)]],
   ['Entwicklungsseiten im Build', checkDevPages(dev)],
+  ['Vorschau-Hinweis im Build', checkPreviewNotice(pages)],
 ];
 
 let total = 0;

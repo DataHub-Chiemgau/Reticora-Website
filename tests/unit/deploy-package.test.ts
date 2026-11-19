@@ -82,7 +82,7 @@ describe.skipIf(!hasDist || !hasComposer)('Release-Paket', () => {
     const lines = readFileSync(join(root, 'MANIFEST.txt'), 'utf8').trimEnd().split('\n');
     expect(lines[0]).toMatch(/^git: abcdef1234567890/);
     expect(lines[1]).toMatch(/^built: \d{4}-\d{2}-\d{2}T/);
-    expect(lines[2]).toMatch(/^build: dev/);
+    expect(lines[2]).toBe('build: dev');
     const sep = lines.indexOf('---');
     expect(sep).toBeGreaterThan(2);
     const entries = lines.slice(sep + 1).map((l) => /^([0-9a-f]{64}) {2}(.+)$/.exec(l)!);

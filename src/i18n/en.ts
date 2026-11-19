@@ -64,6 +64,7 @@ export const UI: typeof DeUI = {
   scrollHint: 'Schematic scrolls sideways.',
   cta: { title: 'Try Reticora on your own network for 30 days.' },
   skip: 'Skip to content',
+  previewNotice: 'Preview – test system, not public',
   menu: 'Menu',
   beleg: 'Evidence',
   copy: 'Copy',

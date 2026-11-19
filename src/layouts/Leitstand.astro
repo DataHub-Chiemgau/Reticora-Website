@@ -21,7 +21,9 @@ interface Props {
 }
 const { title, description, lang, path, noindex = false, theme = 'leitstand', titleMarker = false } = Astro.props;
 const T = ui(lang);
-const hideFromIndex = noindex || routeOf(path)?.noindex === true || process.env.RETICORA_RELEASE !== '1';
+// Entwicklungs-Build (Vorschau auf dem Testserver): sichtbarer Hinweis; im Release-Build (RETICORA_RELEASE=1) nie.
+const devPreview = process.env.RETICORA_RELEASE !== '1';
+const hideFromIndex = noindex || routeOf(path)?.noindex === true || devPreview;
 ---
 
 <html lang={lang} data-theme={theme}>
@@ -39,5 +41,17 @@ const hideFromIndex = noindex || routeOf(path)?.noindex === true || process.env.
     <SiteHeader lang={lang} path={path} />
     <main id="inhalt"><slot /></main>
     <SiteFooter lang={lang} path={path} />
+    {
+      devPreview && (
+        <>
+          <aside class="rt-preview-notice" data-rt="preview-notice" aria-label={T.previewNotice}>
+            <p>{T.previewNotice}</p>
+          </aside>
+          <div class="rt-preview-notice rt-preview-notice--spacer" aria-hidden="true" data-rt="preview-notice-spacer">
+            <p>{T.previewNotice}</p>
+          </div>
+        </>
+      )
+    }
   </body>
 </html>

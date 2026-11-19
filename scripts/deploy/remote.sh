@@ -8,14 +8,18 @@
 # Es liest nur den Pfad $CONFIG_FILE (legt davon einen Symlink in das Release/den Betriebsstand, ändert aber nie die Datei),
 # berührt die Datenbank nicht und schreibt nichts außerhalb dieser Pfade.
 #
-# Aufruf:  remote.sh exists <sha> | install <sha> <.incoming-…> | verify <sha> | preview <sha> | activate <sha> | rollback
-#          | status | prune [Anzahl]
+# Aufruf:  remote.sh exists <sha> [release] | install <sha> <.incoming-…> [release] | verify <sha> [release]
+#          | preview <sha> [release] | activate <sha> | rollback | status | prune [Anzahl]
+# Das letzte Wort `release` verlangt "build: release"; ohne es nehmen exists, install, verify und preview auch "build: dev".
 # `preview` liest eine Zeile für .htpasswd von STDIN.
 #
 # Hochladen (S-03): Der Workflow lädt nie in $RELEASES/<sha> selbst, sondern in einen neuen Ordner $RELEASES/.incoming-<sha>-<lauf>;
 # `install` prüft ihn und benennt ihn atomar in $RELEASES/<sha> um. Gibt es <sha> schon (z. B. das laufende Release), wird der
 # Upload verworfen; ein laufendes Release wird nie überschrieben. `exists` sagt vorher, ob sich der Upload überhaupt lohnt.
-# Nur Release-Builds (S-13): verify, install, preview, activate und rollback verlangen "build: release" in MANIFEST.txt.
+# Builds (S-13): Ein mit --allow-dev gebautes Paket ("build: dev" in MANIFEST.txt, nur für die Vorschau) darf installiert, geprüft und
+# in der Vorschau gezeigt werden. activate und rollback, also alles, was den Betriebsstand berührt, verlangen "build: release".
+# Der Workflow verlangt für einen Betriebslauf zusätzlich überall `release`. Ein Vorschau-Release (dev) gleicher Kennung wird dann
+# durch das Release-Paket ersetzt (dev wird nie current oder previous).
 #
 # Umschaltstrategie (RETICORA_SWITCH):
 #   symlink (Standard)  $LIVE ist ein Symlink auf $RELEASES/<sha>; Umschalten = Symlink atomar ersetzen (ln + mv -T).
@@ -50,12 +54,17 @@ check_sha() {
 
 release_dir() { echo "$RELEASES/$1"; }
 
-# Prüft einen Release-Ordner: vollständig, Release-Build, gehört zu <sha>, keine echte config.php, Prüfsummen.
-verify_dir() { # <Ordner> <sha>
-  local dir="$1" sha="$2"
+# Prüft einen Release-Ordner: vollständig, Build-Art, gehört zu <sha>, keine echte config.php, Prüfsummen.
+# <Modus> release (Standard): nur "build: release"; any: auch "build: dev" (nur Vorschau).
+verify_dir() { # <Ordner> <sha> [release|any]
+  local dir="$1" sha="$2" mode="${3:-release}"
   [[ -d "$dir/www" && -d "$dir/reticora" && -f "$dir/MANIFEST.txt" ]] || die "Release $sha unvollständig oder nicht vorhanden"
   # S-13: ein mit --allow-dev gebautes Paket (ohne bestandene Release-Prüfung) wird auf dem Host nie aktiv.
-  grep -qx 'build: release' "$dir/MANIFEST.txt" || die "Release $sha ist kein Release-Build (MANIFEST.txt ohne 'build: release')"
+  if [[ "$mode" == any ]]; then
+    grep -qxE 'build: (release|dev)' "$dir/MANIFEST.txt" || die "Release $sha: MANIFEST.txt ohne 'build: release' oder 'build: dev'"
+  else
+    grep -qx 'build: release' "$dir/MANIFEST.txt" || die "Release $sha ist kein Release-Build (MANIFEST.txt ohne 'build: release')"
+  fi
   grep -q "^git: $sha" "$dir/MANIFEST.txt" || die "MANIFEST.txt gehört nicht zum Release $sha"
   # Eine echte config.php gehört nicht ins Release; der Symlink auf die gemeinsame Datei entsteht erst beim Aktivieren.
   [[ ! -f "$dir/reticora/config.php" || -L "$dir/reticora/config.php" ]] || die "Release $sha enthält eine echte config.php"
@@ -63,8 +72,13 @@ verify_dir() { # <Ordner> <sha>
   ( cd "$dir" && sed -n '/^---$/,$p' MANIFEST.txt | tail -n +2 | sha256sum --check --quiet - ) || die "Release $sha: Prüfsummen stimmen nicht mit MANIFEST.txt überein"
 }
 
-verify_release() {
-  verify_dir "$(release_dir "$1")" "$1"
+# Wort hinter der Release-Kennung: `release` verlangt einen Release-Build, leer lässt auch dev zu (exists/install/verify/preview).
+mode_of() { case "${1:-}" in release) echo release ;; "") echo any ;; *) die "unbekanntes Wort '$1' (erlaubt: release)" ;; esac; }
+
+is_dev() { grep -qx 'build: dev' "$1/MANIFEST.txt" 2>/dev/null; }
+
+verify_release() { # <sha> [release|any]
+  verify_dir "$(release_dir "$1")" "$1" "${2:-release}"
   echo "verify ok: $1"
 }
 
@@ -105,37 +119,52 @@ switch_live() {
   esac
 }
 
-cmd_exists() {
-  if [[ -d "$(release_dir "$1")" ]]; then echo vorhanden; else echo fehlt; fi
+cmd_exists() { # <sha> [release|any]: ein vorhandenes dev-Release zählt nicht, wenn ein Release-Build verlangt ist
+  local dir; dir="$(release_dir "$1")"
+  if [[ ! -d "$dir" ]]; then echo fehlt
+  elif [[ "${2:-any}" == release ]] && ! grep -qx 'build: release' "$dir/MANIFEST.txt" 2>/dev/null; then echo fehlt
+  else echo vorhanden; fi
 }
 
-cmd_install() { # <sha> <Upload-Ordner unter $RELEASES>
-  local sha="$1" name="${2:-}" src dst
+cmd_install() { # <sha> <Upload-Ordner unter $RELEASES> [release|any]
+  local sha="$1" name="${2:-}" mode="${3:-any}" src dst
   [[ "$name" =~ ^\.incoming-([0-9a-f]{7,40})-[0-9]+-[0-9]+$ && "${BASH_REMATCH[1]}" == "$sha" ]] \
     || die "ungültiger Upload-Ordner: '$name' (erwartet .incoming-$sha-<Lauf>-<Versuch>)"
   src="$RELEASES/$name"; dst="$(release_dir "$sha")"
   [[ -d "$src" && ! -L "$src" ]] || die "Upload-Ordner fehlt: $src"
   if [[ -e "$dst" ]]; then
+    # Einzige Ausnahme vom Verwerfen: ein Vorschau-Release (dev) wird durch den Release-Build gleicher Kennung ersetzt.
+    # dev ist nie current oder previous (activate verweigert es), also läuft darauf nichts.
+    if is_dev "$dst" && grep -qx 'build: release' "$src/MANIFEST.txt" 2>/dev/null \
+      && [[ "$(state_get current)" != "$sha" && "$(state_get previous)" != "$sha" ]]; then
+      verify_dir "$src" "$sha" release
+      rm -rf -- "${RELEASES:?}/$sha"
+      mv -T -- "$src" "$dst"
+      echo "install ok: $sha (Vorschau-Build durch Release-Build ersetzt)"
+      return
+    fi
     # Nie in ein vorhandenes (womöglich laufendes) Release schreiben; der Upload war überflüssig.
     rm -rf -- "${RELEASES:?}/$name"
     echo "install: $sha schon vorhanden, Upload verworfen"
-    verify_release "$sha"
+    verify_release "$sha" "$mode"
     return
   fi
-  verify_dir "$src" "$sha"
+  verify_dir "$src" "$sha" "$mode"
   mv -T -- "$src" "$dst" # atomar; scheitert, falls <sha> inzwischen entstanden ist
   echo "install ok: $sha"
 }
 
-cmd_preview() {
-  local sha="$1" dir pw; dir="$(release_dir "$1")"
+cmd_preview() { # <sha> [release|any]
+  local sha="$1" mode="${2:-any}" dir pw; dir="$(release_dir "$1")"
   guard_path "$PREVIEW"
   [[ ! -L "$PREVIEW" ]] || die "$PREVIEW ist ein Symlink"
   IFS= read -r pw || true
   [[ "$pw" =~ ^[A-Za-z0-9._@+-]+:[^[:space:]]+$ ]] || die "STDIN: erwartet wird eine .htpasswd-Zeile 'Benutzer:Hash'"
-  verify_release "$sha"
+  verify_release "$sha" "$mode"
+  # Konfiguration der Vorschau: Eine Entwicklungs-Vorschau nimmt nie die Betriebs-Konfiguration (Testanfragen gehören nicht in die
+  # Betriebsdatenbank). Ein Release-Build nimmt die Vorschau-Konfiguration, falls vorhanden, sonst die gemeinsame.
   local cfg="$CONFIG_FILE"
-  [[ -f "$PREVIEW_CONFIG_FILE" ]] && cfg="$PREVIEW_CONFIG_FILE"
+  if is_dev "$dir" || [[ -f "$PREVIEW_CONFIG_FILE" ]]; then cfg="$PREVIEW_CONFIG_FILE"; fi
   mkdir -p "$PREVIEW"
   sync_tree "$dir/reticora" "$PREVIEW/reticora"
   link_config "$PREVIEW" "$cfg"
@@ -213,17 +242,17 @@ cmd_prune() {
 main() {
   guard_path "$RELEASES"
   mkdir -p "$RELEASES"
-  local cmd="${1:-}"
+  local cmd="${1:-}" mode
   case "$cmd" in
-    exists)   check_sha "${2:-}"; cmd_exists "$2" ;;
-    install)  check_sha "${2:-}"; cmd_install "$2" "${3:-}" ;;
-    verify)   check_sha "${2:-}"; verify_release "$2" ;;
-    preview)  check_sha "${2:-}"; cmd_preview "$2" ;;
+    exists)   check_sha "${2:-}"; mode="$(mode_of "${3:-}")"; cmd_exists "$2" "$mode" ;;
+    install)  check_sha "${2:-}"; mode="$(mode_of "${4:-}")"; cmd_install "$2" "${3:-}" "$mode" ;;
+    verify)   check_sha "${2:-}"; mode="$(mode_of "${3:-}")"; verify_release "$2" "$mode" ;;
+    preview)  check_sha "${2:-}"; mode="$(mode_of "${3:-}")"; cmd_preview "$2" "$mode" ;;
     activate) check_sha "${2:-}"; cmd_activate "$2" ;;
     rollback) cmd_rollback ;;
     status)   cmd_status ;;
     prune)    cmd_prune "${2:-}" ;;
-    *) die "Aufruf: remote.sh exists|verify|preview|activate <sha> | install <sha> <.incoming-…> | rollback | status | prune [Anzahl]" ;;
+    *) die "Aufruf: remote.sh exists|verify|preview <sha> [release] | activate <sha> | install <sha> <.incoming-…> [release] | rollback | status | prune [Anzahl]" ;;
   esac
 }
 main "$@"

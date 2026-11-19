@@ -61,6 +61,7 @@ export const UI = {
   scrollHint: 'Schema seitlich verschiebbar.',
   cta: { title: 'Testen Sie Reticora 30\u00a0Tage mit Ihrem eigenen Netz.' },
   skip: 'Zum Inhalt',
+  previewNotice: 'Vorschau – Testsystem, nicht öffentlich',
   menu: 'Menü',
   beleg: 'Beleg',
   copy: 'Kopieren',

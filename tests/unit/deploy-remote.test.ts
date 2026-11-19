@@ -21,12 +21,12 @@ const walk = (dir: string): string[] =>
 /** Release-Ordner wie aus package.mjs: www/, reticora/, remote.sh, MANIFEST.txt mit Prüfsummen. */
 function makeRelease(dir: string, sha: string, build: 'release' | 'dev' = 'release', marker = 'v1') {
   rmSync(dir, { recursive: true, force: true });
-  for (const [p, c] of [['www/index.html', `<!doctype html><title>${marker}</title>`], ['www/api/lead.php', '<?php // lead'], ['reticora/src/App.php', '<?php'], ['remote.sh', '#!/bin/sh']] as const) {
+  for (const [p, c] of [['www/index.html', `<!doctype html><title>${marker}</title>`], ['www/.htaccess', '# Seite\n'], ['www/api/.htaccess', 'Require all granted\n'], ['www/api/lead.php', '<?php // lead'], ['reticora/src/App.php', '<?php'], ['remote.sh', '#!/bin/sh']] as const) {
     mkdirSync(dirname(join(dir, p)), { recursive: true });
     writeFileSync(join(dir, p), c);
   }
   const files = walk(dir).map((f) => relative(dir, f)).sort();
-  const lines = [`git: ${sha}`, 'built: 2026-11-18T00:00:00.000Z', `build: ${build === 'release' ? 'release' : 'dev (--allow-dev, nicht für den Betrieb)'}`, `files: ${files.length}`, '---',
+  const lines = [`git: ${sha}`, 'built: 2026-11-18T00:00:00.000Z', `build: ${build}`, `files: ${files.length}`, '---',
     ...files.map((f) => `${createHash('sha256').update(readFileSync(join(dir, f))).digest('hex')}  ${f}`)];
   writeFileSync(join(dir, 'MANIFEST.txt'), lines.join('\n') + '\n');
 }
@@ -46,7 +46,7 @@ describe('remote.sh gegen ein nachgestelltes HOME', () => {
 
   test('S-13: verify, activate und rollback nehmen nur Release-Builds (build: release in MANIFEST.txt)', () => {
     makeRelease(join(releases(), A), A, 'dev');
-    let r = run(['verify', A]);
+    let r = run(['verify', A, 'release']);
     expect(r.status).toBe(1);
     expect(r.stderr).toContain('kein Release-Build');
     r = run(['activate', A]);
@@ -63,6 +63,80 @@ describe('remote.sh gegen ein nachgestelltes HOME', () => {
     r = run(['rollback']);
     expect(r.status).toBe(1);
     expect(readlinkSync(join(home, 'live'))).toBe(join(releases(), B));
+  });
+
+  describe('Vorschau mit Entwicklungs-Build (build: dev)', () => {
+    const previewCfg = () => join(home, 'reticora-config/config.preview.php');
+    const htpasswd = 'vorschau:$2y$12$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ01234';
+
+    test('dev-Paket: installieren und Vorschau ok, activate und rollback verweigert, Betriebsstand unberührt', () => {
+      writeFileSync(previewCfg(), '<?php return [];');
+      makeRelease(join(releases(), `.incoming-${A}-5-1`), A, 'dev');
+      let r = run(['install', A, `.incoming-${A}-5-1`]);
+      expect(r.status, r.stderr).toBe(0);
+      expect(run(['verify', A]).status).toBe(0);
+      r = run(['preview', A], htpasswd);
+      expect(r.status, r.stderr).toBe(0);
+      expect(readFileSync(join(home, 'preview/www/index.html'), 'utf8')).toContain('v1');
+      // Vorschau-Konfiguration, nie die des Betriebs
+      expect(readlinkSync(join(home, 'preview/reticora/config.php'))).toBe(previewCfg());
+      // Indexierung und Zugangsschutz
+      const ht = readFileSync(join(home, 'preview/www/.htaccess'), 'utf8');
+      expect(ht).toContain('Header always set X-Robots-Tag "noindex, nofollow"');
+      expect(ht).toContain('Require valid-user');
+      // Betrieb: verweigert
+      r = run(['activate', A]);
+      expect(r.status).toBe(1);
+      expect(r.stderr).toContain('kein Release-Build');
+      expect(existsSync(join(home, 'live'))).toBe(false);
+      expect(existsSync(join(releases(), '.current'))).toBe(false);
+      // auch wenn ein Release läuft: rollback auf ein später durch dev ersetztes Release geht nicht
+      makeRelease(join(releases(), B), B, 'release');
+      expect(run(['activate', B]).status).toBe(0);
+      expect(run(['activate', A]).status).toBe(1);
+      expect(readlinkSync(join(home, 'live'))).toBe(join(releases(), B));
+      expect(run(['preview', A, 'release'], htpasswd).status).toBe(1);
+    });
+
+    test('dev-Vorschau ohne Vorschau-Konfiguration scheitert, statt die Betriebs-Konfiguration zu nehmen', () => {
+      makeRelease(join(releases(), A), A, 'dev');
+      const r = run(['preview', A], htpasswd);
+      expect(r.status).toBe(1);
+      expect(r.stderr).toContain('config.preview.php');
+      expect(existsSync(join(home, 'preview/reticora/config.php'))).toBe(false);
+    });
+
+    test('Release-Build in der Vorschau: Vorschau-Konfiguration, falls vorhanden, sonst die gemeinsame; Betrieb nimmt nur config.php', () => {
+      makeRelease(join(releases(), A), A, 'release');
+      expect(run(['preview', A, 'release'], htpasswd).status).toBe(0);
+      expect(readlinkSync(join(home, 'preview/reticora/config.php'))).toBe(join(home, 'reticora-config/config.php'));
+      writeFileSync(previewCfg(), '<?php return [];');
+      expect(run(['preview', A, 'release'], htpasswd).status).toBe(0);
+      expect(readlinkSync(join(home, 'preview/reticora/config.php'))).toBe(previewCfg());
+      expect(run(['activate', A]).status).toBe(0);
+      expect(readlinkSync(join(releases(), A, 'reticora/config.php'))).toBe(join(home, 'reticora-config/config.php'));
+    });
+
+    test('exists mit `release` ignoriert ein dev-Release; install ersetzt es durch den Release-Build gleicher Kennung', () => {
+      makeRelease(join(releases(), A), A, 'dev', 'dev-stand');
+      expect(run(['exists', A]).stdout.trim()).toBe('vorhanden');
+      expect(run(['exists', A, 'release']).stdout.trim()).toBe('fehlt');
+      makeRelease(join(releases(), `.incoming-${A}-6-1`), A, 'release', 'rel-stand');
+      const r = run(['install', A, `.incoming-${A}-6-1`, 'release']);
+      expect(r.status, r.stderr).toBe(0);
+      expect(r.stdout).toContain('ersetzt');
+      expect(readFileSync(join(releases(), A, 'www/index.html'), 'utf8')).toContain('rel-stand');
+      expect(run(['exists', A, 'release']).stdout.trim()).toBe('vorhanden');
+      expect(run(['verify', A, 'release']).status).toBe(0);
+      // ein Release-Build wird von einem dev-Upload nie überschrieben
+      makeRelease(join(releases(), `.incoming-${A}-7-1`), A, 'dev', 'dev-stand');
+      expect(run(['install', A, `.incoming-${A}-7-1`]).stdout).toContain('verworfen');
+      expect(readFileSync(join(releases(), A, 'www/index.html'), 'utf8')).toContain('rel-stand');
+    });
+
+    test('unbekanntes Schlusswort wird abgelehnt', () => {
+      expect(run(['exists', A, 'dev']).status).toBe(1);
+    });
   });
 
   test('verify prüft, dass MANIFEST.txt zum Release-Ordner gehört', () => {
@@ -94,9 +168,9 @@ describe('remote.sh gegen ein nachgestelltes HOME', () => {
     expect(existsSync(join(releases(), `.incoming-${A}-2-1`))).toBe(false);
   });
 
-  test('install verweigert Entwicklungs-Builds, fremde Ordnernamen und kaputte Prüfsummen', () => {
+  test('install verweigert mit `release` Entwicklungs-Builds, immer fremde Ordnernamen und kaputte Prüfsummen', () => {
     makeRelease(join(releases(), `.incoming-${A}-3-1`), A, 'dev');
-    expect(run(['install', A, `.incoming-${A}-3-1`]).status).toBe(1);
+    expect(run(['install', A, `.incoming-${A}-3-1`, 'release']).status).toBe(1);
     expect(existsSync(join(releases(), A))).toBe(false);
     for (const bad of ['../x', A, `.incoming-${B}-3-1`, '.incoming-zz-1-1', '']) expect(run(['install', A, bad]).status, bad).toBe(1);
     makeRelease(join(releases(), `.incoming-${A}-4-1`), A);
@@ -143,6 +217,41 @@ describe('Workflows', () => {
     expect(d).toMatch(/\.incoming-/);
     expect(d).toMatch(/remote\.sh install|-- install /);
     expect(d).toMatch(/-- exists /);
+  });
+
+  test('Vorschau ohne Release-Sperre, Betrieb nur mit Release-Build', () => {
+    const d = wf('deploy.yml');
+    const build = job(d, 'build');
+    expect(build).toMatch(/inputs\.target == 'preview'[\s\S]*npm run build\n/);
+    expect(build).toMatch(/--allow-dev/);
+    expect(build).toMatch(/inputs\.target == 'production'[\s\S]*npm run build:release/);
+    // --allow-dev nur im Zweig für die Vorschau
+    const allowDevLines = build.split('\n').filter((l) => /^\s+run: .*--allow-dev/.test(l));
+    expect(allowDevLines.length).toBe(1);
+    const prod = job(d, 'production');
+    expect(prod).toMatch(/build: release/);
+    expect(prod).not.toMatch(/--allow-dev/);
+    expect(prod).toMatch(/remote\.sh activate/);
+    expect(job(d, 'rollback')).not.toMatch(/config\.preview/);
+    // Betriebslauf verlangt überall `release` auf dem Host
+    expect(job(d, 'preview')).toMatch(/REQ=/);
+  });
+
+  test('Vorschau-Konfiguration: Secrets nur als env, per STDIN auf den Host, Modus 600, Betrieb liest sie nie', () => {
+    const d = wf('deploy.yml');
+    const pv = job(d, 'preview');
+    expect(pv).toMatch(/preview-config\.mjs/);
+    expect(pv).toMatch(/umask 077/);
+    expect(pv).toMatch(/chmod 600/);
+    expect(pv).toMatch(/bin\/migrate\.php reticora-config\/config\.preview\.php/);
+    // kein Secret in einer Befehlszeile: `secrets.` kommt nur in env-Zuweisungen vor
+    for (const l of d.split('\n').filter((x) => x.includes('secrets.') && !x.trim().startsWith('#'))) expect(l, l).toMatch(/^\s+[A-Z_]+: \$\{\{ secrets\.[A-Z_]+ \}\}$/);
+    expect(pv.indexOf('preview-config.mjs')).toBeLessThan(pv.indexOf('Rauchtest der Vorschau'));
+    expect(pv.indexOf('preview-config.mjs')).toBeLessThan(pv.indexOf('remote.sh preview'));
+    for (const j of ['production', 'rollback']) expect(job(d, j), j).not.toMatch(/config\.preview|PREVIEW_DB/);
+    const remote = readFileSync(join(repo, 'scripts/deploy/remote.sh'), 'utf8');
+    expect(remote).toMatch(/CONFIG_FILE="\$\{RETICORA_CONFIG_FILE:-\$HOME\/reticora-config\/config\.php\}"/);
+    expect(remote.slice(remote.indexOf('switch_live()'), remote.indexOf('cmd_exists()'))).not.toMatch(/PREVIEW_CONFIG_FILE/);
   });
 
   test('S-09: Vorschau-Passwort als bcrypt, nicht APR1-MD5', () => {

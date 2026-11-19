@@ -443,6 +443,14 @@ tbody[data-cat] { scroll-margin-top: var(--space-4); }
   .demo-spec dd { display: contents; }
 }
 
+/* Vorschau-Hinweis (nur Entwicklungs-Build): fest am unteren Rand, nicht schließbar. Der unsichtbare Platzhalter mit demselben Text
+   reserviert die Höhe im Seitenfluss (auch bei Zeilenumbruch), damit der Hinweis keinen Inhalt verdeckt. */
+.rt-preview-notice { position: fixed; inset-inline: 0; bottom: 0; z-index: 90; padding: var(--space-2) var(--space-4); background: var(--raised); border-top: var(--hairline) solid var(--signal); color: var(--fg); font-size: 14px; line-height: 20px; text-align: center; }
+.rt-preview-notice p { font-weight: 600; }
+.rt-preview-notice--spacer { position: static; visibility: hidden; border-top-color: transparent; }
+html:has(.rt-preview-notice) { scroll-padding-bottom: var(--space-16); }
+@media print { .rt-preview-notice { display: none; } }
+
 /* Druck, alle Seiten: helles Dokumentthema (Tokens in tokens.css, Block „@media print“), ohne Kopfzeile und Sprunglink */
 @media print {
   .rt-site-header, .sr-skip { display: none; }

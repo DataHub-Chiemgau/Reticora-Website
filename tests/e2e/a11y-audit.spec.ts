@@ -1055,6 +1055,8 @@ for (const p of PAGES)
     test.skip(browserName !== 'chromium', 'Baum wird in Chromium festgehalten');
     await page.setViewportSize({ width: 1280, height: 900 });
     await open(page, p);
+    // Der Vorschau-Hinweis gehört nur zum Entwicklungs-Build; der festgehaltene Baum ist der des Release-Builds.
+    await page.evaluate(() => document.querySelectorAll('[data-rt^="preview-notice"]').forEach((e) => e.remove()));
     const tree = await page.locator('body').ariaSnapshot();
     const file = join(SNAP_DIR, `${p.key}.yml`);
     if (process.env.A11Y_SNAPSHOT_UPDATE === '1' || !existsSync(file)) {

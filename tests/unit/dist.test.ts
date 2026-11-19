@@ -168,3 +168,24 @@ describe.skipIf(!hasDist)('dist', () => {
     for (const f of walk(dist, '.html')) expect(readFileSync(f, 'utf8')).not.toContain('<?php');
   });
 });
+
+describe.skipIf(!hasDist)('Vorschau-Hinweis im Build', () => {
+  const isRelease = hasDist && existsSync(join(dist, '.release'));
+  const pages = () => (hasDist ? walk(dist, '.html') : []);
+  test.skipIf(isRelease)('Entwicklungs-Build: jede Seite trägt genau einen Hinweis samt Platzhalter, ohne Inline-Stil', () => {
+    for (const f of pages()) {
+      const html = readFileSync(f, 'utf8');
+      expect(html.match(/data-rt="preview-notice"/g)?.length, f).toBe(1);
+      expect(html.match(/data-rt="preview-notice-spacer"/g)?.length, f).toBe(1);
+      expect(html, f).toMatch(/Vorschau – Testsystem, nicht öffentlich|Preview – test system, not public/);
+    }
+    expect(readFileSync(join(dist, 'index.html'), 'utf8')).toContain('Vorschau – Testsystem, nicht öffentlich');
+    expect(readFileSync(join(dist, 'en/index.html'), 'utf8')).toContain('Preview – test system, not public');
+  });
+  test.skipIf(!isRelease)('Release-Build: kein Hinweis, kein Text', () => {
+    for (const f of pages()) {
+      const html = readFileSync(f, 'utf8');
+      expect(html, f).not.toMatch(/preview-notice|Testsystem|test system, not public/);
+    }
+  });
+});

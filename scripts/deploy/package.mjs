@@ -10,7 +10,8 @@
 //   <out>/reticora-<sha>.tar.gz
 //
 // lead.php braucht keine Änderung: Es sucht vendor/ unter ../../reticora (neben www/) oder in RETICORA_HOME.
-// Das Paket ohne Release-Build (dist/.release fehlt) wird verweigert; --allow-dev gilt nur für Tests.
+// Das Paket ohne Release-Build (dist/.release fehlt) wird verweigert. --allow-dev erlaubt es für die Vorschau und schreibt
+// "build: dev" in MANIFEST.txt; remote.sh nimmt so ein Paket nur für die Vorschau, nie für den Betrieb (S-13).
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -224,7 +225,7 @@ export function buildPackage(opts) {
   const lines = [
     `git: ${sha}${dirty ? ' (Arbeitsverzeichnis mit lokalen Änderungen)' : ''}`,
     `built: ${built.toISOString()}`,
-    `build: ${isRelease ? 'release' : 'dev (--allow-dev, nicht für den Betrieb)'}`,
+    `build: ${isRelease ? 'release' : 'dev'}`,
     `files: ${files.length}`,
     '---',
     ...files.map((f) => `${sha256(join(root, f))}  ${f}`),

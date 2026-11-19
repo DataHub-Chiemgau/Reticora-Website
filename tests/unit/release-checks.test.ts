@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { checkClaims, checkDevPages, checkDistHtml, checkInternalLinks, checkNotEmpty, checkRoutes, checkRoutesBuilt, checkScreenshotFiles, checkScreenshots, checkSite } from '../../scripts/lib/release-checks.mjs';
+import { checkClaims, checkDevPages, checkDistHtml, checkInternalLinks, checkNotEmpty, checkPreviewNotice, checkRoutes, checkRoutesBuilt, checkScreenshotFiles, checkScreenshots, checkSite } from '../../scripts/lib/release-checks.mjs';
 
 describe('Release-Prüfungen', () => {
   test('offener Claim wird mit ID gemeldet', () => {
@@ -97,5 +97,13 @@ describe('Release-Prüfungen', () => {
     }];
     expect(checkInternalLinks(pages, exists)).toEqual(['dist/index.html: /en/ nicht gebaut', 'dist/index.html: /weg.png nicht gebaut']);
     expect(checkInternalLinks([{ path: 'dist/index.html', html: '<a href="/">x</a>' }], exists)).toEqual([]);
+  });
+});
+
+describe('Vorschau-Hinweis', () => {
+  test('ein Release-Build darf den Hinweis nicht enthalten', () => {
+    expect(checkPreviewNotice([{ path: 'dist/index.html', html: '<aside class="rt-preview-notice" data-rt="preview-notice">' }])).toHaveLength(1);
+    expect(checkPreviewNotice([{ path: 'dist/index.html', html: '<div data-rt="preview-notice-spacer">' }])).toHaveLength(1);
+    expect(checkPreviewNotice([{ path: 'dist/index.html', html: '<main>Vorschau</main>' }])).toEqual([]);
   });
 });
