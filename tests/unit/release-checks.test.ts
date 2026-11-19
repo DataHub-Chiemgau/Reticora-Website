@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { checkClaims, checkDevPages, checkDistHtml, checkInternalLinks, checkNotEmpty, checkRoutes, checkRoutesBuilt, checkScreenshotFiles, checkScreenshots, checkSite } from '../../scripts/lib/release-checks.mjs';
+import { checkClaims, checkDevPages, checkDistHtml, checkInternalLinks, checkNotEmpty, checkPreviewNotice, checkRoutes, checkRoutesBuilt, checkScreenshotFiles, checkScreenshots, checkSite } from '../../scripts/lib/release-checks.mjs';
 
 describe('Release-Prüfungen', () => {
   test('offener Claim wird mit ID gemeldet', () => {
@@ -28,7 +28,7 @@ describe('Release-Prüfungen', () => {
     expect(checkDevPages(['index.html', 'device'])).toEqual([]);
   });
 
-  const full = { email: 'a@b.de', phone: '1', managingDirector: 'X', registerCourt: 'Y', registerNumber: 'Z', vatId: 'DE1' };
+  const full = { email: 'a@example.com', phone: '1', managingDirector: 'X', registerCourt: 'Y', registerNumber: 'Z', vatId: 'DE1' };
   test.each([
     ['managingDirector', 'Anbieter: Geschäftsführung fehlt'],
     ['registerCourt', 'Anbieter: Registergericht fehlt'],
@@ -93,9 +93,17 @@ describe('Release-Prüfungen', () => {
     const exists = (p: string) => ['index.html', 'a/index.html', 'x.svg', '_astro/s.css'].includes(p);
     const pages = [{
       path: 'dist/index.html',
-      html: '<a href="/en/">EN</a><a href="/a/#frag">A</a><a href="/a/?q=1">A</a><link rel="icon" href="/x.svg"><link href="/_astro/s.css"><a href="https://x.de/">ext</a><a href="//cdn.x/y">ext</a><a href="#top">t</a><a href="mailto:a@b.de">m</a><img src="/weg.png">',
+      html: '<a href="/en/">EN</a><a href="/a/#frag">A</a><a href="/a/?q=1">A</a><link rel="icon" href="/x.svg"><link href="/_astro/s.css"><a href="https://example.org/">ext</a><a href="//cdn.example.org/y">ext</a><a href="#top">t</a><a href="mailto:a@example.com">m</a><img src="/weg.png">',
     }];
     expect(checkInternalLinks(pages, exists)).toEqual(['dist/index.html: /en/ nicht gebaut', 'dist/index.html: /weg.png nicht gebaut']);
     expect(checkInternalLinks([{ path: 'dist/index.html', html: '<a href="/">x</a>' }], exists)).toEqual([]);
+  });
+});
+
+describe('Vorschau-Hinweis', () => {
+  test('ein Release-Build darf den Hinweis nicht enthalten', () => {
+    expect(checkPreviewNotice([{ path: 'dist/index.html', html: '<aside class="rt-preview-notice" data-rt="preview-notice">' }])).toHaveLength(1);
+    expect(checkPreviewNotice([{ path: 'dist/index.html', html: '<div data-rt="preview-notice-spacer">' }])).toHaveLength(1);
+    expect(checkPreviewNotice([{ path: 'dist/index.html', html: '<main>Vorschau</main>' }])).toEqual([]);
   });
 });

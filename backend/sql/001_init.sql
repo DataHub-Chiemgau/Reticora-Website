@@ -22,9 +22,10 @@ CREATE TABLE IF NOT EXISTS rate_limit (
     KEY idx_rate_window (window_start)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
--- Zufälliger HMAC-Schlüssel des Rate-Limits, eine Zeile, täglich überschrieben (Spec Ä-10).
+-- Zufälliger HMAC-Schlüssel des Rate-Limits, eine Zeile, je Stundenfenster überschrieben (Spec Ä-10, Ä-36).
+-- window_start: Beginn des Stundenfensters (Unix-Zeit), zu dem der Schlüssel gehört. Bestehende Tabellen: 002_rate_limit_key_hourly.sql.
 CREATE TABLE IF NOT EXISTS rate_limit_key (
-    id      TINYINT UNSIGNED NOT NULL PRIMARY KEY,
-    day     CHAR(10) NOT NULL,
-    secret  CHAR(64) NOT NULL
+    id            TINYINT UNSIGNED NOT NULL PRIMARY KEY,
+    window_start  INT UNSIGNED NOT NULL,
+    secret        CHAR(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;

@@ -227,7 +227,7 @@ zur Klärung gilt die Annahme in der dritten Spalte.
 | 4 | **Freigabe Design-System** | **freigegeben am 2026-11-12:** `design-system.md` und `specs/2026-11-12-website-spec.md` |
 | 5 | Startseite | **umgesetzt** (Startseite deutsch, Bausteine, Tests) |
 | 6 | Übrige Seiten, Englisch, Formular und Backend | **umgesetzt** (2026-11-12): je 22 deutsche und englische Seiten (jeweils mit 404-Seite) sowie die Entwicklungsseite, Lead-Backend nach Spec §14 Ä-07 bis Ä-25, Budgets je Seite, Lighthouse für sechs Seiten, wöchentlicher `security.txt`-Lauf. Inhalte je Seite warten auf Freigabe durch den Auftraggeber |
-| 7 | QA, Sicherheit, Datenschutz, Barrierefreiheit | offen: manuelle Barrierefreiheitsprüfung, Sicherheits- und Datenschutzprüfung mit Protokoll, Container mit Apache, PHP, MariaDB und SMTP-Fänger (Spec Ä-31) |
+| 7 | QA, Sicherheit, Datenschutz, Barrierefreiheit | **umgesetzt** (2026-11-18): Protokolle `docs/qa/2026-11-sicherheit.md`, `docs/qa/2026-11-datenschutz.md`, `docs/qa/2026-11-barrierefreiheit.md` mit allen Befunden und ihrer Behebung; Zielumgebung als Container (Apache, PHP 8.4, MariaDB, Mailpit mit TLS) mit Integrationstests im CI; Deploy-Ablauf mit Vorschau, Freigabe und Rückweg (`docs/deploy.md`). Offen und nur auf dem Hoster prüfbar: Sicherheits-Prüfpunkte P-01 bis P-14, Datenschutz §9, Screenreader-Prüfung (Anleitung im Barrierefreiheitsprotokoll), Firefox-Ladehänger in der CI (Ursache ungeklärt, Server antwortet unauffällig) |
 | 8 | Menschliche Freigabe, Deploy | gesperrt: Rechtstexte und Anbieterangaben vom Auftraggeber, geprüfte Claims, Screenshots, Deploy auf Hetzner (Datenbank, `config.php`, Cronjob für `purge.php`); der Deploy-Workflow fehlt noch |
 
 ## 10. Entscheidungen
@@ -250,6 +250,8 @@ zur Klärung gilt die Annahme in der dritten Spalte.
 | W-E14 | 2026-11-12 | Enterprise Shared: Cloud auf getrennter Infrastruktur. Enterprise Local: beim Kunden gehostet, Preis einschließlich aller Arbeiten | Auftraggeber |
 | W-E15 | 2026-11-12 | Testende: 30 Tage weiter aktiv, dann Löschung. Downgrade: kein Datenverlust, Mehr-CIs als Zusatz-CIs, nicht enthaltene Funktionen gesperrt | Auftraggeber |
 | W-E16 | 2026-11-12 | Limits je Paket nach `README.md` §14; Preise netto zzgl. MwSt.; Paketname „Essentials“ | Auftraggeber |
+| W-E17 | 2026-11-19 | Go-live 2027-01-01; bis dahin wird nur die Vorschau genutzt (Entwicklungs-Build erlaubt, Betrieb bleibt hinter der Release-Sperre) | Auftraggeber |
+| W-E18 | 2026-11-19 | Löschfrist Kontaktanfragen 30 Tage ab Eingang (`retention_days` = 30) | Auftraggeber |
 
 ## 11. Offene Entscheidungen des Auftraggebers
 
@@ -269,5 +271,5 @@ genannte Annahme; alle Punkte erscheinen auch in den Berichten der Phase.
 11. **Entfallene Sätze zum gleichen Umfang:** Entfernt wurden „denselben Umfang“ (Enterprise Shared und Local) und „Der Funktionsumfang ist gleich.“ in der FAQ. Bestätigen, dass sie nicht wiederkehren sollen.
 12. **„Workspace“ oder „Scope“** für „Arbeitsbereich“ in der englischen Fassung: Die Seiten schreiben „workspace“, weil die App-Beschriftung „Scope“ mit den Discovery-Scopes kollidiert. Bestätigen oder die App-Beschriftung angleichen.
 13. **Selbst gebildete englische Begriffe** (`content-plan.md` §6.3, „vorgeschlagen, Freigabe ausstehend“) und die drei nur englischen Erläuterungen zu DATEV, DIN 66399 und KRITIS.
-14. **Aufbewahrung der Kontaktanfragen:** Vorschlag 90 Tage (`retention_days`); Auftraggeber legt die Frist fest (Spec §6.3).
+14. ~~**Aufbewahrung der Kontaktanfragen**~~ **Entschieden 2026-11-19 (W-E18):** 30 Tage ab Eingang (`retention_days` = 30, Spec §6.3). Erledigt.
 15. **Eigene Microcopy:** Texte, die in keiner Vorlage standen und von der Umsetzung formuliert wurden (zum Beispiel „Zurück zum Formular“, Hinweise zu Sprungmarken in der Geräteliste, Fehlertexte, die die App nicht kennt). Soweit festgehalten, stehen sie in den Textdokumenten unter `docs/copy` (teils als „eigene Formulierung“ gekennzeichnet); alle brauchen Freigabe.

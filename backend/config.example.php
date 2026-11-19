@@ -9,8 +9,8 @@ return [
     // Direkte Kontaktadresse, wird auf der Hinweisseite bei Serverfehler/zu vielen Anfragen gezeigt.
     'contact_email' => 'kontakt@example.com',
 
-    // Aufbewahrungsfrist der Anfragen in Tagen. Vorschlag 90; vom Auftraggeber festzulegen und zu bestätigen.
-    'retention_days' => 90,
+    // Aufbewahrungsfrist der Anfragen in Tagen, gezählt ab Eingang: 30 Tage nach Eingang (Entscheidung 2026-11-19).
+    'retention_days' => 30,
 
     // Rate-Limit (Spec §6.2, Ä-07): je Herkunft und Stunde (Standard 5, erlaubt 1–100) und angenommene Anfragen
     // insgesamt je Stunde (Standard 60, erlaubt 1–1000). Werte außerhalb werden auf die Grenze gesetzt.

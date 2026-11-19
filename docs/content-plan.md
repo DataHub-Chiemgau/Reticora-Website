@@ -453,6 +453,11 @@ Module für Alarmregeln und Compliance eingeschaltet hat (F-23).
   Zusammenfassung.
 - Unsichtbares Köderfeld und Zeitfalle gegen Spam; kein Captcha eines
   Dritten.
+- Hinweis (Datenschutzprüfung DS-08): Die Zeitfalle ist entfallen (Spec §14
+  Ä-07); geschützt wird mit Köderfeld und Rate-Limit. Was das Formular heute
+  speichert und wie lange, steht in Spec §14 Ä-43 und in
+  `docs/qa/2026-11-datenschutz.md` Abschnitt 8 (Fakten für die
+  Datenschutzerklärung).
 
 ## 10. Sprache und Auffindbarkeit
 

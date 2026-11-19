@@ -1,0 +1,350 @@
+# /preise/ (preise-de), Chromium, 1280 × 900; Prüfung in docs/qa/2026-11-barrierefreiheit.md
+- link "Zum Inhalt":
+  - /url: "#inhalt"
+- banner:
+  - link "Reticora":
+    - /url: /
+  - navigation "Hauptnavigation":
+    - link "Produkt":
+      - /url: /produkt/discovery/
+    - link "Geräte":
+      - /url: /geraete/
+    - link "Lösungen":
+      - /url: /loesungen/msp/
+    - link "Sicherheit":
+      - /url: /sicherheit/
+    - link "Preise":
+      - /url: /preise/
+  - group "Sprache":
+    - text: DE
+    - link "EN – English":
+      - /url: /en/pricing/
+      - text: EN
+  - link "Anmelden":
+    - /url: https://www.reticora.cloud/login
+  - link "Live-Demo":
+    - /url: /demo/
+  - link "30 Tage testen":
+    - /url: https://www.reticora.cloud/onboarding
+- main:
+  - region "Pakete und Preise":
+    - heading "Pakete und Preise" [level=1]
+    - paragraph: Alle Pakete enthalten CMDB, Discovery, Topologie, Racks und API. Sie zahlen monatlich oder jährlich im Voraus. Preise zzgl. MwSt.
+  - region "Die Pakete":
+    - heading "Die Pakete" [level=2]
+    - paragraph: zzgl. MwSt.
+    - paragraph: Angebot nur für Unternehmen.
+    - region "Pakete, Preise und Limits":
+      - table:
+        - rowgroup:
+          - row "Paket Beschreibung und Handlung im Monat im Jahr erstes Beta-Jahr CIs Collectors Nutzer Belege":
+            - columnheader "Paket"
+            - columnheader "Beschreibung und Handlung"
+            - columnheader "im Monat"
+            - columnheader "im Jahr"
+            - columnheader "erstes Beta-Jahr"
+            - columnheader "CIs"
+            - columnheader "Collectors"
+            - columnheader "Nutzer"
+            - columnheader "Belege"
+        - rowgroup:
+          - 'row "Essentials CMDB, Discovery, Topologie, Racks, API, Assets, Tickets 30 Tage testen: Essentials 49 € 490 € 441 € bis 500 2 5"':
+            - rowheader "Essentials"
+            - 'cell "CMDB, Discovery, Topologie, Racks, API, Assets, Tickets 30 Tage testen: Essentials"':
+              - paragraph: CMDB, Discovery, Topologie, Racks, API, Assets, Tickets
+              - 'link "30 Tage testen: Essentials"':
+                - /url: https://www.reticora.cloud/onboarding
+                - text: 30 Tage testen
+            - cell "49 €"
+            - cell "490 €"
+            - cell "441 €"
+            - cell "bis 500"
+            - cell "2"
+            - cell "5"
+            - cell:
+              - group: "Beleg : Paketumfang, Limits, Preise"
+          - 'row "Standard dazu Lager, Inventur, Etiketten, Unterschrift, SLAs, DATEV-Export 30 Tage testen: Standard 119 € 1.190 € 1.071 € bis 2.500 5 25"':
+            - rowheader "Standard"
+            - 'cell "dazu Lager, Inventur, Etiketten, Unterschrift, SLAs, DATEV-Export 30 Tage testen: Standard"':
+              - paragraph: dazu Lager, Inventur, Etiketten, Unterschrift, SLAs, DATEV-Export
+              - 'link "30 Tage testen: Standard"':
+                - /url: https://www.reticora.cloud/onboarding
+                - text: 30 Tage testen
+            - cell "119 €"
+            - cell "1.190 €"
+            - cell "1.071 €"
+            - cell "bis 2.500"
+            - cell "5"
+            - cell "25"
+            - cell:
+              - group: "Beleg : Paketumfang, Limits, Preise"
+          - 'row "Pro dazu Monitoring, Workflows, Formulare, Bestellungen 30 Tage testen: Pro 299 € 2.990 € 2.691 € bis 10.000 20 100"':
+            - rowheader "Pro"
+            - 'cell "dazu Monitoring, Workflows, Formulare, Bestellungen 30 Tage testen: Pro"':
+              - paragraph: dazu Monitoring, Workflows, Formulare, Bestellungen
+              - 'link "30 Tage testen: Pro"':
+                - /url: https://www.reticora.cloud/onboarding
+                - text: 30 Tage testen
+            - cell "299 €"
+            - cell "2.990 €"
+            - cell "2.691 €"
+            - cell "bis 10.000"
+            - cell "20"
+            - cell "100"
+            - cell:
+              - group: "Beleg : Paketumfang, Limits, Preise"
+          - 'row "Enterprise Shared dazu Compliance und Endpoint-Agent, in der Cloud auf getrennter Infrastruktur Kontakt aufnehmen: Enterprise Shared ab 999 € auf Anfrage entfällt bis 50.000 unbegrenzt unbegrenzt"':
+            - rowheader "Enterprise Shared"
+            - 'cell "dazu Compliance und Endpoint-Agent, in der Cloud auf getrennter Infrastruktur Kontakt aufnehmen: Enterprise Shared"':
+              - paragraph: dazu Compliance und Endpoint-Agent, in der Cloud auf getrennter Infrastruktur
+              - 'link "Kontakt aufnehmen: Enterprise Shared"':
+                - /url: /kontakt/?topic=enterprise
+                - text: Kontakt aufnehmen
+            - cell "ab 999 €"
+            - cell "auf Anfrage"
+            - cell "entfällt"
+            - cell "bis 50.000"
+            - cell "unbegrenzt"
+            - cell "unbegrenzt"
+            - cell:
+              - group: "Beleg : Paketumfang, Limits, Preise"
+              - group: "Beleg : Enterprise Shared und Enterprise Local"
+          - 'row "Enterprise Local bei Ihnen gehostet, inklusive aller Arbeiten Kontakt aufnehmen: Enterprise Local ab 1.999 € auf Anfrage entfällt bis 50.000 unbegrenzt unbegrenzt"':
+            - rowheader "Enterprise Local"
+            - 'cell "bei Ihnen gehostet, inklusive aller Arbeiten Kontakt aufnehmen: Enterprise Local"':
+              - paragraph: bei Ihnen gehostet, inklusive aller Arbeiten
+              - 'link "Kontakt aufnehmen: Enterprise Local"':
+                - /url: /kontakt/?topic=enterprise
+                - text: Kontakt aufnehmen
+            - cell "ab 1.999 €"
+            - cell "auf Anfrage"
+            - cell "entfällt"
+            - cell "bis 50.000"
+            - cell "unbegrenzt"
+            - cell "unbegrenzt"
+            - cell:
+              - group: "Beleg : Paketumfang, Limits, Preise"
+              - group: "Beleg : Enterprise Shared und Enterprise Local"
+    - paragraph:
+      - text: "Beta-Rabatt: 20 % in den ersten sechs Monaten, 10 % in den folgenden sechs Monaten, danach der volle Preis. Bei jährlicher Zahlung gilt im ersten Jahr der Preis der Spalte „erstes Beta-Jahr“."
+      - group: "Beleg : Paketumfang, Limits, Preise"
+  - region "Funktionen je Paket":
+    - heading "Funktionen je Paket" [level=2]
+    - region "Funktionen je Paket im Vergleich":
+      - table:
+        - rowgroup:
+          - row "Funktion Essentials Standard Pro Enterprise Shared Enterprise Local":
+            - columnheader "Funktion"
+            - columnheader "Essentials"
+            - columnheader "Standard"
+            - columnheader "Pro"
+            - columnheader "Enterprise Shared"
+            - columnheader "Enterprise Local"
+        - rowgroup:
+          - row "CMDB, Discovery und Reviews enthalten enthalten enthalten enthalten enthalten":
+            - rowheader "CMDB, Discovery und Reviews"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+          - row "Topologie, Ausfallsimulation und Racks enthalten enthalten enthalten enthalten enthalten":
+            - rowheader "Topologie, Ausfallsimulation und Racks"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+          - row "API, Webhooks, CSV-Export und Import enthalten enthalten enthalten enthalten enthalten":
+            - rowheader "API, Webhooks, CSV-Export und Import"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+          - row "DATEV-Export nicht enthalten enthalten enthalten enthalten enthalten":
+            - rowheader "DATEV-Export"
+            - cell "nicht enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+          - row "Assets, Zuweisungen, Verträge und Dokumente enthalten enthalten enthalten enthalten enthalten":
+            - rowheader "Assets, Zuweisungen, Verträge und Dokumente"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+          - row "Dokumentenspeicher 1 000 MiB 10 000 MiB 50 000 MiB unbegrenzt unbegrenzt":
+            - rowheader "Dokumentenspeicher"
+            - cell "1 000 MiB"
+            - cell "10 000 MiB"
+            - cell "50 000 MiB"
+            - cell "unbegrenzt"
+            - cell "unbegrenzt":
+              - text: unbegrenzt
+              - group: "Beleg : Dokumente"
+          - row "Tickets enthalten enthalten enthalten enthalten enthalten":
+            - rowheader "Tickets"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+          - row "SLAs und Geschäftskalender nicht enthalten enthalten enthalten enthalten enthalten":
+            - rowheader "SLAs und Geschäftskalender"
+            - cell "nicht enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+          - row "Lagerbestand, Inventur, Etiketten und Unterschrift nicht enthalten enthalten enthalten enthalten enthalten":
+            - rowheader "Lagerbestand, Inventur, Etiketten und Unterschrift"
+            - cell "nicht enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+          - row "Bestellungen nicht enthalten nicht enthalten enthalten enthalten enthalten":
+            - rowheader "Bestellungen"
+            - cell "nicht enthalten"
+            - cell "nicht enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+          - row "Monitoring, Workflows und Formulare nicht enthalten nicht enthalten enthalten enthalten enthalten":
+            - rowheader "Monitoring, Workflows und Formulare"
+            - cell "nicht enthalten"
+            - cell "nicht enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+          - row "Compliance, Befunde und Endpoint-Agent nicht enthalten nicht enthalten nicht enthalten enthalten enthalten":
+            - rowheader "Compliance, Befunde und Endpoint-Agent"
+            - cell "nicht enthalten"
+            - cell "nicht enthalten"
+            - cell "nicht enthalten"
+            - cell "enthalten"
+            - cell "enthalten"
+          - row "IGA und KI-Assistent Add-on Add-on Add-on Add-on Add-on":
+            - rowheader "IGA und KI-Assistent"
+            - cell "Add-on"
+            - cell "Add-on"
+            - cell "Add-on"
+            - cell "Add-on"
+            - cell "Add-on"
+    - paragraph: "✓ enthalten · – nicht enthalten · ∞ unbegrenzt · Add-on: zu jedem Paket zubuchbar, Preis auf Anfrage"
+    - paragraph:
+      - text: Funktionen je Paket. Enterprise Shared und Enterprise Local unterscheiden sich im Betrieb.
+      - group: "Beleg : Paketumfang, Limits, Preise"
+  - region "Zusatzkosten":
+    - heading "Zusatzkosten" [level=2]
+    - term: je CI über dem Limit des Pakets
+    - definition:
+      - text: 0,05 € im Monat
+      - group: "Beleg : Zusatzkosten"
+    - term: je Monitoring-Service
+    - definition:
+      - text: 0,03 € im Monat
+      - group: "Beleg : Zusatzkosten"
+    - term: Add-ons IGA und KI-Assistent
+    - definition: auf Anfrage
+    - paragraph: Alle Beträge zzgl. MwSt.
+  - region "30 Tage testen":
+    - heading "30 Tage testen" [level=2]
+    - paragraph:
+      - text: Der Test umfasst den Standard-Umfang für bis zu 100 CIs. Sie legen ein Konto an, bestätigen Ihre E-Mail-Adresse und richten bei der ersten Anmeldung eine Authenticator-App ein. Nach dem Test bleibt Ihre CMDB 30 Tage erhalten; wählen Sie bis dahin kein Paket, wird sie gelöscht.
+      - group: "Beleg : Test und Downgrade"
+    - link "30 Tage testen":
+      - /url: https://www.reticora.cloud/onboarding
+  - region "Fragen zu Preisen und Paketen":
+    - heading "Fragen zu Preisen und Paketen" [level=2]
+    - heading "Was zählt als CI?" [level=3]
+    - paragraph:
+      - text: "Ein CI ist ein Eintrag in der CMDB: ein Gerät, eine virtuelle Maschine, ein Service. Für das Limit zählen alle nicht gelöschten CIs Ihrer Organisation, über alle Kunden, gleich ob die Discovery sie angelegt hat oder ein Mensch."
+      - group: "Beleg : Was als CI zählt"
+    - heading "Was passiert über dem Limit?" [level=3]
+    - paragraph:
+      - text: "Jedes CI über dem Limit Ihres Pakets kostet 0,05 € im Monat. Findet die Discovery über dem Limit ein neues Gerät, verwirft Reticora es nicht: Es wartet in der Review-Inbox als „Nicht lizenziertes CI“, bis es übernommen werden kann."
+      - group: "Beleg : Zusatzkosten"
+      - group: "Beleg : Neue Geräte über dem Limit"
+    - heading "Was passiert nach dem Test?" [level=3]
+    - paragraph:
+      - text: Ihre CMDB bleibt nach dem Ende des Tests 30 Tage erhalten. Wählen Sie in dieser Zeit ein Paket, arbeiten Sie mit allen Daten weiter; sonst wird sie gelöscht.
+      - group: "Beleg : Test und Downgrade"
+    - heading "Was passiert, wenn ich in ein kleineres Paket wechsle?" [level=3]
+    - paragraph:
+      - text: Sie verlieren keine Daten. CIs über dem Limit des neuen Pakets werden als zusätzliche CIs berechnet. Funktionen, die das neue Paket nicht enthält, werden gesperrt; ihre Daten bleiben erhalten.
+      - group: "Beleg : Test und Downgrade"
+      - group: "Beleg : Zusatzkosten"
+    - heading "Wie funktioniert der Beta-Rabatt?" [level=3]
+    - paragraph:
+      - text: In den ersten sechs Monaten zahlen Sie 20 % weniger, in den folgenden sechs Monaten 10 % weniger, danach den vollen Preis. Zahlen Sie jährlich im Voraus, gilt im ersten Jahr der Preis der Spalte „erstes Beta-Jahr“.
+      - group: "Beleg : Paketumfang, Limits, Preise"
+    - heading "Was unterscheidet Enterprise Shared und Enterprise Local?" [level=3]
+    - paragraph:
+      - text: Enterprise Shared läuft in der Cloud auf getrennter Infrastruktur. Enterprise Local wird bei Ihnen gehostet; der Preis enthält alle Arbeiten dafür.
+      - group: "Beleg : Enterprise Shared und Enterprise Local"
+    - heading "Was kosten IGA und der KI-Assistent?" [level=3]
+    - paragraph: Beide Add-ons sind zu jedem Paket zubuchbar. Den Preis nennen wir auf Anfrage.
+    - heading "Können Privatpersonen Reticora buchen?" [level=3]
+    - paragraph: Nein. Das Angebot richtet sich nur an Unternehmen. Alle Preise verstehen sich zuzüglich Mehrwertsteuer.
+  - region "Testen Sie Reticora 30 Tage mit Ihrem eigenen Netz.":
+    - heading "Testen Sie Reticora 30 Tage mit Ihrem eigenen Netz." [level=2]
+    - link "30 Tage testen":
+      - /url: https://www.reticora.cloud/onboarding
+    - link "Live-Demo":
+      - /url: /demo/
+    - link "Kontakt":
+      - /url: /kontakt/
+    - paragraph: Angebot nur für Unternehmen.
+- contentinfo:
+  - heading "Produkt" [level=2]
+  - link "Discovery":
+    - /url: /produkt/discovery/
+  - link "Datenqualität":
+    - /url: /produkt/datenqualitaet/
+  - link "Topologie und Impact":
+    - /url: /produkt/topologie-impact/
+  - link "Verwaltung":
+    - /url: /produkt/verwaltung/
+  - link "Betrieb":
+    - /url: /produkt/betrieb/
+  - link "Compliance":
+    - /url: /produkt/compliance/
+  - link "API":
+    - /url: /produkt/api/
+  - heading "Einsatz" [level=2]
+  - link "Für Netzbetreiber":
+    - /url: /loesungen/isp/
+  - link "Für MSPs":
+    - /url: /loesungen/msp/
+  - link "Unterstützte Geräte":
+    - /url: /geraete/
+  - link "Preise":
+    - /url: /preise/
+  - heading "Vertrauen" [level=2]
+  - link "Sicherheit":
+    - /url: /sicherheit/
+  - link "Subprozessoren":
+    - /url: /subprozessoren/
+  - link "Barrierefreiheit":
+    - /url: /barrierefreiheit/
+  - heading "Kontakt" [level=2]
+  - link "Kontakt":
+    - /url: /kontakt/
+  - link "Live-Demo":
+    - /url: /demo/
+  - link "Anmelden":
+    - /url: https://www.reticora.cloud/login
+  - text: Koyer Consulting für IT und Kommunikation UG (haftungsbeschränkt)
+  - link "Impressum":
+    - /url: /impressum/
+  - link "Datenschutz":
+    - /url: /datenschutz/
+  - link "AGB":
+    - /url: /agb/
+  - text: Angebot nur für Unternehmen
+  - link "English":
+    - /url: /en/pricing/

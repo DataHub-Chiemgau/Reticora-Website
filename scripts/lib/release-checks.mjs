@@ -119,3 +119,8 @@ export function checkNotEmpty(claims, screenshots, routes) {
 export function checkDevPages(paths) {
   return paths.filter((p) => p === 'dev' || p.startsWith('dev/')).map((p) => `dist/${p}: Entwicklungsseite im Release-Build`);
 }
+
+/** Der Vorschau-Hinweis („Testsystem, nicht öffentlich“) gehört nur in Entwicklungs-Builds, nie in ein Release. */
+export function checkPreviewNotice(files) {
+  return files.filter(({ html }) => /\sdata-rt="preview-notice(?:-spacer)?"/.test(html)).map(({ path }) => `${path}: Vorschau-Hinweis im Release-Build`);
+}

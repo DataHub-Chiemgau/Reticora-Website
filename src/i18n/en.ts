@@ -64,6 +64,7 @@ export const UI: typeof DeUI = {
   scrollHint: 'Schematic scrolls sideways.',
   cta: { title: 'Try Reticora on your own network for 30 days.' },
   skip: 'Skip to content',
+  previewNotice: 'Preview – test system, not public',
   menu: 'Menu',
   beleg: 'Evidence',
   copy: 'Copy',
@@ -74,7 +75,7 @@ export const UI: typeof DeUI = {
   tableHint: 'The table scrolls sideways.',
   featuresLabel: 'Features',
   copyNamed: 'Copy {label}',
-  matrix: { yes: 'included', no: 'not included', unlimited: 'unlimited' },
+  matrix: { yes: 'included', no: 'not included', unlimited: 'unlimited', none: 'none', na: 'not applicable' },
   devices: { filter: 'Category', all: 'All', one: '1 device family', many: '{n} device families' },
   asOf: 'As of',
   topo: {

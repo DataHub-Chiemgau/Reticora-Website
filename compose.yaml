@@ -1,0 +1,92 @@
+# Zielumgebung für die Integrationstests (Phase 7, README „Zielumgebung“). NUR Test, nie Betrieb.
+# Vorher: npm run build (dist/ und backend/templates/) und für die Backend-Tests cd backend && composer install.
+# Start:  docker compose up -d --build --wait     Ende: docker compose down -v
+# Alle Zugangsdaten (Datenbank, SMTP, Test-CA) erzeugt der Web-Container beim ersten Start im Volume "secrets";
+# db und mail warten auf die Marke "ready". Im Repository steht kein Passwort.
+name: reticora-integration
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/web/Dockerfile
+    ports:
+      - "127.0.0.1:8088:80"
+    environment:
+      RETICORA_SITE_URL: http://127.0.0.1:8088
+      # Werte für config.php (docker/config.integration.php) und für die Backend-Integrationstests im Container.
+      RETICORA_IT_DB_DSN: mysql:host=db;dbname=reticora;charset=utf8mb4
+      RETICORA_IT_DB_USER: reticora
+      RETICORA_IT_DB_PASS_FILE: /run/reticora-secrets/db_pass
+      RETICORA_IT_SMTP_HOST: mail
+      RETICORA_IT_SMTP_PORT: "1025"
+      RETICORA_IT_SMTP_ENCRYPTION: starttls
+      RETICORA_IT_SMTP_USER: reticora-it
+      RETICORA_IT_SMTP_PASS_FILE: /run/reticora-secrets/smtp_pass
+      # zweiter Name desselben Mailservers, der nicht im Zertifikat steht (Zertifikatsprüfung muss scheitern)
+      RETICORA_IT_SMTP_MISMATCH_HOST: mail-wrong-name
+      RETICORA_IT_MAILPIT_URL: http://mail:8025
+      RETICORA_IT_SALES: vertrieb@example.com
+    volumes:
+      - ./dist:/srv/dist:ro
+      - ./backend/templates:/var/www/reticora/templates:ro
+      # nur für die Backend-Integrationstests (PHPUnit aus backend/vendor des Runners), nicht Teil der Anwendung
+      - ./backend:/opt/backend-src:ro
+      - secrets:/run/reticora-secrets
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1/') === false ? 1 : 0);"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  db:
+    image: mariadb:11.4
+    depends_on:
+      web:
+        condition: service_started
+    entrypoint: ["/bin/sh", "-c", "until [ -f /run/reticora-secrets/ready ]; do sleep 0.5; done; exec docker-entrypoint.sh mariadbd"]
+    environment:
+      MARIADB_DATABASE: reticora
+      MARIADB_USER: reticora
+      MARIADB_PASSWORD_FILE: /run/reticora-secrets/db_pass
+      MARIADB_RANDOM_ROOT_PASSWORD: "1"
+    volumes:
+      # Schema wie auf dem Hosting aus backend/sql/001_init.sql; bin/migrate.php prüft der Integrationstest zusätzlich.
+      - ./backend/sql/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+      - secrets:/run/reticora-secrets:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+      start_period: 20s
+
+  mail:
+    image: axllent/mailpit:v1.33.1
+    depends_on:
+      web:
+        condition: service_started
+    entrypoint: ["/bin/sh", "-c", "until [ -f /run/reticora-secrets/ready ]; do sleep 0.5; done; exec /mailpit"]
+    environment:
+      # SMTP nur nach STARTTLS und nur mit Anmeldung (wie beim Mailanbieter); Zertifikat von der Test-CA.
+      MP_SMTP_TLS_CERT: /run/reticora-secrets/mail.crt
+      MP_SMTP_TLS_KEY: /run/reticora-secrets/mail.key
+      MP_SMTP_REQUIRE_STARTTLS: "true"
+      MP_SMTP_AUTH_FILE: /run/reticora-secrets/smtp-auth
+      MP_MAX_MESSAGES: "5000"
+    ports:
+      - "127.0.0.1:8025:8025"
+    networks:
+      default:
+        aliases:
+          - mail-wrong-name
+    volumes:
+      - secrets:/run/reticora-secrets:ro
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  secrets: {}

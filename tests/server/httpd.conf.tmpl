@@ -25,9 +25,10 @@ LoadModule filter_module @MODS@/mod_filter.so
   LoadModule log_config_module @MODS@/mod_log_config.so
 </IfModule>
 LoadModule alias_module @MODS@/mod_alias.so
-# nur im Test: /api/lead.php geht an den PHP-Entwicklungsserver (im Betrieb liegt lead.php im Webroot)
+# PHP wie beim Hoster über FastCGI (PHP-FPM); lead.php liegt in einer Webroot-Kopie unter api/ (siehe unten)
 LoadModule proxy_module @MODS@/mod_proxy.so
-LoadModule proxy_http_module @MODS@/mod_proxy_http.so
+LoadModule proxy_fcgi_module @MODS@/mod_proxy_fcgi.so
+LoadModule env_module @MODS@/mod_env.so
 @IDENTITY@
 TypesConfig /etc/mime.types
 AddType font/woff2 .woff2
@@ -51,10 +52,27 @@ DocumentRoot "@DOCROOT@"
   Options FollowSymLinks
   Require all granted
 </Directory>
-# Origin und Host des Browsers bleiben unverändert (Origin-Prüfung im Backend)
-ProxyPreserveHost On
-ProxyRequests Off
-ProxyPass "/api/lead.php" "http://127.0.0.1:8081/lead.php"
-# zweite Instanz mit Standard-Limit, nur für den Test des Rate-Limits
-ProxyPass "/api-limit/lead.php" "http://127.0.0.1:8082/lead.php"
+# /api/ wie im Paket (www/api/lead.php und www/api/.htaccess aus backend/public), Sicherheitsprüfung S-07: Die Webroot-Kopie
+# @TMP@/www trägt dieselbe Wurzel-.htaccess wie dist/; Kopfzeilen, Sperren und LimitRequestBody wirken also wie beim Hoster.
+# Konfiguration und Backend-Pfad gehen als FastCGI-Parameter (SetEnv) an PHP, lead.php liest sie mit getenv().
+Alias "/api/" "@TMP@/www/api/"
+<Directory "@TMP@/www">
+  AllowOverride All
+  Options FollowSymLinks
+  Require all granted
+  <FilesMatch "\.php$">
+    SetHandler "proxy:fcgi://@FPM@"
+  </FilesMatch>
+</Directory>
+<Directory "@TMP@/www/api">
+  SetEnv RETICORA_HOME "@BACKEND@"
+  SetEnv RETICORA_CONFIG "@CONFIG_MAIN@"
+</Directory>
+# api-limit-anfang: zweite Instanz mit Standard-Limit, nur für den Test des Rate-Limits
+Alias "/api-limit/" "@TMP@/www/api-limit/"
+<Directory "@TMP@/www/api-limit">
+  SetEnv RETICORA_HOME "@BACKEND@"
+  SetEnv RETICORA_CONFIG "@CONFIG_LIMIT@"
+</Directory>
+# api-limit-ende
 DirectoryIndex index.html

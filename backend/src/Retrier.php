@@ -8,7 +8,8 @@ use PDO;
 use Throwable;
 
 /**
- * Stellt zurückgehaltene (held) und nicht zugestellte (not_delivered) Anfragen nachträglich an das Vertriebspostfach zu
+ * Stellt zurückgehaltene (held), nicht zugestellte (not_delivered) und hängengebliebene (pending seit über 15 Minuten, DS-05)
+ * Anfragen nachträglich an das Vertriebspostfach zu
  * (bin/retry.php, per Cron). Höchstens $max Mails je Lauf, älteste zuerst. Beim ersten Fehler bricht der Lauf ab
  * (der Mailserver ist dann vermutlich nicht erreichbar; weitere Versuche kosten nur Zeit). Gibt nie Formularinhalte aus.
  */
@@ -21,12 +22,13 @@ final class Retrier
     }
 
     /** @return array{sent:int, failed:int, remaining:int} */
-    public function run(int $max = self::DEFAULT_MAX): array
+    public function run(int $max = self::DEFAULT_MAX, ?int $now = null): array
     {
+        $now ??= time();
         $repo = new LeadRepository($this->pdo);
         $sent = 0;
         $failed = 0;
-        foreach ($repo->undelivered(max(1, $max)) as $row) {
+        foreach ($repo->undelivered(max(1, $max), $now) as $row) {
             $received = strtotime((string) $row['created_at'] . ' UTC');
             try {
                 $this->mailer->sendToSales([
@@ -45,13 +47,6 @@ final class Retrier
             $repo->setDelivery((int) $row['id'], LeadRepository::DELIVERED);
             $sent++;
         }
-        return ['sent' => $sent, 'failed' => $failed, 'remaining' => $this->remaining()];
-    }
-
-    private function remaining(): int
-    {
-        $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM lead WHERE delivery IN (:a, :b)');
-        $stmt->execute([':a' => LeadRepository::HELD, ':b' => LeadRepository::NOT_DELIVERED]);
-        return (int) $stmt->fetchColumn();
+        return ['sent' => $sent, 'failed' => $failed, 'remaining' => $repo->countUndelivered($now)['undelivered']];
     }
 }

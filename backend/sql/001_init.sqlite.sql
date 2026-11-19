@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS rate_limit (
 );
 
 CREATE TABLE IF NOT EXISTS rate_limit_key (
-    id      INTEGER NOT NULL PRIMARY KEY,
-    day     TEXT NOT NULL,
-    secret  TEXT NOT NULL
+    id            INTEGER NOT NULL PRIMARY KEY,
+    window_start  INTEGER NOT NULL,
+    secret        TEXT NOT NULL
 );

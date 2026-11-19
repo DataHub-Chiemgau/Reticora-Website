@@ -1,0 +1,128 @@
+# /demo/ (demo-de), Chromium, 1280 × 900; Prüfung in docs/qa/2026-11-barrierefreiheit.md
+- link "Zum Inhalt":
+  - /url: "#inhalt"
+- banner:
+  - link "Reticora":
+    - /url: /
+  - navigation "Hauptnavigation":
+    - link "Produkt":
+      - /url: /produkt/discovery/
+    - link "Geräte":
+      - /url: /geraete/
+    - link "Lösungen":
+      - /url: /loesungen/msp/
+    - link "Sicherheit":
+      - /url: /sicherheit/
+    - link "Preise":
+      - /url: /preise/
+  - group "Sprache":
+    - text: DE
+    - link "EN – English":
+      - /url: /en/demo/
+      - text: EN
+  - link "Anmelden":
+    - /url: https://www.reticora.cloud/login
+  - link "Live-Demo":
+    - /url: /demo/
+  - link "30 Tage testen":
+    - /url: https://www.reticora.cloud/onboarding
+- main:
+  - region "Live-Demo":
+    - heading "Live-Demo" [level=1]
+    - paragraph: "Die Demo ist eine eigene Instanz von Reticora mit Beispieldaten. Sie brauchen kein Konto: Melden Sie sich mit dem Zugang unten an und probieren Sie aus, was Sie interessiert."
+  - region "Zugang zur Demo":
+    - heading "Zugang zur Demo" [level=2]
+    - term: Adresse
+    - definition:
+      - code: https://www.demo.reticora.cloud
+      - button "Adresse kopieren": Kopieren
+      - status
+    - term: Benutzer
+    - definition:
+      - code: demo@reticora.cloud
+      - button "Benutzer kopieren": Kopieren
+      - status
+    - term: Passwort
+    - definition:
+      - code: Demo
+      - button "Passwort kopieren": Kopieren
+      - status
+    - paragraph: "Gemeinsames Konto. Alle Besucher der Demo nutzen dasselbe Konto und sehen, was andere eintragen. Geben Sie keine echten Daten ein: keine Namen, keine Adressen, keine Zugangsdaten, nichts aus Ihrem Netz oder dem Ihrer Kunden."
+    - link "Demo öffnen":
+      - /url: https://www.demo.reticora.cloud
+  - region "Drei Dinge zum Ausprobieren":
+    - heading "Drei Dinge zum Ausprobieren" [level=2]
+    - heading "Einen Ausfall simulieren" [level=3]
+    - paragraph:
+      - text: Öffnen Sie „Topologie“, wählen Sie eine PDU oder USV und klicken Sie „Ausfall simulieren“. Grau dargestellt sind die betroffenen CIs. Server, die an zwei Stromwegen hängen, stehen unter „Durch Redundanz geschützt“. Wählen Sie ein zweites CI dazu und sehen Sie, wie sich das Bild ändert.
+      - group: "Beleg : Ausfallsimulation"
+    - figure "Abb. 1 · Ausfallsimulation in der Topologie.": S-06 Ausfallsimulation Platzhalter für Screenshot · 1440 × 900 · dunkles Thema Abb. 1 · Ausfallsimulation in der Topologie.
+    - heading "Die Herkunft eines Feldes ansehen" [level=3]
+    - paragraph:
+      - text: Öffnen Sie ein CI und dort die Herkunft eines Feldes, etwa der Seriennummer. Sie sehen Quelle, Rang, Zeitpunkt der Beobachtung und warum dieser Wert gilt.
+      - group: "Beleg : Herkunft je Feld"
+    - figure "Abb. 2 · Herkunft eines Feldes in der CI-Ansicht.": S-02 CI-Detail mit Herkunft eines Feldes Platzhalter für Screenshot · 1440 × 900 · dunkles Thema Abb. 2 · Herkunft eines Feldes in der CI-Ansicht.
+    - heading "Ein Review entscheiden" [level=3]
+    - paragraph:
+      - text: "Öffnen Sie die Review-Inbox und wählen Sie einen Eintrag. Beobachtung und CI stehen nebeneinander. Entscheiden Sie: zusammenführen, neu anlegen, übernehmen oder verwerfen."
+      - group: "Beleg : Review-Inbox"
+    - 'figure "Abb. 3 · Review-Inbox: Beobachtung und CI im Vergleich."': "S-03 Review-Inbox mit Vergleichsansicht Platzhalter für Screenshot · 1440 × 900 · dunkles Thema Abb. 3 · Review-Inbox: Beobachtung und CI im Vergleich."
+  - region "Lieber mit Ihrem eigenen Netz?":
+    - heading "Lieber mit Ihrem eigenen Netz?" [level=2]
+    - paragraph:
+      - text: Im Test verbinden Sie einen Collector mit Ihrem Netz und sehen Ihre eigenen Geräte, 30 Tage im Standard-Umfang bis 100 CIs.
+      - group: "Beleg : Test und Downgrade"
+    - link "30 Tage testen":
+      - /url: https://www.reticora.cloud/onboarding
+    - link "Kontakt":
+      - /url: /kontakt/
+    - paragraph: Angebot nur für Unternehmen.
+- contentinfo:
+  - heading "Produkt" [level=2]
+  - link "Discovery":
+    - /url: /produkt/discovery/
+  - link "Datenqualität":
+    - /url: /produkt/datenqualitaet/
+  - link "Topologie und Impact":
+    - /url: /produkt/topologie-impact/
+  - link "Verwaltung":
+    - /url: /produkt/verwaltung/
+  - link "Betrieb":
+    - /url: /produkt/betrieb/
+  - link "Compliance":
+    - /url: /produkt/compliance/
+  - link "API":
+    - /url: /produkt/api/
+  - heading "Einsatz" [level=2]
+  - link "Für Netzbetreiber":
+    - /url: /loesungen/isp/
+  - link "Für MSPs":
+    - /url: /loesungen/msp/
+  - link "Unterstützte Geräte":
+    - /url: /geraete/
+  - link "Preise":
+    - /url: /preise/
+  - heading "Vertrauen" [level=2]
+  - link "Sicherheit":
+    - /url: /sicherheit/
+  - link "Subprozessoren":
+    - /url: /subprozessoren/
+  - link "Barrierefreiheit":
+    - /url: /barrierefreiheit/
+  - heading "Kontakt" [level=2]
+  - link "Kontakt":
+    - /url: /kontakt/
+  - link "Live-Demo":
+    - /url: /demo/
+  - link "Anmelden":
+    - /url: https://www.reticora.cloud/login
+  - text: Koyer Consulting für IT und Kommunikation UG (haftungsbeschränkt)
+  - link "Impressum":
+    - /url: /impressum/
+  - link "Datenschutz":
+    - /url: /datenschutz/
+  - link "AGB":
+    - /url: /agb/
+  - text: Angebot nur für Unternehmen
+  - link "English":
+    - /url: /en/demo/

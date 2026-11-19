@@ -1,3 +1,4 @@
+import { fitScrollFrames } from './frames';
 const f = document.querySelector<HTMLElement>('[data-filter]');
 if (f) {
   const g = f.querySelector<HTMLElement>('[role=group]')!;
@@ -18,3 +19,5 @@ if (f) {
     out.textContent = (n === 1 ? f.dataset.one! : f.dataset.many!).replace('{n}', String(n));
   });
 }
+
+fitScrollFrames();

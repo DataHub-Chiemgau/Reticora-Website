@@ -12,8 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # kein Push in diesem Lauf: GITHUB_TOKEN nicht in .git/config ablegen (S-10)
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -21,14 +24,15 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y apache2
       - run: npm run check
       - run: npm run build
-      - run: npm test
-      - uses: shivammathur/setup-php@v2
+      # PHP und das Backend vor den Unit-Tests: einige prüfen erzeugte PHP-Dateien gegen das Backend.
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2.40.0
         with:
           php-version: '8.4'
           extensions: pdo_sqlite, mbstring
           coverage: none
       - run: composer install --no-interaction --prefer-dist
         working-directory: backend
+      - run: npm test
       - run: composer audit
         working-directory: backend
       - run: vendor/bin/phpunit
@@ -38,7 +42,21 @@ jobs:
       - run: npm run test:e2e
         env:
           RETICORA_ACCESS_LOG: ${{ runner.temp }}/apache-access.log
-      - uses: actions/upload-artifact@v4
+      # Die Artefakte lassen sich in manchen Umgebungen nicht herunterladen; deshalb steht die Auswertung
+      # des Zugriffsprotokolls zusätzlich im Job-Log: langsame (>1 s) und abgebrochene Anfragen (%X = X)
+      # sowie die Zahl der Abrufe je HTML-Seite (fehlt ein Abruf, kam die Anfrage nie beim Server an).
+      - name: Zugriffsprotokoll auswerten
+        if: failure()
+        env:
+          LOG: ${{ runner.temp }}/apache-access.log
+        run: |
+          [ -f "$LOG" ] || { echo "kein Zugriffsprotokoll"; exit 0; }
+          echo "Anfragen gesamt: $(wc -l < "$LOG")"
+          echo "--- langsamer als 1 s oder abgebrochen ---"
+          awk '{ d=$(NF-1); x=$NF; if (d+0 > 1000000 || x == "X") print }' "$LOG" | head -n 200
+          echo "--- Abrufe je HTML-Seite ---"
+          awk '{ p=$5; if (p ~ /\/$/) n[p]++ } END { for (k in n) print n[k], k }' "$LOG" | sort -k2 | head -n 120
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: failure()
         with:
           name: e2e-diagnose
@@ -49,5 +67,8 @@ jobs:
           retention-days: 7
       - run: npm run lhci
       # Alle Pakete sind devDependencies (nichts davon läuft im ausgelieferten Build), daher wird der ganze Baum geprüft.
-      # Stand: 9 high, 0 critical; alle 9 stammen aus der Kette @lhci/cli (basic-ftp über proxy-agent). Kritische Funde sperren.
+      # Stand 2026-11-18 (nach npm update von basic-ftp/proxy-agent, S-11): 14 high, 0 critical. Alle 14 gehen auf eine
+      # Meldung zurück: picomatch (ReDoS, GHSA-fc5q-39xc-vjpf) über astro, vite, vitest, html-validate und @astrojs/check;
+      # behoben erst mit neuen Hauptversionen dieser Werkzeuge (Dependabot meldet sie). Die Muster stammen aus dem eigenen
+      # Code, nicht von außen. Kritische Funde sperren.
       - run: npm audit --audit-level=critical

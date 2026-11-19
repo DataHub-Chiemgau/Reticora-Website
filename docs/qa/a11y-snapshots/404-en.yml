@@ -1,0 +1,100 @@
+# /en/does-not-exist/ (404-en), Chromium, 1280 × 900; Prüfung in docs/qa/2026-11-barrierefreiheit.md
+- link "Skip to content":
+  - /url: "#inhalt"
+- banner:
+  - link "Reticora":
+    - /url: /en/
+  - navigation "Main navigation":
+    - link "Product":
+      - /url: /en/product/discovery/
+    - link "Devices":
+      - /url: /en/devices/
+    - link "Solutions":
+      - /url: /en/solutions/msp/
+    - link "Security":
+      - /url: /en/security/
+    - link "Pricing":
+      - /url: /en/pricing/
+  - group "Language":
+    - link "DE – Deutsch":
+      - /url: /
+      - text: DE
+    - text: EN
+  - link "Sign in":
+    - /url: https://www.reticora.cloud/login
+  - link "Live demo":
+    - /url: /en/demo/
+  - link "Try for 30 days":
+    - /url: https://www.reticora.cloud/onboarding
+- main:
+  - region "This page does not exist.":
+    - paragraph: Error 404
+    - heading "This page does not exist." [level=1]
+    - paragraph: "The address may be outdated or misspelled. From here you can continue:"
+  - navigation "Further links":
+    - list:
+      - listitem:
+        - link "Home page":
+          - /url: /en/
+      - listitem:
+        - 'link "Discovery: how your inventory is built"':
+          - /url: /en/product/discovery/
+      - listitem:
+        - link "Supported devices":
+          - /url: /en/devices/
+      - listitem:
+        - link "Pricing":
+          - /url: /en/pricing/
+      - listitem:
+        - link "Contact":
+          - /url: /en/contact/
+  - paragraph: If a link on this website brought you here, please tell us which one using the contact form.
+- contentinfo:
+  - heading "Product" [level=2]
+  - link "Discovery":
+    - /url: /en/product/discovery/
+  - link "Data quality":
+    - /url: /en/product/data-quality/
+  - link "Topology and impact":
+    - /url: /en/product/topology-impact/
+  - link "Administration":
+    - /url: /en/product/administration/
+  - link "Operations":
+    - /url: /en/product/operations/
+  - link "Compliance":
+    - /url: /en/product/compliance/
+  - link "API":
+    - /url: /en/product/api/
+  - heading "Use cases" [level=2]
+  - link "For network operators":
+    - /url: /en/solutions/isp/
+  - link "For MSPs":
+    - /url: /en/solutions/msp/
+  - link "Supported devices":
+    - /url: /en/devices/
+  - link "Pricing":
+    - /url: /en/pricing/
+  - heading "Trust" [level=2]
+  - link "Security":
+    - /url: /en/security/
+  - link "Subprocessors":
+    - /url: /en/subprocessors/
+  - link "Accessibility":
+    - /url: /en/accessibility/
+  - heading "Contact" [level=2]
+  - link "Contact":
+    - /url: /en/contact/
+  - link "Live demo":
+    - /url: /en/demo/
+  - link "Sign in":
+    - /url: https://www.reticora.cloud/login
+  - text: Koyer Consulting für IT und Kommunikation UG (haftungsbeschränkt)
+  - link "Legal notice":
+    - /url: /en/legal-notice/
+  - link "Privacy":
+    - /url: /en/privacy/
+  - link "Terms":
+    - /url: /en/terms/
+  - text: Offer for businesses only
+  - link "Deutsch":
+    - /url: /

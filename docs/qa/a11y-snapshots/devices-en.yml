@@ -1,0 +1,274 @@
+# /en/devices/ (devices-en), Chromium, 1280 × 900; Prüfung in docs/qa/2026-11-barrierefreiheit.md
+- link "Skip to content":
+  - /url: "#inhalt"
+- banner:
+  - link "Reticora":
+    - /url: /en/
+  - navigation "Main navigation":
+    - link "Product":
+      - /url: /en/product/discovery/
+    - link "Devices":
+      - /url: /en/devices/
+    - link "Solutions":
+      - /url: /en/solutions/msp/
+    - link "Security":
+      - /url: /en/security/
+    - link "Pricing":
+      - /url: /en/pricing/
+  - group "Language":
+    - link "DE – Deutsch":
+      - /url: /geraete/
+      - text: DE
+    - text: EN
+  - link "Sign in":
+    - /url: https://www.reticora.cloud/login
+  - link "Live demo":
+    - /url: /en/demo/
+  - link "Try for 30 days":
+    - /url: https://www.reticora.cloud/onboarding
+- main:
+  - region "Is your device recognized?":
+    - heading "Is your device recognized?" [level=1]
+    - paragraph:
+      - text: The collector ships with profiles for common network, server, storage and power devices. The table lists each device family with the protocols Reticora uses to recognize and read it.
+      - group: "Evidence : Recognized vendors and device classes"
+    - link "Try for 30 days":
+      - /url: https://www.reticora.cloud/onboarding
+    - link "Live demo":
+      - /url: /en/demo/
+    - paragraph: Offer for businesses only.
+  - region "Device families":
+    - heading "Device families" [level=2]
+    - group "Category":
+      - button "All" [pressed]
+      - button "Network"
+      - button "Servers and virtualization"
+      - button "Storage"
+      - button "Power"
+    - paragraph: 31 device families
+    - group: "Evidence : Recognized vendors and device classes"
+    - region "Device families with vendor and protocols":
+      - table:
+        - rowgroup:
+          - row "Vendor Family Protocols":
+            - columnheader "Vendor"
+            - columnheader "Family"
+            - columnheader "Protocols"
+        - rowgroup:
+          - row "Network":
+            - rowheader "Network"
+          - row "Arista EOS SNMP":
+            - rowheader "Arista"
+            - cell "EOS"
+            - cell "SNMP"
+          - row "Aruba CX 6xxx SNMP":
+            - rowheader "Aruba"
+            - cell "CX 6xxx"
+            - cell "SNMP"
+          - row "Cisco IOS SNMP, SSH":
+            - rowheader "Cisco"
+            - cell "IOS"
+            - cell "SNMP, SSH"
+          - row "Cisco Catalyst 9200/9300 SNMP":
+            - rowheader "Cisco"
+            - cell "Catalyst 9200/9300"
+            - cell "SNMP"
+          - row "Cisco ISR/ASR SNMP":
+            - rowheader "Cisco"
+            - cell "ISR/ASR"
+            - cell "SNMP"
+          - row "Cisco ASA/Firepower SNMP":
+            - rowheader "Cisco"
+            - cell "ASA/Firepower"
+            - cell "SNMP"
+          - row "Dell OS10 SNMP":
+            - rowheader "Dell"
+            - cell "OS10"
+            - cell "SNMP"
+          - row "Deciso OPNsense SNMP":
+            - rowheader "Deciso"
+            - cell "OPNsense"
+            - cell "SNMP"
+          - row "Fortinet FortiGate SNMP":
+            - rowheader "Fortinet"
+            - cell "FortiGate"
+            - cell "SNMP"
+          - row "HPE ProCurve SNMP":
+            - rowheader "HPE"
+            - cell "ProCurve"
+            - cell "SNMP"
+          - row "Juniper Junos SNMP, SSH":
+            - rowheader "Juniper"
+            - cell "Junos"
+            - cell "SNMP, SSH"
+          - row "MikroTik RouterOS SNMP, SSH":
+            - rowheader "MikroTik"
+            - cell "RouterOS"
+            - cell "SNMP, SSH"
+          - row "Netgate pfSense SNMP":
+            - rowheader "Netgate"
+            - cell "pfSense"
+            - cell "SNMP"
+          - row "Ubiquiti UniFi Access Point SNMP":
+            - rowheader "Ubiquiti"
+            - cell "UniFi Access Point"
+            - cell "SNMP"
+          - row "Ubiquiti UniFi Switch SNMP":
+            - rowheader "Ubiquiti"
+            - cell "UniFi Switch"
+            - cell "SNMP"
+        - rowgroup:
+          - row "Servers and virtualization":
+            - rowheader "Servers and virtualization"
+          - row "Dell PowerEdge (iDRAC) SNMP, Redfish":
+            - rowheader "Dell"
+            - cell "PowerEdge (iDRAC)"
+            - cell "SNMP, Redfish"
+          - row "HPE ProLiant (iLO) SNMP, Redfish":
+            - rowheader "HPE"
+            - cell "ProLiant (iLO)"
+            - cell "SNMP, Redfish"
+          - row "Lenovo ThinkSystem (XCC) SNMP, Redfish":
+            - rowheader "Lenovo"
+            - cell "ThinkSystem (XCC)"
+            - cell "SNMP, Redfish"
+          - row "Supermicro BMC SNMP, Redfish":
+            - rowheader "Supermicro"
+            - cell "BMC"
+            - cell "SNMP, Redfish"
+          - row "VMware ESXi SNMP":
+            - rowheader "VMware"
+            - cell "ESXi"
+            - cell "SNMP"
+          - row "Proxmox VE SNMP, SSH":
+            - rowheader "Proxmox"
+            - cell "VE"
+            - cell "SNMP, SSH"
+          - row "Microsoft Windows Server SNMP, WMI":
+            - rowheader "Microsoft"
+            - cell "Windows Server"
+            - cell "SNMP, WMI"
+          - row "Linux Server SNMP, SSH":
+            - rowheader "Linux"
+            - cell "Server"
+            - cell "SNMP, SSH"
+        - rowgroup:
+          - row "Storage":
+            - rowheader "Storage"
+          - row "iXsystems TrueNAS SNMP, SSH":
+            - rowheader "iXsystems"
+            - cell "TrueNAS"
+            - cell "SNMP, SSH"
+          - row "NetApp ONTAP SNMP":
+            - rowheader "NetApp"
+            - cell "ONTAP"
+            - cell "SNMP"
+          - row "QNAP QTS SNMP":
+            - rowheader "QNAP"
+            - cell "QTS"
+            - cell "SNMP"
+          - row "Synology DSM SNMP":
+            - rowheader "Synology"
+            - cell "DSM"
+            - cell "SNMP"
+        - rowgroup:
+          - row "Power":
+            - rowheader "Power"
+          - row "APC Smart-UPS (Network Management Card) SNMP":
+            - rowheader "APC"
+            - cell "Smart-UPS (Network Management Card)"
+            - cell "SNMP"
+          - row "APC Rack PDU SNMP":
+            - rowheader "APC"
+            - cell "Rack PDU"
+            - cell "SNMP"
+          - row "Eaton UPS SNMP":
+            - rowheader "Eaton"
+            - cell "UPS"
+            - cell "SNMP"
+          - row "Raritan PX PDU SNMP":
+            - rowheader "Raritan"
+            - cell "PX PDU"
+            - cell "SNMP"
+    - paragraph: Vendor names are trademarks of their respective owners and appear here only to describe compatibility.
+  - region "How the collector recognizes a device":
+    - heading "How the collector recognizes a device" [level=2]
+    - paragraph:
+      - text: "For every device it finds, the collector works in a fixed order: first the SNMP response (sysObjectID and description), then Redfish (vendor and model of the server controller), then the banner of a service such as SSH. It also takes the vendor prefix from the MAC address. The first matching profile sets type, vendor and model."
+      - group: "Evidence : Classification"
+    - link "Protocols and discovery workflow":
+      - /url: /en/product/discovery/
+  - region "What happens to unknown devices":
+    - heading "What happens to unknown devices" [level=2]
+    - paragraph:
+      - text: If no profile matches, Reticora still creates the device, as a generic device. The MAC address names the vendor, and an “Unclassified device” review waits in the review inbox. You set the type on the CI and resolve the review.
+      - group: "Evidence : Classification"
+      - group: "Evidence : Kinds of reviews"
+      - text: Discovery later raises a generic device to a specific type; it never changes any other type, such as one you set.
+      - group: "Evidence : Type of an unknown device"
+  - region "Adding profiles":
+    - heading "Adding profiles" [level=2]
+    - paragraph:
+      - text: "A profile is a declarative file: how to recognize a device and which values the collector queries. The collector loads additional or changed profiles from a directory, without you waiting for a new release."
+      - group: "Evidence : Extensible device profiles"
+      - text: Missing a device family? Let us know.
+    - link "Contact":
+      - /url: /en/contact/
+  - region "Try Reticora on your own network for 30 days.":
+    - heading "Try Reticora on your own network for 30 days." [level=2]
+    - link "Try for 30 days":
+      - /url: https://www.reticora.cloud/onboarding
+    - link "Live demo":
+      - /url: /en/demo/
+    - link "Contact":
+      - /url: /en/contact/
+    - paragraph: Offer for businesses only.
+- contentinfo:
+  - heading "Product" [level=2]
+  - link "Discovery":
+    - /url: /en/product/discovery/
+  - link "Data quality":
+    - /url: /en/product/data-quality/
+  - link "Topology and impact":
+    - /url: /en/product/topology-impact/
+  - link "Administration":
+    - /url: /en/product/administration/
+  - link "Operations":
+    - /url: /en/product/operations/
+  - link "Compliance":
+    - /url: /en/product/compliance/
+  - link "API":
+    - /url: /en/product/api/
+  - heading "Use cases" [level=2]
+  - link "For network operators":
+    - /url: /en/solutions/isp/
+  - link "For MSPs":
+    - /url: /en/solutions/msp/
+  - link "Supported devices":
+    - /url: /en/devices/
+  - link "Pricing":
+    - /url: /en/pricing/
+  - heading "Trust" [level=2]
+  - link "Security":
+    - /url: /en/security/
+  - link "Subprocessors":
+    - /url: /en/subprocessors/
+  - link "Accessibility":
+    - /url: /en/accessibility/
+  - heading "Contact" [level=2]
+  - link "Contact":
+    - /url: /en/contact/
+  - link "Live demo":
+    - /url: /en/demo/
+  - link "Sign in":
+    - /url: https://www.reticora.cloud/login
+  - text: Koyer Consulting für IT und Kommunikation UG (haftungsbeschränkt)
+  - link "Legal notice":
+    - /url: /en/legal-notice/
+  - link "Privacy":
+    - /url: /en/privacy/
+  - link "Terms":
+    - /url: /en/terms/
+  - text: Offer for businesses only
+  - link "Deutsch":
+    - /url: /geraete/

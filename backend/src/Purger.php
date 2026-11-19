@@ -8,7 +8,7 @@ use PDO;
 
 /**
  * Löschlauf (bin/purge.php, stündlich per Cron): Leads nach Frist, Rate-Limit-Zähler aus abgelaufenen Stundenfenstern,
- * Rate-Limit-Schlüssel einmal je UTC-Tag überschreiben (Spec Ä-10). Liefert nur Anzahlen.
+ * Rate-Limit-Schlüssel einmal je Stundenfenster überschreiben (Spec Ä-10, Ä-36). Liefert nur Anzahlen.
  */
 final class Purger
 {
@@ -16,31 +16,29 @@ final class Purger
     {
     }
 
-    /** @return array{leads_deleted:int, rate_limit_deleted:int, undelivered:int, held:int, not_delivered:int, key_rotated:int} */
+    /** @return array{leads_deleted:int, rate_limit_deleted:int, undelivered:int, held:int, not_delivered:int, pending:int, key_rotated:int} */
     public function run(int $now, int $retentionDays): array
     {
-        // Nicht zugestellte und zurückgehaltene Anfragen bleiben, bis sie zugestellt sind (bin/retry.php) oder von Hand erledigt wurden.
-        $stmt = $this->pdo->prepare('DELETE FROM lead WHERE created_at < :cutoff AND delivery NOT IN (:a, :b)');
-        $stmt->execute([':cutoff' => gmdate('Y-m-d H:i:s', $now - $retentionDays * 86400), ':a' => LeadRepository::NOT_DELIVERED, ':b' => LeadRepository::HELD]);
+        // Nicht zugestellte, zurückgehaltene und hängengebliebene (pending) Anfragen bleiben, bis sie zugestellt sind
+        // (bin/retry.php) oder von Hand erledigt wurden. Ein pending, das älter als die Frist ist, ist immer hängengeblieben (DS-05).
+        $stmt = $this->pdo->prepare('DELETE FROM lead WHERE created_at < :cutoff AND delivery NOT IN (:a, :b, :c)');
+        $stmt->execute([
+            ':cutoff' => gmdate('Y-m-d H:i:s', $now - $retentionDays * 86400),
+            ':a' => LeadRepository::NOT_DELIVERED, ':b' => LeadRepository::HELD, ':c' => LeadRepository::PENDING,
+        ]);
         $leads = $stmt->rowCount();
 
         $rate = (new RateLimiter($this->pdo))->purgeExpired($now);
         $rotated = (new RateLimitKey($this->pdo))->rotateIfStale($now) ? 1 : 0;
-
-        $count = function (string $status): int {
-            $q = $this->pdo->prepare('SELECT COUNT(*) FROM lead WHERE delivery = :s');
-            $q->execute([':s' => $status]);
-            return (int) $q->fetchColumn();
-        };
-        $held = $count(LeadRepository::HELD);
-        $notDelivered = $count(LeadRepository::NOT_DELIVERED);
+        $open = (new LeadRepository($this->pdo))->countUndelivered($now);
 
         return [
             'leads_deleted' => $leads,
             'rate_limit_deleted' => $rate,
-            'undelivered' => $held + $notDelivered,
-            'held' => $held,
-            'not_delivered' => $notDelivered,
+            'undelivered' => $open['undelivered'],
+            'held' => $open['held'],
+            'not_delivered' => $open['not_delivered'],
+            'pending' => $open['pending'],
             'key_rotated' => $rotated,
         ];
     }

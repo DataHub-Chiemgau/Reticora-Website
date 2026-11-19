@@ -7,7 +7,7 @@ namespace Reticora\Lead;
 final class Response
 {
     /** Gleiche Werte wie public/.htaccess für die statischen Seiten (geprüft in ContactPageTest). */
-    public const SITE_CSP = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'";
+    public const SITE_CSP = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'";
     public const SITE_PERMISSIONS = 'camera=(), microphone=(), geolocation=(), payment=(), usb=()';
     /** Wie die Website. Mit no-referrer sendete der Browser beim erneuten Absenden des Formulars `Origin: null` (dann 403). */
     public const SITE_REFERRER = 'strict-origin-when-cross-origin';

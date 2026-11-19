@@ -61,6 +61,7 @@ export const UI = {
   scrollHint: 'Schema seitlich verschiebbar.',
   cta: { title: 'Testen Sie Reticora 30\u00a0Tage mit Ihrem eigenen Netz.' },
   skip: 'Zum Inhalt',
+  previewNotice: 'Vorschau – Testsystem, nicht öffentlich',
   menu: 'Menü',
   beleg: 'Beleg',
   copy: 'Kopieren',
@@ -71,7 +72,7 @@ export const UI = {
   tableHint: 'Die Tabelle lässt sich seitlich verschieben.',
   featuresLabel: 'Funktionen',
   copyNamed: '{label} kopieren',
-  matrix: { yes: 'enthalten', no: 'nicht enthalten', unlimited: 'unbegrenzt' },
+  matrix: { yes: 'enthalten', no: 'nicht enthalten', unlimited: 'unbegrenzt', none: 'keines', na: 'entfällt' },
   devices: { filter: 'Kategorie', all: 'Alle', one: '1 Gerätefamilie', many: '{n} Gerätefamilien' },
   asOf: 'Stand',
   topo: {

@@ -1,0 +1,289 @@
+name: Deploy
+
+# Nur manuell. Ablauf: build -> preview (Vorschau mit Zugangsschutz) -> production (Umschalten, nach Freigabe der Umgebung).
+# `rollback` schaltet auf das vorige Release zurück. Siehe docs/deploy.md.
+#
+# Vorschau (target preview): Entwicklungs-Build (`npm run build`: noindex, Platzhalter erlaubt, Hinweis „Vorschau – Testsystem“),
+# Paket mit --allow-dev ("build: dev" in MANIFEST.txt). So lässt sich der echte Server schon vor dem Release testen.
+# Betrieb (target production): Sperre. Der Build-Job ruft `npm run build:release` auf. Solange die Release-Prüfung offene Mängel
+# meldet (Claims, Bilder, Anbieterangaben, Platzhalter), scheitert der Lauf dort, und es wird nichts hochgeladen.
+# Zusätzlich verweigert scripts/deploy/package.mjs jedes dist/ ohne die Marke dist/.release (außer --allow-dev, nur Vorschau),
+# und remote.sh schaltet nie ein Paket mit "build: dev" auf den Betrieb (S-13).
+#
+# Secrets (Umgebungen "preview" und "production", nur Namen hier):
+#   HETZNER_SSH_HOST, HETZNER_SSH_USER, HETZNER_SSH_KEY, HETZNER_KNOWN_HOSTS (festgelegter Hostschlüssel, Zeile für Port 222),
+#   PREVIEW_HTPASSWD (Format "benutzer:passwort"; der Hash entsteht im Lauf)
+#   Umgebung "preview", optional (alle neun oder keins): PREVIEW_DB_DSN, PREVIEW_DB_USER, PREVIEW_DB_PASSWORD, PREVIEW_SMTP_HOST,
+#   PREVIEW_SMTP_PORT (587 oder 465), PREVIEW_SMTP_USER, PREVIEW_SMTP_PASSWORD, PREVIEW_MAIL_FROM, PREVIEW_MAIL_TO. Daraus entsteht
+#   ~/reticora-config/config.preview.php auf dem Host (nur für die Vorschau; der Betrieb nimmt nur config.php).
+# Variablen der Umgebungen: PREVIEW_URL (Vorschau-Adresse), LIVE_URL (Standard https://www.reticora.de),
+#   RETICORA_SWITCH (symlink oder rsync, Standard symlink), PREVIEW_PHP_BIN (PHP-Programm auf dem Host, Standard php)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Ziel: preview (nur Vorschau), production (Vorschau, dann Freigabe und Umschalten) oder rollback (auf das vorige Release zurück)'
+        type: choice
+        required: true
+        default: preview
+        options:
+          - preview
+          - production
+          - rollback
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  SHA: ${{ github.sha }}
+
+jobs:
+  build:
+    if: inputs.target != 'rollback'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # kein Push in diesem Lauf: GITHUB_TOKEN nicht in .git/config ablegen (S-10)
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # Vorschau: Entwicklungs-Build ohne Release-Sperre. Er trägt nie die Marke dist/.release.
+      - name: Entwicklungs-Build für die Vorschau
+        if: inputs.target == 'preview'
+        run: npm run build
+      # Betrieb: muss bestehen. Scheitert heute absichtlich an offenen Release-Mängeln; dann endet der Lauf hier.
+      - name: Release-Build (Release-Sperre)
+        if: inputs.target == 'production'
+        run: npm run build:release
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2.40.0
+        with:
+          php-version: '8.4'
+          extensions: mbstring
+          tools: composer
+          coverage: none
+      - run: composer audit --locked --no-dev
+        working-directory: backend
+      # Das Paket führt `composer install --no-dev --optimize-autoloader` im Paketordner aus (kein vendor/ mit Entwicklungswerkzeugen).
+      # --allow-dev gibt es nur im Vorschau-Zweig; der Betrieb packt ausschließlich ein dist/ mit Release-Marke.
+      - name: Paket für die Vorschau (Entwicklungs-Build erlaubt)
+        if: inputs.target == 'preview'
+        run: node scripts/deploy/package.mjs --allow-dev --out release --sha "$SHA"
+      - name: Paket für den Betrieb (nur mit Release-Marke)
+        if: inputs.target == 'production'
+        run: node scripts/deploy/package.mjs --out release --sha "$SHA"
+      - name: Paket prüfen
+        env:
+          TARGET: ${{ inputs.target }}
+        run: |
+          set -euo pipefail
+          short="${SHA::12}"
+          test -f "release/reticora-${short}/MANIFEST.txt"
+          test -f "release/reticora-${short}/www/api/lead.php"
+          if find "release/reticora-${short}" -name config.php -o -name '*.map' | grep -q .; then echo "Unzulässige Dateien im Paket" >&2; exit 1; fi
+          # Betrieb nur mit Release-Build, Vorschau nur mit Entwicklungs-Build: die Art steht im Manifest.
+          want=dev; [ "$TARGET" = production ] && want=release
+          grep -qx "build: ${want}" "release/reticora-${short}/MANIFEST.txt" || { echo "MANIFEST.txt: 'build: ${want}' erwartet" >&2; exit 1; }
+          head -5 "release/reticora-${short}/MANIFEST.txt"
+      # Tarball statt Ordner: upload-artifact lässt Punktdateien (.htaccess) in Ordnern standardmäßig weg.
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-package
+          path: release/*.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+
+  # S-02: Jobs mit Secrets laufen nur vom Hauptzweig (ein Lauf auf einem anderen Zweig führte dessen Skripte mit dem
+  # SSH-Schlüssel aus). Zusätzlich verlangen beide Umgebungen in GitHub "Deployment branches: main" und Prüfer (docs/deploy.md).
+  preview:
+    if: github.ref == 'refs/heads/main' && inputs.target != 'rollback'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: preview
+    env:
+      HETZNER_SSH_HOST: ${{ secrets.HETZNER_SSH_HOST }}
+      HETZNER_SSH_USER: ${{ secrets.HETZNER_SSH_USER }}
+      HETZNER_SSH_KEY: ${{ secrets.HETZNER_SSH_KEY }}
+      HETZNER_KNOWN_HOSTS: ${{ secrets.HETZNER_KNOWN_HOSTS }}
+      PREVIEW_HTPASSWD: ${{ secrets.PREVIEW_HTPASSWD }}
+      PREVIEW_URL: ${{ vars.PREVIEW_URL }}
+      SWITCH: ${{ vars.RETICORA_SWITCH || 'symlink' }}
+      TARGET: ${{ inputs.target }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # kein Push in diesem Lauf: GITHUB_TOKEN nicht in .git/config ablegen (S-10)
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-package
+          path: release
+      - name: Paket entpacken
+        run: |
+          set -euo pipefail
+          tar -xzf "release/reticora-${SHA::12}.tar.gz" -C release
+          test -f "release/reticora-${SHA::12}/remote.sh"
+      - name: SSH einrichten (Port 222, festgelegter Hostschlüssel)
+        run: bash scripts/deploy/ssh-setup.sh
+      - name: Release hochladen und prüfen
+        run: |
+          set -euo pipefail
+          rel="${SHA::12}"
+          # Betriebslauf (target production): auf dem Host nur Release-Builds zulassen; sonst auch den Entwicklungs-Build der Vorschau.
+          REQ=""; [ "$TARGET" = production ] && REQ=" release"
+          incoming=".incoming-${rel}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          # S-03: nie in releases/<sha> selbst laden (ist es das laufende Release, löschte rsync --delete dort den Symlink auf
+          # config.php und tauschte Dateien im Betrieb einzeln aus). Liegt der Stand schon auf dem Host, entfällt der Upload;
+          # sonst in einen neuen Ordner laden, den remote.sh install prüft und atomar in releases/<sha> umbenennt.
+          # remote.sh kommt dafür aus dem ausgecheckten Stand über STDIN.
+          # shellcheck disable=SC2029
+          state="$(ssh hetzner "bash -s -- exists ${rel}${REQ}" < scripts/deploy/remote.sh)"
+          if [ "$state" = vorhanden ]; then
+            echo "Release ${rel} liegt schon auf dem Host: kein Upload."
+          else
+            rsync -a --exclude=/reticora/config.php --rsync-path="mkdir -p releases/${incoming} && rsync" \
+              "release/reticora-${rel}/" "hetzner:releases/${incoming}/"
+            # shellcheck disable=SC2029
+            ssh hetzner "bash -s -- install ${rel} ${incoming}${REQ}" < scripts/deploy/remote.sh
+          fi
+          # shellcheck disable=SC2029
+          ssh hetzner "RETICORA_SWITCH=${SWITCH} bash releases/${rel}/remote.sh verify ${rel}${REQ}"
+      # Optional: Konfiguration der Vorschau (Datenbank, Versand) aus Secrets. Der Inhalt entsteht lokal aus Umgebungsvariablen
+      # (scripts/deploy/preview-config.mjs, jeder Wert per var_export-Schreibweise) und geht über STDIN auf den Host: kein Wert in
+      # Befehlszeile oder Protokoll. Danach legt migrate.php die Tabellen an. Muss vor dem Einrichten der Vorschau laufen (Symlink).
+      - name: Vorschau-Konfiguration schreiben und Datenbank einrichten (optional)
+        env:
+          PREVIEW_DB_DSN: ${{ secrets.PREVIEW_DB_DSN }}
+          PREVIEW_DB_USER: ${{ secrets.PREVIEW_DB_USER }}
+          PREVIEW_DB_PASSWORD: ${{ secrets.PREVIEW_DB_PASSWORD }}
+          PREVIEW_SMTP_HOST: ${{ secrets.PREVIEW_SMTP_HOST }}
+          PREVIEW_SMTP_PORT: ${{ secrets.PREVIEW_SMTP_PORT }}
+          PREVIEW_SMTP_USER: ${{ secrets.PREVIEW_SMTP_USER }}
+          PREVIEW_SMTP_PASSWORD: ${{ secrets.PREVIEW_SMTP_PASSWORD }}
+          PREVIEW_MAIL_FROM: ${{ secrets.PREVIEW_MAIL_FROM }}
+          PREVIEW_MAIL_TO: ${{ secrets.PREVIEW_MAIL_TO }}
+          PHP_BIN: ${{ vars.PREVIEW_PHP_BIN || 'php' }}
+        run: |
+          set -euo pipefail
+          rel="${SHA::12}"
+          names=(PREVIEW_DB_DSN PREVIEW_DB_USER PREVIEW_DB_PASSWORD PREVIEW_SMTP_HOST PREVIEW_SMTP_PORT PREVIEW_SMTP_USER PREVIEW_SMTP_PASSWORD PREVIEW_MAIL_FROM PREVIEW_MAIL_TO)
+          missing=()
+          for n in "${names[@]}"; do [ -n "${!n:-}" ] || missing+=("$n"); done
+          if [ "${#missing[@]}" -eq "${#names[@]}" ]; then
+            echo "Keine PREVIEW_*-Secrets für die Konfiguration gesetzt: Schritt übersprungen (config.preview.php muss dann von Hand liegen)."
+            exit 0
+          fi
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "Vorschau-Konfiguration unvollständig, es fehlen: ${missing[*]}" >&2
+            exit 1
+          fi
+          [[ "$PHP_BIN" =~ ^[A-Za-z0-9._/-]+$ ]] || { echo "PREVIEW_PHP_BIN enthält unzulässige Zeichen" >&2; exit 1; }
+          # Erst erzeugen (scheitert bei fehlendem oder ungültigem Wert, ohne Werte auszugeben), dann übertragen.
+          cfg="$(node scripts/deploy/preview-config.mjs)"
+          # umask 077 und chmod 600; atomar ersetzen; eine leere Datei wird nie übernommen. Der Befehl enthält keine Werte.
+          printf '%s\n' "$cfg" | ssh hetzner 'umask 077 && mkdir -p reticora-config && cat > reticora-config/.config.preview.php.new && test -s reticora-config/.config.preview.php.new && chmod 600 reticora-config/.config.preview.php.new && mv -f reticora-config/.config.preview.php.new reticora-config/config.preview.php'
+          # shellcheck disable=SC2029
+          ssh hetzner "${PHP_BIN} -l reticora-config/config.preview.php >/dev/null && ${PHP_BIN} releases/${rel}/reticora/bin/migrate.php reticora-config/config.preview.php"
+      - name: Vorschau mit Zugangsschutz einrichten
+        run: |
+          set -euo pipefail
+          rel="${SHA::12}"
+          case "${PREVIEW_HTPASSWD}" in *:*) ;; *) echo "PREVIEW_HTPASSWD muss 'benutzer:passwort' sein" >&2; exit 1 ;; esac
+          user="${PREVIEW_HTPASSWD%%:*}"
+          pass="${PREVIEW_HTPASSWD#*:}"
+          # S-09: bcrypt (Apache 2.4 versteht $2y$) statt APR1-MD5; das Passwort geht über STDIN, nicht über die Befehlszeile.
+          command -v htpasswd >/dev/null || { sudo apt-get update && sudo apt-get install -y apache2-utils; }
+          line="$(printf '%s' "$pass" | htpasswd -niBC 12 "$user" | sed -n '1p')"
+          case "$line" in "${user}:\$2y\$"*) ;; *) echo "htpasswd lieferte keinen bcrypt-Hash" >&2; exit 1 ;; esac
+          # shellcheck disable=SC2029
+          printf '%s\n' "$line" | ssh hetzner "RETICORA_SWITCH=${SWITCH} bash releases/${rel}/remote.sh preview ${rel}${REQ}"
+      - name: Rauchtest der Vorschau
+        run: |
+          test -n "${PREVIEW_URL}" || { echo "Variable PREVIEW_URL fehlt" >&2; exit 1; }
+          bash scripts/deploy/smoke.sh "${PREVIEW_URL}" "${PREVIEW_HTPASSWD}"
+
+  production:
+    if: github.ref == 'refs/heads/main' && inputs.target == 'production'
+    needs: [build, preview]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Geschützte Umgebung mit erforderlichen Prüfern: zweite Freigabe nach Sichtprüfung der Vorschau.
+    environment: production
+    env:
+      HETZNER_SSH_HOST: ${{ secrets.HETZNER_SSH_HOST }}
+      HETZNER_SSH_USER: ${{ secrets.HETZNER_SSH_USER }}
+      HETZNER_SSH_KEY: ${{ secrets.HETZNER_SSH_KEY }}
+      HETZNER_KNOWN_HOSTS: ${{ secrets.HETZNER_KNOWN_HOSTS }}
+      LIVE_URL: ${{ vars.LIVE_URL || 'https://www.reticora.de' }}
+      SWITCH: ${{ vars.RETICORA_SWITCH || 'symlink' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # kein Push in diesem Lauf: GITHUB_TOKEN nicht in .git/config ablegen (S-10)
+          persist-credentials: false
+      - name: SSH einrichten (Port 222, festgelegter Hostschlüssel)
+        run: bash scripts/deploy/ssh-setup.sh
+      # Nur ein Release-Build geht in den Betrieb: Die Art steht im Manifest des hochgeladenen Pakets (auf dem Host geprüft).
+      # remote.sh activate verweigert "build: dev" ein zweites Mal.
+      - name: Paket ist ein Release-Build (MANIFEST.txt)
+        run: |
+          # shellcheck disable=SC2029
+          ssh hetzner "grep -qx 'build: release' releases/${SHA::12}/MANIFEST.txt" || { echo "Paket ${SHA::12} ist kein Release-Build: Abbruch" >&2; exit 1; }
+      - name: Auf das Release umschalten (voriges bleibt für den Rückweg)
+        id: activate
+        run: |
+          # Ausdehnung auf dem Client ist gewollt
+          # shellcheck disable=SC2029
+          ssh hetzner "RETICORA_SWITCH=${SWITCH} bash releases/${SHA::12}/remote.sh activate ${SHA::12}"
+      - name: Rauchtest des Betriebs
+        id: smoke
+        run: bash scripts/deploy/smoke.sh "${LIVE_URL}"
+      - name: Automatisch zurückschalten, weil der Rauchtest scheiterte
+        if: failure() && steps.activate.outcome == 'success'
+        run: |
+          # Ausdehnung auf dem Client ist gewollt
+          # shellcheck disable=SC2029
+          ssh hetzner "RETICORA_SWITCH=${SWITCH} bash releases/${SHA::12}/remote.sh rollback"
+      - name: Alte Releases aufräumen (current, previous und preview bleiben)
+        run: |
+          # Ausdehnung auf dem Client ist gewollt
+          # shellcheck disable=SC2029
+          ssh hetzner "RETICORA_SWITCH=${SWITCH} bash releases/${SHA::12}/remote.sh prune 5"
+
+  rollback:
+    if: github.ref == 'refs/heads/main' && inputs.target == 'rollback'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    env:
+      HETZNER_SSH_HOST: ${{ secrets.HETZNER_SSH_HOST }}
+      HETZNER_SSH_USER: ${{ secrets.HETZNER_SSH_USER }}
+      HETZNER_SSH_KEY: ${{ secrets.HETZNER_SSH_KEY }}
+      HETZNER_KNOWN_HOSTS: ${{ secrets.HETZNER_KNOWN_HOSTS }}
+      LIVE_URL: ${{ vars.LIVE_URL || 'https://www.reticora.de' }}
+      SWITCH: ${{ vars.RETICORA_SWITCH || 'symlink' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # kein Push in diesem Lauf: GITHUB_TOKEN nicht in .git/config ablegen (S-10)
+          persist-credentials: false
+      - name: SSH einrichten (Port 222, festgelegter Hostschlüssel)
+        run: bash scripts/deploy/ssh-setup.sh
+      # remote.sh kommt aus dem ausgecheckten Stand und wird über STDIN ausgeführt; es ist kein neues Paket nötig.
+      - name: Auf das vorige Release zurückschalten
+        run: |
+          # Ausdehnung auf dem Client ist gewollt
+          # shellcheck disable=SC2029
+          ssh hetzner "RETICORA_SWITCH=${SWITCH} bash -s -- rollback" < scripts/deploy/remote.sh
+      - name: Rauchtest des Betriebs
+        run: bash scripts/deploy/smoke.sh "${LIVE_URL}"

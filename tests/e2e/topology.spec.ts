@@ -209,3 +209,17 @@ test('axe ohne Befunde auf dem Schema', async ({ page }) => {
   const r = await new AxeBuilder({ page }).include('[data-topo]').analyze();
   expect(r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
 });
+
+// Barrierefreiheit H-2: Das Bild heißt nur wie sein Titel; die lange Beschreibung ist die Beschreibung, nicht Teil des Namens.
+test('Netzschema und Verbindungsschema: Name = Titel, Beschreibung = desc (H-2)', async ({ page }) => {
+  for (const [path, frame] of [['/produkt/topologie-impact/', '.rt-topo-frame'], ['/en/product/topology-impact/', '.rt-topo-frame'], ['/', '.rt-schema-frame'], ['/en/', '.rt-schema-frame']] as const) {
+    await page.goto(path);
+    const img = page.locator(`${frame} svg[role="img"]`).first();
+    const title = (await img.locator('title').textContent())!.trim();
+    const desc = (await img.locator('desc').textContent())!.trim();
+    expect(title.length, path).toBeGreaterThan(5);
+    expect(desc.length, path).toBeGreaterThan(title.length);
+    await expect(img, path).toHaveAccessibleName(title);
+    await expect(img, path).toHaveAccessibleDescription(desc);
+  }
+});

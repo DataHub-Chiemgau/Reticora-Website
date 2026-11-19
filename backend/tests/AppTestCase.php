@@ -42,6 +42,7 @@ abstract class AppTestCase extends TestCase
     {
         return Config::fromArray($overrides + [
             'site_url' => 'https://www.example.com',
+            'retention_days' => 90,
             'contact_email' => 'kontakt@example.com',
             'db' => ['dsn' => 'sqlite::memory:'],
             'mail' => ['from_address' => 'versand@example.com', 'from_name' => 'Reticora Website', 'to_address' => 'vertrieb@example.com'],
@@ -89,11 +90,13 @@ abstract class AppTestCase extends TestCase
      */
     protected function post(array $fields, array $headers = [], string $ip = '203.0.113.7'): Response
     {
+        $body = http_build_query($fields);
         $headers = array_change_key_case($headers + [
             'Origin' => 'https://www.example.com',
             'Content-Type' => 'application/x-www-form-urlencoded',
+            'Content-Length' => (string) strlen($body),
         ], CASE_LOWER);
-        return $this->app->handle(new Request('POST', $headers, [], http_build_query($fields), $ip));
+        return $this->app->handle(new Request('POST', $headers, [], $body, $ip));
     }
 
     /** @param array<string,string> $headers */
@@ -102,8 +105,15 @@ abstract class AppTestCase extends TestCase
         $headers = array_change_key_case($headers + [
             'Origin' => 'https://www.example.com',
             'Content-Type' => 'application/x-www-form-urlencoded',
+            'Content-Length' => (string) strlen($body),
         ], CASE_LOWER);
         return $this->app->handle(new Request('POST', $headers, [], $body, $ip));
+    }
+
+    /** POST-Anfrage wie vom Browser: mit Content-Length (ohne sie antwortet die App 411, S-06). @param array<string,string> $headers */
+    protected static function postRequest(array $headers, string $body, string $ip): Request
+    {
+        return new Request('POST', array_change_key_case($headers, CASE_LOWER) + ['content-length' => (string) strlen($body)], [], $body, $ip);
     }
 
     protected function countLeads(): int
