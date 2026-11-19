@@ -53,7 +53,13 @@ final class App
         if ($request->method !== 'POST') {
             return $this->reject($request, 405, 'Method Not Allowed', ['Allow' => 'POST']);
         }
-        $declared = (int) ($request->header('content-length') ?? 0);
+        // S-06: nur mit gültiger Content-Length und ohne Transfer-Encoding. Bei `chunked` kürzt Apache (LimitRequestBody) den
+        // Körper je nach PHP-Einbindung, während PHP ihn schon verarbeitet; Browser senden Formulare immer mit Länge.
+        $length = $request->header('content-length');
+        if ($request->header('transfer-encoding') !== null || $length === null || preg_match('/^\d{1,10}$/', trim($length)) !== 1) {
+            return $this->reject($request, 411, 'Length Required');
+        }
+        $declared = (int) trim($length);
         if ($declared > Request::MAX_BODY || strlen($request->body) > Request::MAX_BODY) {
             return $this->reject($request, 413, 'Payload Too Large');
         }
@@ -102,6 +108,11 @@ final class App
         }
 
         $leads = new LeadRepository($pdo);
+        if ($state === RateLimiter::HELD && $leads->countHeld() >= $this->config->heldMax()) {
+            // S-01: Der Bestand an zurückgehaltenen Anfragen ist begrenzt (Speicher, Postfach); darüber wie an der harten Grenze.
+            ($this->log)('held_ceiling');
+            return $this->tooManyRequests($request, $lang, $retryAfter);
+        }
         $lead = $result['lead'];
         $id = $leads->insert($lead, $now);
         if ($state === RateLimiter::HELD) {

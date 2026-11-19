@@ -1,0 +1,157 @@
+# /geraete/ (geraete-de-gefiltert), Chromium, 1280 × 900; Prüfung in docs/qa/2026-11-barrierefreiheit.md
+- link "Zum Inhalt":
+  - /url: "#inhalt"
+- banner:
+  - link "Reticora":
+    - /url: /
+  - navigation "Hauptnavigation":
+    - link "Produkt":
+      - /url: /produkt/discovery/
+    - link "Geräte":
+      - /url: /geraete/
+    - link "Lösungen":
+      - /url: /loesungen/msp/
+    - link "Sicherheit":
+      - /url: /sicherheit/
+    - link "Preise":
+      - /url: /preise/
+  - group "Sprache":
+    - text: DE
+    - link "EN – English":
+      - /url: /en/devices/
+      - text: EN
+  - link "Anmelden":
+    - /url: https://www.reticora.cloud/login
+  - link "Live-Demo":
+    - /url: /demo/
+  - link "30 Tage testen":
+    - /url: https://www.reticora.cloud/onboarding
+- main:
+  - region "Wird Ihr Gerät erkannt?":
+    - heading "Wird Ihr Gerät erkannt?" [level=1]
+    - paragraph:
+      - text: Der Collector bringt Profile für verbreitete Netzwerk-, Server-, Storage- und Stromgeräte mit. Die Tabelle zeigt jede Gerätefamilie mit den Protokollen, über die Reticora sie erkennt und ausliest.
+      - group: "Beleg : Erkannte Hersteller und Geräteklassen"
+    - link "30 Tage testen":
+      - /url: https://www.reticora.cloud/onboarding
+    - link "Live-Demo":
+      - /url: /demo/
+    - paragraph: Angebot nur für Unternehmen.
+  - region "Gerätefamilien":
+    - heading "Gerätefamilien" [level=2]
+    - group "Kategorie":
+      - button "Alle"
+      - button "Netzwerk"
+      - button "Server und Virtualisierung"
+      - button "Storage" [pressed]
+      - button "Strom"
+    - paragraph: 4 Gerätefamilien
+    - group: "Beleg : Erkannte Hersteller und Geräteklassen"
+    - region "Gerätefamilien mit Hersteller und Protokollen":
+      - table:
+        - rowgroup:
+          - row "Hersteller Familie Protokolle":
+            - columnheader "Hersteller"
+            - columnheader "Familie"
+            - columnheader "Protokolle"
+        - rowgroup:
+          - row "Storage":
+            - rowheader "Storage"
+          - row "iXsystems TrueNAS SNMP, SSH":
+            - rowheader "iXsystems"
+            - cell "TrueNAS"
+            - cell "SNMP, SSH"
+          - row "NetApp ONTAP SNMP":
+            - rowheader "NetApp"
+            - cell "ONTAP"
+            - cell "SNMP"
+          - row "QNAP QTS SNMP":
+            - rowheader "QNAP"
+            - cell "QTS"
+            - cell "SNMP"
+          - row "Synology DSM SNMP":
+            - rowheader "Synology"
+            - cell "DSM"
+            - cell "SNMP"
+    - paragraph: Herstellernamen sind Marken ihrer Inhaber und stehen hier nur zur Beschreibung der Kompatibilität.
+  - region "So erkennt der Collector ein Gerät":
+    - heading "So erkennt der Collector ein Gerät" [level=2]
+    - paragraph:
+      - text: "Für jedes gefundene Gerät geht der Collector in fester Reihenfolge vor: zuerst die Antwort auf SNMP (sysObjectID und Beschreibung), dann Redfish (Hersteller und Modell des Server-Controllers), dann das Banner eines Dienstes wie SSH. Dazu nimmt er die Herstellerkennung aus der MAC-Adresse. Das erste passende Profil legt Typ, Hersteller und Modell fest."
+      - group: "Beleg : Klassifikation"
+    - link "Protokolle und Ablauf der Discovery":
+      - /url: /produkt/discovery/
+  - region "Was mit unbekannten Geräten geschieht":
+    - heading "Was mit unbekannten Geräten geschieht" [level=2]
+    - paragraph:
+      - text: Passt kein Profil, legt Reticora das Gerät trotzdem an, als generisches Gerät. Den Hersteller nennt die MAC-Adresse, und in der Review-Inbox wartet ein Review „Unklassifiziertes Gerät“. Sie setzen den Typ am CI und erledigen das Review.
+      - group: "Beleg : Klassifikation"
+      - group: "Beleg : Arten von Reviews"
+      - text: Ein generisches Gerät hebt die Discovery später auf einen bestimmten Typ; einen anderen Typ, etwa den, den Sie gesetzt haben, ändert sie nie.
+      - group: "Beleg : Typ eines unbekannten Geräts"
+  - region "Profile ergänzen":
+    - heading "Profile ergänzen" [level=2]
+    - paragraph:
+      - text: "Ein Profil ist eine beschreibende Datei: woran ein Gerät zu erkennen ist und welche Werte der Collector abfragt. Zusätzliche oder geänderte Profile lädt der Collector aus einem Verzeichnis, ohne dass Sie auf eine neue Version warten."
+      - group: "Beleg : Erweiterbare Geräteprofile"
+      - text: Fehlt Ihnen eine Familie, schreiben Sie uns.
+    - link "Kontakt":
+      - /url: /kontakt/
+  - region "Testen Sie Reticora 30 Tage mit Ihrem eigenen Netz.":
+    - heading "Testen Sie Reticora 30 Tage mit Ihrem eigenen Netz." [level=2]
+    - link "30 Tage testen":
+      - /url: https://www.reticora.cloud/onboarding
+    - link "Live-Demo":
+      - /url: /demo/
+    - link "Kontakt":
+      - /url: /kontakt/
+    - paragraph: Angebot nur für Unternehmen.
+- contentinfo:
+  - heading "Produkt" [level=2]
+  - link "Discovery":
+    - /url: /produkt/discovery/
+  - link "Datenqualität":
+    - /url: /produkt/datenqualitaet/
+  - link "Topologie und Impact":
+    - /url: /produkt/topologie-impact/
+  - link "Verwaltung":
+    - /url: /produkt/verwaltung/
+  - link "Betrieb":
+    - /url: /produkt/betrieb/
+  - link "Compliance":
+    - /url: /produkt/compliance/
+  - link "API":
+    - /url: /produkt/api/
+  - heading "Einsatz" [level=2]
+  - link "Für Netzbetreiber":
+    - /url: /loesungen/isp/
+  - link "Für MSPs":
+    - /url: /loesungen/msp/
+  - link "Unterstützte Geräte":
+    - /url: /geraete/
+  - link "Preise":
+    - /url: /preise/
+  - heading "Vertrauen" [level=2]
+  - link "Sicherheit":
+    - /url: /sicherheit/
+  - link "Subprozessoren":
+    - /url: /subprozessoren/
+  - link "Barrierefreiheit":
+    - /url: /barrierefreiheit/
+  - heading "Kontakt" [level=2]
+  - link "Kontakt":
+    - /url: /kontakt/
+  - link "Live-Demo":
+    - /url: /demo/
+  - link "Anmelden":
+    - /url: https://www.reticora.cloud/login
+  - text: Koyer Consulting für IT und Kommunikation UG (haftungsbeschränkt)
+  - link "Impressum":
+    - /url: /impressum/
+  - link "Datenschutz":
+    - /url: /datenschutz/
+  - link "AGB":
+    - /url: /agb/
+  - text: Angebot nur für Unternehmen
+  - link "English":
+    - /url: /en/devices/

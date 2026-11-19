@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-// Cronjob (z. B. alle 15 Minuten): stellt zurückgehaltene (held) und nicht zugestellte (not_delivered) Anfragen an das
-// Vertriebspostfach zu. Aufruf: php bin/retry.php [Pfad/zu/config.php] [Höchstzahl Mails, Standard 20].
+// Cronjob (z. B. alle 15 Minuten): stellt zurückgehaltene (held), nicht zugestellte (not_delivered) und hängengebliebene
+// (pending seit über 15 Minuten) Anfragen an das Vertriebspostfach zu. Aufruf: php bin/retry.php [Pfad/zu/config.php] [Höchstzahl Mails, Standard 20].
 // Ausgabe nur Anzahlen. Exit 1 bei Fehler (z. B. SMTP nicht erreichbar), sonst 0.
 if (PHP_SAPI !== 'cli') {
     exit(1);

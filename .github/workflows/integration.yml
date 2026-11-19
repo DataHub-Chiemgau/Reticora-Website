@@ -1,0 +1,63 @@
+name: Integration
+
+# Zielumgebung (README „Zielumgebung“): Apache 2.4 + PHP 8.4 (mod_php), MariaDB 11.4, Mailpit mit STARTTLS und Anmeldung.
+# Backend-Integrationstests laufen IM Web-Container (gegen db und mail im Compose-Netz, mit der Test-CA im Systemspeicher
+# des Containers); die Browser-Tests laufen auf dem Runner gegen http://127.0.0.1:8088 und lesen Mailpit über :8025.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # kein Push in diesem Lauf: GITHUB_TOKEN nicht in .git/config ablegen (S-10)
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # dist/ (Webroot) und backend/templates/ (422-Seite) aus demselben Build
+      - run: npm run build
+      # PHPUnit für die Backend-Integrationstests (backend/ wird schreibgeschützt in den Web-Container eingehängt)
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2.40.0
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_mysql
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+        working-directory: backend
+      - run: docker compose up -d --build --wait --wait-timeout 300
+      - name: Backend-Integrationstests im Web-Container (MariaDB, SMTP mit STARTTLS und Anmeldung)
+        run: >-
+          docker compose exec -T -w /opt/backend-src web
+          php vendor/bin/phpunit --testsuite integration --do-not-cache-result
+      - run: npx playwright install --with-deps chromium
+      - name: Browser-Integrationstests gegen den Container
+        run: npx playwright test -c playwright.integration.config.ts
+        env:
+          RETICORA_IT_BASE_URL: http://127.0.0.1:8088
+          RETICORA_IT_MAILPIT_URL: http://127.0.0.1:8025
+      - name: Protokolle des Stacks sichern
+        if: failure()
+        run: docker compose logs --no-color --timestamps > compose-logs.txt 2>&1 || true
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: failure()
+        with:
+          name: integration-diagnose
+          path: |
+            compose-logs.txt
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Stack entfernen
+        if: always()
+        run: docker compose down -v

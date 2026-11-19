@@ -1,3 +1,4 @@
+import { fitScrollFrames } from './frames';
 for (const b of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
   const box = b.closest('.rt-code, .demo-row');
   const status = box?.querySelector('[role=status]');
@@ -15,3 +16,5 @@ for (const b of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
     timer = window.setTimeout(() => status && (status.textContent = ''), 2000);
   });
 }
+
+fitScrollFrames();

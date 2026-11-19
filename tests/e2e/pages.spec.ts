@@ -94,17 +94,12 @@ for (const path of PAGES) {
       expect(r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
     });
 
-    test('keine fremden Hosts, keine Konsolenfehler', async ({ page, baseURL }) => {
-      const hosts = new Set<string>();
+    // Fremde Hosts, Cookies und Speicher prüft privacy.spec.ts auf jeder Seite (DS-01).
+    test('keine Konsolenfehler', async ({ page }) => {
       const errors: string[] = [];
-      page.on('request', (r) => {
-        const u = new URL(r.url());
-        if (u.protocol.startsWith('http')) hosts.add(u.host);
-      });
       page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
       page.on('pageerror', (e) => errors.push(e.message));
       await page.goto(path, { waitUntil: 'networkidle' });
-      expect([...hosts]).toEqual([new URL(baseURL!).host]);
       expect(errors).toEqual([]);
     });
   });

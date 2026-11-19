@@ -50,8 +50,8 @@ const LABEL = {
 ---
 
 <section class="rt-topo" data-topo data-lang={lang} aria-label={T.section}>
-  <section class="rt-topo-frame" tabindex="0" aria-label={T.title}>
-    <svg viewBox="0 0 1100 420" role="img" aria-labelledby={`${id}-t ${id}-d`}>
+  <section class="rt-topo-frame" tabindex="0" data-scroll-frame aria-label={T.title}>
+    <svg viewBox="0 0 1100 420" role="img" aria-labelledby={`${id}-t`} aria-describedby={`${id}-d`}>
       <title id={`${id}-t`}>{T.title}</title>
       <desc id={`${id}-d`}>{T.desc}</desc>
       <g>

@@ -15,7 +15,78 @@ function walk(dir: string, ext: string): string[] {
   });
 }
 
+/** Alle Dateien unter dir (auch Punktdateien). */
+function all(dir: string): string[] {
+  return readdirSync(dir).flatMap((n) => {
+    const p = join(dir, n);
+    return statSync(p).isDirectory() ? all(p) : [p];
+  });
+}
+
+/**
+ * Fremde Ressourcen und Vorab-Verbindungen im Build (Datenschutzprotokoll DS-02, Sicherheitsprotokoll B-01/B-02): Diese eine
+ * Prüfung über den gebauten Stand ersetzt die Einzelsuchen der beiden Protokolle. Erlaubt sind Links (<a href>) und kanonische
+ * bzw. Sprachverweise (<link rel="canonical|alternate">), weil der Browser sie nicht von selbst lädt.
+ */
+function foreignLoads(name: string, text: string): string[] {
+  const out: string[] = [];
+  const external = (u: string) => /^(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(u.trim());
+  if (name.endsWith('.html')) {
+    for (const m of text.matchAll(/<link\b[^>]*>/gi)) {
+      const tag = m[0];
+      const rel = (/\srel="([^"]*)"/i.exec(tag)?.[1] ?? '').toLowerCase().split(/\s+/);
+      if (rel.some((r) => ['preconnect', 'dns-prefetch', 'prefetch', 'prerender'].includes(r))) out.push(`Vorab-Verbindung: ${tag}`);
+      const href = /\shref="([^"]*)"/i.exec(tag)?.[1] ?? '';
+      if (external(href) && !rel.some((r) => r === 'canonical' || r === 'alternate')) out.push(`fremde Ressource: ${tag}`);
+    }
+    if (/<script\b[^>]*type="speculationrules"/i.test(text)) out.push('speculationrules');
+    for (const m of text.matchAll(/<(?:script|img|iframe|source|video|audio|track|embed|object|input)\b[^>]*>/gi)) {
+      for (const a of m[0].matchAll(/\s(src|srcset|poster|data|formaction)="([^"]*)"/gi)) {
+        if (a[2].split(',').some((part) => external(part.trim().split(/\s+/)[0]))) out.push(`fremde Ressource: ${m[0]}`);
+      }
+    }
+    for (const m of text.matchAll(/<form\b[^>]*\saction="([^"]*)"/gi)) if (external(m[1])) out.push(`Formular an fremden Host: ${m[0]}`);
+  }
+  if (name.endsWith('.css') || name.endsWith('.html')) {
+    if (/url\(\s*['"]?\s*(?:[a-z]+:)?\/\//i.test(text)) out.push('url() mit fremdem Host');
+    if (/@import\b/i.test(text)) out.push('@import');
+  }
+  if (/[#@]\s*sourceMappingURL=/.test(text)) out.push('sourceMappingURL');
+  return out;
+}
+
+describe('foreignLoads erkennt, was der Browser von selbst lädt', () => {
+  test.each([
+    ['a.html', '<link rel="preconnect" href="https://fonts.example.com">'],
+    ['a.html', '<link rel="dns-prefetch" href="//cdn.example.com">'],
+    ['a.html', '<link rel="prefetch" href="/x/">'],
+    ['a.html', '<link rel="stylesheet" href="https://cdn.example.com/a.css">'],
+    ['a.html', '<script type="speculationrules">{}</script>'],
+    ['a.html', '<img src="//tracker.example.com/p.gif">'],
+    ['a.html', '<img srcset="/a.png 1x, https://cdn.example.com/b.png 2x">'],
+    ['a.html', '<video poster="https://cdn.example.com/p.jpg"></video>'],
+    ['a.html', '<form action="https://forms.example.com/x">'],
+    ['a.css', 'a{background:url(https://cdn.example.com/a.png)}'],
+    ['a.css', '@import "/b.css";'],
+    ['a.js', 'x()\n//# sourceMappingURL=a.js.map'],
+  ])('%s: %s', (name, text) => {
+    expect(foreignLoads(name, text).length).toBeGreaterThan(0);
+  });
+  test('erlaubt: Links, canonical, alternate, eigene Ressourcen', () => {
+    expect(foreignLoads('a.html', '<a href="https://www.reticora.cloud/login">x</a><link rel="canonical" href="https://www.reticora.de/"><link rel="alternate" hreflang="en" href="https://www.reticora.de/en/"><link rel="stylesheet" href="/_astro/a.css"><img src="/a.png"><script type="module" src="/_astro/b.js"></script>')).toEqual([]);
+  });
+});
+
 describe.skipIf(!hasDist)('dist', () => {
+  test('DS-02: keine Vorab-Verbindungen, keine fremden Ressourcen, keine Source-Maps', () => {
+    const files = all(dist);
+    expect(files.filter((f) => f.endsWith('.map'))).toEqual([]);
+    const found = files
+      .filter((f) => /\.(html|css|js|mjs|svg|xml|txt|json)$/.test(f))
+      .flatMap((f) => foreignLoads(f, readFileSync(f, 'utf8')).map((x) => `${f.slice(dist.length + 1)}: ${x}`));
+    expect(found).toEqual([]);
+  });
+
   test('kein Inline-Skript und kein style-Attribut im HTML', () => {
     for (const f of walk(dist, '.html')) {
       const html = readFileSync(f, 'utf8');

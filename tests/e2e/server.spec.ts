@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-const CSP = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'";
+// S-08 (Spec Ä-37): img-src ohne data:
+const CSP = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'";
 
 for (const path of ['/', '/gibt-es-nicht/', '/index.html', '/_astro'])
   test(`Kopfzeilen auf ${path}`, async ({ request }) => {

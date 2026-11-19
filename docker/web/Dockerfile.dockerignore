@@ -1,0 +1,10 @@
+# Nur, was das Image braucht (BuildKit liest diese Datei statt einer .dockerignore im Kontext).
+*
+!backend/composer.json
+!backend/composer.lock
+!backend/src
+!backend/bin
+!backend/sql
+!backend/public
+!docker/config.integration.php
+!docker/web

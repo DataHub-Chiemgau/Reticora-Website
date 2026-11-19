@@ -10,3 +10,4 @@ backend/config.php
 backend/.phpunit.result.cache
 backend/templates/*.html
 backend/templates/*.json
+release/

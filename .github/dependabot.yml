@@ -1,0 +1,19 @@
+# Wöchentliche Meldungen zu neuen Versionen (Sicherheitsprüfung S-10, S-11). Actions sind per Commit-SHA festgelegt;
+# Dependabot aktualisiert SHA und Versionskommentar gemeinsam.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+  - package-ecosystem: "composer"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5

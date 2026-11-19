@@ -8,6 +8,7 @@ use Reticora\Lead\App;
 use Reticora\Lead\Config;
 use Reticora\Lead\ContactPage;
 use Reticora\Lead\Database;
+use Reticora\Lead\LogFiles;
 use Reticora\Lead\MailTransport;
 use Reticora\Lead\Request;
 use Reticora\Lead\Responder;
@@ -17,6 +18,7 @@ use Reticora\Lead\TransportFactory;
 ini_set('display_errors', '0');
 ini_set('html_errors', '0');
 ini_set('log_errors', '1');
+header_remove('X-Powered-By'); // S-05: auch bei expose_php = On beim Hoster
 
 // Verzeichnis mit vendor/, src/, templates/ und config.php: RETICORA_HOME oder ../../reticora (neben dem Webroot).
 // Kein Rückgriff auf ../ : Im Betrieb wäre das das Webroot.
@@ -38,7 +40,8 @@ try {
     exit;
 }
 
-$logPath = $config->string('log_path');
+// DS-04: eine Datei je UTC-Tag (<log_path ohne .log>-JJJJ-MM-TT.log); purge.php löscht Tage vor retention_days.
+$logPath = LogFiles::daily($config->string('log_path'), time());
 if ($logPath !== '') {
     ini_set('error_log', $logPath);
 }

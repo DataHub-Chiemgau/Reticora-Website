@@ -8,6 +8,7 @@ import { ui } from '../../src/i18n';
 import { kontakt } from '../../src/content/de/kontakt';
 import { content } from '../../src/content';
 import { E2E_DIR, leadCount, uniqueEmail } from './helpers/backend';
+import { expectApiHeaders } from './helpers/headers';
 
 const T = ui('de');
 const F = T.form;
@@ -525,6 +526,15 @@ test.describe('Backend hinter Apache', () => {
     expect(r.status()).toBe(429);
     expect(Number(r.headers()['retry-after'])).toBeGreaterThan(0);
     expect(Number(r.headers()['retry-after'])).toBeLessThanOrEqual(3600);
+    expectApiHeaders(r, '429 JSON');
+    // dieselbe Grenze als Hinweisseite (HTML): eine CSP, nicht die der Website und die strengere des Backends nebeneinander (S-04)
+    const html = await request.post('/api-limit/lead.php', {
+      form: { name: 'Limit', email: uniqueEmail('limit'), company: 'X GmbH', topic: 'demo', message: '', lang: 'de' },
+      headers: { Origin: ORIGIN },
+      maxRedirects: 0,
+    });
+    expect(html.status()).toBe(429);
+    expectApiHeaders(html, '429 HTML');
   });
 });
 

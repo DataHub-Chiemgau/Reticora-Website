@@ -1,6 +1,7 @@
 ---
 import Rich from './Rich.astro';
 import type { Lang } from '../data/types';
+import { ui } from '../i18n';
 
 interface Props {
   label: string;
@@ -10,10 +11,12 @@ interface Props {
   lang: Lang;
 }
 const { label, columns, rows, rowHeader, lang } = Astro.props;
+// Ein Strich allein heißt „keines“; Screenreader lesen ihn in der Standardeinstellung oft nicht vor, daher ein Wort dazu.
+const none = ui(lang).matrix.none;
 ---
 
 {/* Eine Tabellenform für alle breiten Tabellen: im Scrollrahmen (fokussierbar, benannt); unter 48rem stehen die Zeilen untereinander (Beschriftung je Zelle), so dass nichts abgeschnitten wird und kein Hinweis nötig ist. */}
-<section class="rt-table-wrap" tabindex="0" aria-label={label}>
+<section class="rt-table-wrap" tabindex="0" data-scroll-frame aria-label={label}>
   <table class="rt-table rt-table--stack">
     <thead>
       <tr>{columns.map((c) => <th scope="col" class={c.numeric ? 'num' : undefined}>{c.head}</th>)}</tr>
@@ -23,7 +26,7 @@ const { label, columns, rows, rowHeader, lang } = Astro.props;
         <tr>
           {columns.map((c) => c.key === rowHeader
             ? <th scope="row">{c.sub && r[c.sub] ? <span class="rt-tarif">{r[c.key]}<small>{r[c.sub]}</small></span> : <Rich text={r[c.key]} lang={lang} />}</th>
-            : <td class={c.numeric ? 'num' : undefined} data-label={c.head}><Rich text={r[c.key]} lang={lang} /></td>)}
+            : <td class={c.numeric ? 'num' : undefined} data-label={c.head}>{r[c.key] === '–' ? <><span aria-hidden="true">–</span><span class="sr-only">{none}</span></> : <Rich text={r[c.key]} lang={lang} />}</td>)}
         </tr>
       ))}
     </tbody>

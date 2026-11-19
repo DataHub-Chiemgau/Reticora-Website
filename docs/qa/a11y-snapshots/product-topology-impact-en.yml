@@ -1,0 +1,238 @@
+# /en/product/topology-impact/ (product-topology-impact-en), Chromium, 1280 × 900; Prüfung in docs/qa/2026-11-barrierefreiheit.md
+- link "Skip to content":
+  - /url: "#inhalt"
+- banner:
+  - link "Reticora":
+    - /url: /en/
+  - navigation "Main navigation":
+    - link "Product":
+      - /url: /en/product/discovery/
+    - link "Devices":
+      - /url: /en/devices/
+    - link "Solutions":
+      - /url: /en/solutions/msp/
+    - link "Security":
+      - /url: /en/security/
+    - link "Pricing":
+      - /url: /en/pricing/
+  - group "Language":
+    - link "DE – Deutsch":
+      - /url: /produkt/topologie-impact/
+      - text: DE
+    - text: EN
+  - link "Sign in":
+    - /url: https://www.reticora.cloud/login
+  - link "Live demo":
+    - /url: /en/demo/
+  - link "Try for 30 days":
+    - /url: https://www.reticora.cloud/onboarding
+- main:
+  - region "What depends on what, and what goes down with it?":
+    - heading "What depends on what, and what goes down with it?" [level=1]
+    - paragraph:
+      - text: From the observations Reticora derives how your devices are connected and powered. From that, the outage simulation calculates which CIs, customers and sites an outage hits.
+      - group: "Evidence : Neighbors from LLDP"
+      - group: "Evidence : Impact analysis"
+    - link "Live demo":
+      - /url: /en/demo/
+    - link "Try for 30 days":
+      - /url: https://www.reticora.cloud/onboarding
+    - paragraph: Offer for businesses only.
+  - navigation "Product":
+    - list:
+      - listitem:
+        - link "Discovery":
+          - /url: /en/product/discovery/
+      - listitem:
+        - link "Data quality":
+          - /url: /en/product/data-quality/
+      - listitem:
+        - link "Topology and impact":
+          - /url: /en/product/topology-impact/
+      - listitem:
+        - link "Administration":
+          - /url: /en/product/administration/
+      - listitem:
+        - link "Operations":
+          - /url: /en/product/operations/
+      - listitem:
+        - link "Compliance":
+          - /url: /en/product/compliance/
+      - listitem:
+        - link "API":
+          - /url: /en/product/api/
+  - region "Outage simulation":
+    - region "Schematic of a power chain with outage simulation":
+      - img "Schematic of a power chain with outage simulation": powered_by powered_by powered_by powered_by powered_by powered_by powered_by hosted_on hosted_on usv-01 pdu-a pdu-b sw-access-01 srv-01 srv-02 nas-01 vm-app-01 vm-db-01
+    - group "Simulate outage":
+      - button "usv-01"
+      - button "pdu-a" [pressed]
+      - button "pdu-b"
+      - button "sw-access-01"
+      - button "srv-01"
+      - button "srv-02"
+      - button "nas-01"
+      - button "vm-app-01"
+      - button "vm-db-01"
+    - status: "If “pdu-a” fails, 1 more CI is affected (shown in gray). Protected by redundancy: srv-01, srv-02."
+    - paragraph: CI, status “Active” failed affected (shown in gray) Schematic, not a screenshot
+  - region "Topology as a graph":
+    - heading "Topology as a graph" [level=2]
+    - paragraph
+    - paragraph:
+      - text: When a device reports a neighbor over LLDP, a
+      - code: connected_to
+      - text: relationship is created.
+      - group: "Evidence : Neighbors from LLDP"
+      - text: "Reticora also records the dependencies between CIs: what runs on what, what draws power from what, what belongs to a cluster. The topology shows all of it as a graph; the color of a dot stands for the status of the CI. Up to 2,000 nodes, you see the whole network; above that you first choose a site or type."
+      - group: "Evidence : Size of the topology"
+    - 'figure "Fig. 1 · Topology: CIs as a graph, the color shows the status."': "S-04 Topology Screenshot placeholder · 1440 × 900 · dark theme Fig. 1 · Topology: CIs as a graph, the color shows the status."
+  - region "Outage simulation with redundancy":
+    - heading "Outage simulation with redundancy" [level=2]
+    - paragraph
+    - paragraph:
+      - text: Select one or more CIs and let them fail. Reticora follows the relationships and shows what is affected. Power (
+      - code: powered_by
+      - text: ) and clusters (
+      - code: member_of_cluster
+      - text: ") count as redundant: a server with two power supplies on two PDUs only fails once both PDUs have failed. With"
+      - code: hosted_on
+      - text: ","
+      - code: runs_on
+      - text: and
+      - code: depends_on
+      - text: a single failed provider is enough.
+      - group: "Evidence : Outage simulation"
+      - group: "Evidence : Rules of the outage simulation"
+    - figure "Fig. 2 · Outage simulation in the topology.": S-06 Outage simulation Screenshot placeholder · 1440 × 900 · dark theme Fig. 2 · Outage simulation in the topology.
+    - paragraph: "Example (the same nine CIs as in the network schematic):"
+    - region "Example outages in the network schematic":
+      - table:
+        - rowgroup:
+          - row "Outage affected protected by redundancy":
+            - columnheader "Outage"
+            - columnheader "affected"
+            - columnheader "protected by redundancy"
+        - rowgroup:
+          - row "pdu-a sw-access-01 srv-01, srv-02":
+            - rowheader "pdu-a":
+              - code: pdu-a
+            - cell "sw-access-01":
+              - code: sw-access-01
+            - cell "srv-01, srv-02":
+              - code: srv-01
+              - text: ","
+              - code: srv-02
+          - row "pdu-a and pdu-b both servers, switch, NAS, both VMs (6) none":
+            - rowheader "pdu-a and pdu-b":
+              - code: pdu-a
+              - text: and
+              - code: pdu-b
+            - cell "both servers, switch, NAS, both VMs (6)"
+            - cell "none"
+          - row "usv-01 both PDUs and everything behind them (8) none":
+            - rowheader "usv-01":
+              - code: usv-01
+            - cell "both PDUs and everything behind them (8)"
+            - cell "none"
+          - row "srv-01 vm-app-01 none":
+            - rowheader "srv-01":
+              - code: srv-01
+            - cell "vm-app-01":
+              - code: vm-app-01
+            - cell "none"
+  - region "Who is affected":
+    - heading "Who is affected" [level=2]
+    - paragraph
+    - paragraph:
+      - text: The impact analysis does not stop at devices. It lists the affected CIs, customers, sites and services and shows which CI is a single point of failure for a service.
+      - group: "Evidence : Impact analysis"
+      - text: Anything reached only through a network connection (
+      - code: connected_to
+      - text: ") is listed separately as “possibly affected”: it is not certain that the outage hits these CIs, and they are not counted."
+      - group: "Evidence : Rules of the outage simulation"
+      - text: For a maintenance window you calculate several CIs at once.
+      - group: "Evidence : Maintenance windows and multiple failures"
+    - link "Maintenance windows":
+      - /url: /en/product/operations/
+  - region "The power chain back to the source":
+    - heading "The power chain back to the source" [level=2]
+    - paragraph
+    - paragraph:
+      - text: "Reticora models power supply as a chain: device, PDU, UPS, source."
+      - group: "Evidence : Power chain"
+      - text: This lets the outage simulation answer questions such as “What stays on while UPS B is being serviced?”. The collector reads the values of UPSs and PDUs itself and shows them as history on the CI.
+      - group: "Evidence : Collection methods"
+      - group: "Evidence : Metrics"
+  - region "Provenance and verification state of every relationship":
+    - heading "Provenance and verification state of every relationship" [level=2]
+    - paragraph
+    - paragraph:
+      - text: "Relationships have provenance too. Each one carries its source, a confidence and a verification state: unverified or confirmed. A neighbor from LLDP has a confidence of 1.0. Without LLDP, Reticora uses the switch’s forwarding table at 0.6. Unconfirmed edges from discovery disappear after 7 days or five times the scope interval, whichever is longer. Discovery never deletes edges you create by hand, and it does not recreate edges you remove."
+      - group: "Evidence : Provenance of relationships"
+  - region "Racks with front and rear":
+    - heading "Racks with front and rear" [level=2]
+    - paragraph
+    - paragraph:
+      - text: The rack view shows the occupancy per rack unit, on the front and on the rear. When you mount a device, Reticora checks whether it fits the height and whether the space on that side is free.
+      - group: "Evidence : Rack view"
+      - group: "Evidence : Rack with two sides"
+    - figure "Fig. 3 · Rack, front.": S-05 Rack, front view Screenshot placeholder · 720 × 900 · dark theme Fig. 3 · Rack, front.
+  - region "Try Reticora on your own network for 30 days.":
+    - heading "Try Reticora on your own network for 30 days." [level=2]
+    - link "Try for 30 days":
+      - /url: https://www.reticora.cloud/onboarding
+    - link "Live demo":
+      - /url: /en/demo/
+    - link "Contact":
+      - /url: /en/contact/
+    - paragraph: Offer for businesses only.
+- contentinfo:
+  - heading "Product" [level=2]
+  - link "Discovery":
+    - /url: /en/product/discovery/
+  - link "Data quality":
+    - /url: /en/product/data-quality/
+  - link "Topology and impact":
+    - /url: /en/product/topology-impact/
+  - link "Administration":
+    - /url: /en/product/administration/
+  - link "Operations":
+    - /url: /en/product/operations/
+  - link "Compliance":
+    - /url: /en/product/compliance/
+  - link "API":
+    - /url: /en/product/api/
+  - heading "Use cases" [level=2]
+  - link "For network operators":
+    - /url: /en/solutions/isp/
+  - link "For MSPs":
+    - /url: /en/solutions/msp/
+  - link "Supported devices":
+    - /url: /en/devices/
+  - link "Pricing":
+    - /url: /en/pricing/
+  - heading "Trust" [level=2]
+  - link "Security":
+    - /url: /en/security/
+  - link "Subprocessors":
+    - /url: /en/subprocessors/
+  - link "Accessibility":
+    - /url: /en/accessibility/
+  - heading "Contact" [level=2]
+  - link "Contact":
+    - /url: /en/contact/
+  - link "Live demo":
+    - /url: /en/demo/
+  - link "Sign in":
+    - /url: https://www.reticora.cloud/login
+  - text: Koyer Consulting für IT und Kommunikation UG (haftungsbeschränkt)
+  - link "Legal notice":
+    - /url: /en/legal-notice/
+  - link "Privacy":
+    - /url: /en/privacy/
+  - link "Terms":
+    - /url: /en/terms/
+  - text: Offer for businesses only
+  - link "Deutsch":
+    - /url: /produkt/topologie-impact/

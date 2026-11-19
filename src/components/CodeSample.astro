@@ -12,7 +12,7 @@ const { title, copyLabel, copiedLabel, failedLabel, lang } = Astro.props;
     <span class="rt-code-status" role="status"></span>
     <button class="rt-btn rt-btn--quiet" type="button" data-copy data-copied={copiedLabel} data-failed={failedLabel ?? ui(lang).copyFailed} hidden>{copyLabel}</button>
   </div>
-  <pre tabindex="0"><code><slot /></code></pre>
+  <pre tabindex="0" data-scroll-frame><code><slot /></code></pre>
 </div>
 
 <script>
